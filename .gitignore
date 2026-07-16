@@ -32,6 +32,17 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# local uploads
+/public/uploads
+
+# local mock JSON databases (worker/employer profiles when USE_MOCK_MAP_DATA=1)
+/.data
+
+# Capacitor native projects (generated via npm run cap:add:android)
+/android
+/ios
 
 # vercel
 .vercel

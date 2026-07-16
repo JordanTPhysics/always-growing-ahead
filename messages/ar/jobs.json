@@ -1,0 +1,46 @@
+{
+  "title": "الوظائف",
+  "searchTitle": "تصفح الوظائف",
+  "myJobsTitle": "إعلانات وظائفي",
+  "createTitle": "إنشاء وظيفة",
+  "editTitle": "تعديل الوظيفة",
+  "jobTitle": "المسمى الوظيفي",
+  "description": "الوصف",
+  "jobType": "نوع الوظيفة",
+  "postcode": "الرمز البريدي",
+  "address": "العنوان / المنطقة",
+  "salaryMin": "الحد الأدنى للراتب",
+  "salaryMax": "الحد الأقصى للراتب",
+  "salaryType": "نوع الراتب",
+  "requirements": "المتطلبات",
+  "status": "الحالة",
+  "skills": "المهارات",
+  "requiredSkill": "مطلوب",
+  "niceToHave": "مفضل",
+  "publish": "نشر",
+  "saveDraft": "حفظ كمسودة",
+  "closeJob": "إغلاق الوظيفة",
+  "emptyMine": "لا توجد إعلانات وظائف بعد.",
+  "emptyBrowse": "لا توجد وظائف نشطة بعد.",
+  "upgradeToPost": "نشر الوظائف يتطلب اشتراك Advanced.",
+  "company": "الشركة",
+  "viewJob": "عرض الوظيفة",
+  "jobTypes": {
+    "full-time": "دوام كامل",
+    "part-time": "دوام جزئي",
+    "contract": "عقد",
+    "temporary": "مؤقت",
+    "apprenticeship": "تدريب مهني"
+  },
+  "salaryTypes": {
+    "hourly": "ساعي",
+    "daily": "يومي",
+    "annual": "سنوي"
+  },
+  "statuses": {
+    "draft": "مسودة",
+    "active": "نشط",
+    "closed": "مغلق",
+    "expired": "منتهي"
+  }
+}

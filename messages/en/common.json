@@ -1,0 +1,46 @@
+{
+  "appName": "AGA",
+  "tagline": "Find work and hire near you across the UK",
+  "nav": {
+    "home": "Home",
+    "findWork": "Find work",
+    "welcome": "Welcome",
+    "hire": "Hire",
+    "myProfile": "My profile",
+    "workerProfile": "Worker profile",
+    "employerProfile": "Employer profile",
+    "myJobs": "My jobs",
+    "billing": "Billing",
+    "notifications": "Notifications",
+    "admin": "Admin",
+    "privacy": "Privacy",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "switchToHiring": "Switch to hiring",
+    "switchToWorking": "Switch to finding work"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "create": "Create",
+    "delete": "Delete",
+    "publish": "Publish",
+    "saveDraft": "Save draft",
+    "back": "Back",
+    "continue": "Continue",
+    "view": "View",
+    "preview": "Preview",
+    "close": "Close"
+  },
+  "status": {
+    "loading": "Loading…",
+    "saved": "Saved",
+    "error": "Something went wrong"
+  },
+  "language": "Language",
+  "footer": {
+    "rights": "UK job marketplace"
+  }
+}

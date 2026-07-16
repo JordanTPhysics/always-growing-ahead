@@ -1,0 +1,22 @@
+{
+  "title": "Find workers near you",
+  "filters": "Filters",
+  "mapView": "Map",
+  "listView": "List",
+  "location": "City or postcode",
+  "locationPlaceholder": "e.g. Manchester or B1 1AA",
+  "radius": "Search radius",
+  "radiusMiles": "{miles} mi",
+  "nationwide": "Nationwide",
+  "desiredJobType": "Desired job type",
+  "any": "Any",
+  "applyFilters": "Apply filters",
+  "resultCount": "{count, plural, =0 {No workers} one {# worker} other {# workers}}",
+  "empty": "No public workers match these filters. Try a wider radius or clear filters.",
+  "viewFull": "View full profile",
+  "unnamedWorker": "Worker profile",
+  "listDesktopHint": "Results are shown in the list panel. Switch to Map to browse on the map.",
+  "nearMe": "Use my location",
+  "nearMeLabel": "Near me",
+  "nearMeFailed": "Could not get your location. Check permissions and try again."
+}

@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AGA
 
-## Getting Started
+UK job search & employment marketplace (Next.js App Router).
 
-First, run the development server:
+## Phase 1 status
+
+Foundations are in place:
+
+- Auth.js (email/password + optional Google)
+- `[locale]` routing with **next-intl** (`en` + `ar`, RTL-aware layout)
+- MySQL schema + migration runner
+- Repository data layer (`lib/db/repositories/*`)
+- Worker / employer profile CRUD
+- Job CRUD (list browse only — map search is Phase 2)
+- Entitlement helpers ready for Stripe (Phase 3)
+
+## Setup
+
+1. Copy `.env.example` → `.env.local` and fill DB + `AUTH_SECRET`.
+2. Create a MySQL 8 database user/password as needed.
+3. Run migrations:
+
+```bash
+npm run db:migrate
+```
+
+4. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) (redirects to `/en`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Mock test accounts (`USE_MOCK_MAP_DATA=1`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Seed demo profiles/jobs (and MySQL users when the DB is available):
 
-## Learn More
+```bash
+npm run seed:mock
+```
 
-To learn more about Next.js, take a look at the following resources:
+| Email | Password | Tier |
+|---|---|---|
+| `full@aga.test` | `password123` | Advanced (full — worker + employer/jobs) |
+| `worker@aga.test` | `password123` | Basic (worker subscription only) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+With mock map data enabled, these logins work even without MySQL.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Dev-only tier switch (until Stripe)
 
-## Deploy on Vercel
+```bash
+curl -X POST http://localhost:3000/api/dev/set-tier \
+  -H "Content-Type: application/json" \
+  --cookie "..." \
+  -d "{\"tier\":\"advanced\"}"
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+In development, job posting is allowed without Advanced so Phase 1 CRUD is usable.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+| Script | Purpose |
+|---|---|
+| `npm run dev` | Next.js dev server |
+| `npm run build` | Production build |
+| `npm run db:migrate` | Apply `lib/db/migrations/*.sql` |
+| `npm run seed:mock` | Seed mock test accounts + demo JSON data |

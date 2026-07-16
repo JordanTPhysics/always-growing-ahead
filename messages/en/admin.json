@@ -1,0 +1,12 @@
+{
+  "title": "Admin dashboard",
+  "subtitle": "Review proposed skills and manage user access.",
+  "pendingSkills": "Pending skills",
+  "users": "Recent users",
+  "noPendingSkills": "There are no pending skill proposals.",
+  "approve": "Approve",
+  "reject": "Reject",
+  "role": "Role",
+  "tier": "Tier",
+  "email": "Email"
+}

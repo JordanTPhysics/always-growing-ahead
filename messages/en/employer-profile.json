@@ -1,0 +1,17 @@
+{
+  "title": "Employer profile",
+  "subtitle": "Company details shown on your job postings",
+  "companyName": "Company name",
+  "companyDescription": "About the company",
+  "website": "Website",
+  "logoUrl": "Logo URL",
+  "contactSection": "Contact details",
+  "contactHint": "Shown on your jobs when a worker reveals contact info.",
+  "contactEmail": "Email",
+  "contactPhone": "Phone",
+  "linkedinUrl": "LinkedIn profile URL",
+  "createCta": "Create employer profile",
+  "updateCta": "Save company profile",
+  "empty": "You don't have an employer profile yet.",
+  "neededForJobs": "Create an employer profile before posting jobs."
+}

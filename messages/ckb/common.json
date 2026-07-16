@@ -1,0 +1,46 @@
+{
+  "appName": "AGA",
+  "tagline": "Find work and hire near you across the UK",
+  "nav": {
+    "home": "ماڵەوە",
+    "findWork": "دۆزینەوەی کار",
+    "welcome": "خۆتۆمارکردن",
+    "hire": "دامەزراندن",
+    "myProfile": "پرۆفایلی من",
+    "workerProfile": "پرۆفایلی کرێکار",
+    "employerProfile": "پرۆفایلی خاوەنکار",
+    "myJobs": "کارەکانی من",
+    "billing": "پارەدان",
+    "notifications": "ئاگادارکردنەوەکان",
+    "admin": "بەڕێوەبەر",
+    "privacy": "تایبەتمەندی",
+    "signIn": "چوونەژوورەوە",
+    "signUp": "خۆتۆمارکردن",
+    "signOut": "چوونەدەرەوە",
+    "switchToHiring": "گۆڕین بۆ دامەزراندن",
+    "switchToWorking": "گۆڕین بۆ دۆزینەوەی کار"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "create": "Create",
+    "delete": "Delete",
+    "publish": "Publish",
+    "saveDraft": "Save draft",
+    "back": "Back",
+    "continue": "Continue",
+    "view": "View",
+    "preview": "Preview",
+    "close": "Close"
+  },
+  "status": {
+    "loading": "Loading…",
+    "saved": "Saved",
+    "error": "Something went wrong"
+  },
+  "language": "Language",
+  "footer": {
+    "rights": "UK job marketplace"
+  }
+}

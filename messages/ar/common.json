@@ -1,0 +1,46 @@
+{
+  "appName": "AGA",
+  "tagline": "ابحث عن عمل ووظّف بالقرب منك في المملكة المتحدة",
+  "nav": {
+    "home": "الرئيسية",
+    "findWork": "ابحث عن عمل",
+    "welcome": "مرحبا بك",
+    "hire": "توظيف",
+    "myProfile": "ملفي",
+    "workerProfile": "ملف العامل",
+    "employerProfile": "ملف صاحب العمل",
+    "myJobs": "وظائفي",
+    "billing": "الفوترة",
+    "notifications": "الإشعارات",
+    "admin": "الإدارة",
+    "privacy": "الخصوصية",
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "signOut": "تسجيل الخروج",
+    "switchToHiring": "التبديل إلى التوظيف",
+    "switchToWorking": "التبديل إلى البحث عن عمل"
+  },
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "delete": "حذف",
+    "publish": "نشر",
+    "saveDraft": "حفظ كمسودة",
+    "back": "رجوع",
+    "continue": "متابعة",
+    "view": "عرض",
+    "preview": "معاينة",
+    "close": "إغلاق"
+  },
+  "status": {
+    "loading": "جارٍ التحميل…",
+    "saved": "تم الحفظ",
+    "error": "حدث خطأ ما"
+  },
+  "language": "اللغة",
+  "footer": {
+    "rights": "سوق عمل في المملكة المتحدة"
+  }
+}

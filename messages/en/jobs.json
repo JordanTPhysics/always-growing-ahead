@@ -1,0 +1,46 @@
+{
+  "title": "Jobs",
+  "searchTitle": "Browse jobs",
+  "myJobsTitle": "My job postings",
+  "createTitle": "Create job",
+  "editTitle": "Edit job",
+  "jobTitle": "Job title",
+  "description": "Description",
+  "jobType": "Job type",
+  "postcode": "Postcode",
+  "address": "Address / area",
+  "salaryMin": "Salary min",
+  "salaryMax": "Salary max",
+  "salaryType": "Salary type",
+  "requirements": "Requirements",
+  "status": "Status",
+  "skills": "Skills",
+  "requiredSkill": "Required",
+  "niceToHave": "Nice to have",
+  "publish": "Publish",
+  "saveDraft": "Save as draft",
+  "closeJob": "Close job",
+  "emptyMine": "No job postings yet.",
+  "emptyBrowse": "No active jobs yet.",
+  "upgradeToPost": "Posting jobs requires an Advanced subscription.",
+  "company": "Company",
+  "viewJob": "View job",
+  "jobTypes": {
+    "full-time": "Full-time",
+    "part-time": "Part-time",
+    "contract": "Contract",
+    "temporary": "Temporary",
+    "apprenticeship": "Apprenticeship"
+  },
+  "salaryTypes": {
+    "hourly": "Hourly",
+    "daily": "Daily",
+    "annual": "Annual"
+  },
+  "statuses": {
+    "draft": "Draft",
+    "active": "Active",
+    "closed": "Closed",
+    "expired": "Expired"
+  }
+}
