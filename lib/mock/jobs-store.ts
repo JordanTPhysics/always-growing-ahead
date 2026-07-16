@@ -6,6 +6,7 @@ import type {
   JobType,
   SalaryType,
 } from "@/lib/db/types";
+import { ensureDemoJsonSeeded } from "@/lib/mock/demo-seed";
 import { nextNumericId, readJsonFile, writeJsonFile } from "@/lib/mock/json-db";
 import { getJsonEmployerById } from "@/lib/mock/profiles-store";
 
@@ -40,6 +41,7 @@ function nowIso() {
 }
 
 function readJobs(): JobsDb {
+  ensureDemoJsonSeeded();
   return readJsonFile<JobsDb>(JOBS_FILE, { jobs: [] });
 }
 

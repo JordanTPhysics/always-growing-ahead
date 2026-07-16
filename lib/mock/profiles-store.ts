@@ -10,6 +10,7 @@ import type {
   WorkerSearchResult,
   WorkerSkill,
 } from "@/lib/db/types";
+import { ensureDemoJsonSeeded } from "@/lib/mock/demo-seed";
 import { nextNumericId, readJsonFile, writeJsonFile } from "@/lib/mock/json-db";
 
 const WORKERS_FILE = "workers.json";
@@ -63,6 +64,7 @@ function nowIso() {
 }
 
 function readWorkers(): WorkersDb {
+  ensureDemoJsonSeeded();
   return readJsonFile<WorkersDb>(WORKERS_FILE, { workers: [] });
 }
 
@@ -71,6 +73,7 @@ function writeWorkers(db: WorkersDb) {
 }
 
 function readEmployers(): EmployersDb {
+  ensureDemoJsonSeeded();
   return readJsonFile<EmployersDb>(EMPLOYERS_FILE, { employers: [] });
 }
 
