@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { buttonSecondaryClassName } from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
 
 export function SaveSearchButton({
   kind,
@@ -31,13 +31,9 @@ export function SaveSearchButton({
 
   return (
     <span className="inline-flex items-center gap-2">
-      <button
-        type="button"
-        className={buttonSecondaryClassName}
-        onClick={() => void saveSearch()}
-      >
+      <Button type="button" variant="secondary" onClick={() => void saveSearch()}>
         Save search
-      </button>
+      </Button>
       {status === "saved" ? <span className="text-xs text-muted">Saved</span> : null}
       {status === "error" ? <span className="text-xs text-danger">Could not save</span> : null}
     </span>

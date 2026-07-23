@@ -193,6 +193,8 @@ export type JobSearchFilters = {
   lng?: number;
   /** null/undefined with lat/lng = nationwide (no radius cap) */
   radiusMeters?: number | null;
+  /** Substring match on job title */
+  field?: string;
   jobType?: JobType;
   salaryMin?: number;
   salaryMax?: number;
@@ -205,6 +207,8 @@ export type WorkerSearchFilters = {
   lat?: number;
   lng?: number;
   radiusMeters?: number | null;
+  /** Substring match on worker headline */
+  field?: string;
   jobType?: JobType;
   skillIds?: number[];
   availability?: Availability;
@@ -223,4 +227,27 @@ export type JobSkill = {
   skill_id: number;
   required: boolean;
   skill_name?: string;
+};
+
+export type EducationMediaType = "pdf" | "video";
+
+export type EducationResource = {
+  id: number;
+  topic: string;
+  media_type: EducationMediaType;
+  file_url: string;
+  file_name: string;
+  mime_type: string;
+  byte_size: number;
+  title_en: string;
+  title_ar: string | null;
+  title_ckb: string | null;
+  description_en: string | null;
+  description_ar: string | null;
+  description_ckb: string | null;
+  sort_order: number;
+  is_published: boolean;
+  created_by: number | null;
+  created_at: Date;
+  updated_at: Date;
 };

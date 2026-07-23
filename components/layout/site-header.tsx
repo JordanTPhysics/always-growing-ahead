@@ -6,6 +6,7 @@ import { Link, usePathname, useRouter } from "@/lib/i18n/routing";
 import { activeLocales, locales, type ActiveLocale } from "@/lib/i18n/locales";
 import { signOut } from "next-auth/react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 type Props = {
@@ -101,6 +102,15 @@ export function SiteHeader({ user }: Props) {
             <Link href="/workers" className="text hover:text-text">
               {t("nav.hire")}
             </Link>
+            <Link href="/education" className="text hover:text-text">
+              {t("nav.education")}
+            </Link>
+            <Link href="/help" className="text hover:text-text">
+              {t("nav.help")}
+            </Link>
+            <Link href="/pricing" className="text hover:text-text">
+              {t("nav.pricing")}
+            </Link>
             {user ? (
               <>
                 <Link
@@ -139,13 +149,14 @@ export function SiteHeader({ user }: Props) {
                   {t("nav.welcome")} {user.email}
                 </span>
                 <NotificationBell />
-                <button
+                <Button
                   type="button"
-                  className="rounded-md border border-border bg-white px-3 py-1.5 text-black hover:bg-background-soft"
+                  size="sm"
+                  variant="secondary"
                   onClick={() => signOut({ callbackUrl: `/${locale}` })}
                 >
                   {t("nav.signOut")}
-                </button>
+                </Button>
                 <LanguageSelect />
               </div>
 
@@ -166,7 +177,7 @@ export function SiteHeader({ user }: Props) {
                   <div
                     id={menuId}
                     role="menu"
-                    className="absolute end-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-md bg-surface text-text shadow-lg border-border border"
+                    className="absolute end-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-md border border-border bg-surface text-text shadow-panel"
                   >
                     <p className="truncate px-3 py-2.5 text-xs text-muted">
                       {user.email}
@@ -192,6 +203,22 @@ export function SiteHeader({ user }: Props) {
                     >
                       {t("nav.notifications")}
                     </NotificationBell>
+                    <Link
+                      href="/help"
+                      role="menuitem"
+                      className={menuItemClassName}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {t("nav.help")}
+                    </Link>
+                    <Link
+                      href="/pricing"
+                      role="menuitem"
+                      className={menuItemClassName}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {t("nav.pricing")}
+                    </Link>
                     <div role="none">
                       <button
                         type="button"
@@ -256,12 +283,9 @@ export function SiteHeader({ user }: Props) {
               >
                 {t("nav.signIn")}
               </Link>
-              <Link
-                href="/sign-up"
-                className="rounded-md bg-foreground px-3 py-1.5 text-white hover:opacity-90"
-              >
-                {t("nav.signUp")}
-              </Link>
+              <Button asChild size="sm" variant="accent">
+                <Link href="/sign-up">{t("nav.signUp")}</Link>
+              </Button>
               <LanguageSelect />
             </div>
           )}

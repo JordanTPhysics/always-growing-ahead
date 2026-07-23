@@ -8,6 +8,7 @@ import {
 import { getJsonWorkerById } from "@/lib/mock/profiles-store";
 import { stripProfileContact } from "@/lib/profiles/contact";
 import { PageHeader } from "@/components/ui/forms";
+import { Card, PageSection } from "@/components/ui/card";
 import { ContactReveal } from "@/components/billing/contact-reveal";
 
 export default async function WorkerPublicPage({
@@ -43,13 +44,13 @@ export default async function WorkerPublicPage({
   }
 
   return (
-    <article className="space-y-6">
+    <PageSection>
       <PageHeader
         title={profile.headline ?? t("title")}
         subtitle={profile.bio ?? undefined}
       />
 
-      <div className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         {profile.postcode || profile.address_text ? (
           <p className="text-sm text-muted">
             {[profile.address_text, profile.postcode].filter(Boolean).join(", ")}
@@ -102,9 +103,9 @@ export default async function WorkerPublicPage({
             ))}
           </div>
         ) : null}
-      </div>
+      </Card>
 
       <ContactReveal target="worker" workerId={workerId} />
-    </article>
+    </PageSection>
   );
 }

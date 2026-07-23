@@ -640,6 +640,10 @@ export async function searchMockJobs(
   let jobs = withDistance([...byId.values()], filters.lat, filters.lng);
   jobs = withinRadius(jobs, filters.radiusMeters);
 
+  if (filters.field?.trim()) {
+    const term = filters.field.trim().toLowerCase();
+    jobs = jobs.filter((j) => j.title.toLowerCase().includes(term));
+  }
   if (filters.jobType) {
     jobs = jobs.filter((j) => j.job_type === filters.jobType);
   }
@@ -676,6 +680,12 @@ export async function searchMockWorkers(
   let workers = withDistance([...byId.values()], filters.lat, filters.lng);
   workers = withinRadius(workers, filters.radiusMeters);
 
+  if (filters.field?.trim()) {
+    const term = filters.field.trim().toLowerCase();
+    workers = workers.filter((w) =>
+      w.headline?.toLowerCase().includes(term)
+    );
+  }
   if (filters.jobType) {
     workers = workers.filter((w) =>
       (w.desired_job_types as JobType[] | null)?.includes(filters.jobType!)

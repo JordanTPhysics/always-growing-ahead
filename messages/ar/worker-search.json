@@ -5,6 +5,8 @@
   "listView": "قائمة",
   "location": "المدينة أو الرمز البريدي",
   "locationPlaceholder": "مثلاً مانشستر أو B1 1AA",
+  "field": "المهنة أو الدور",
+  "fieldPlaceholder": "مثلاً محاسب، غسّال صحون",
   "radius": "نطاق البحث",
   "radiusMiles": "{miles} ميل",
   "nationwide": "على مستوى المملكة",

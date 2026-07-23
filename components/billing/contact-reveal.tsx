@@ -4,10 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { useSession } from "next-auth/react";
-import {
-  buttonPrimaryClassName,
-  buttonSecondaryClassName,
-} from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { canViewContactInfo, type Tier } from "@/lib/entitlements";
 import { track } from "@/lib/analytics/track";
@@ -36,12 +34,12 @@ export function ContactReveal(props: Props) {
 
   if (!session?.user) {
     return (
-      <div className="space-y-3 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-3 p-5">
         <p className="text-sm text-muted">{t("signInToContact")}</p>
-        <Link href="/sign-in" className={buttonPrimaryClassName}>
-          {t("signIn")}
-        </Link>
-      </div>
+        <Button asChild>
+          <Link href="/sign-in">{t("signIn")}</Link>
+        </Button>
+      </Card>
     );
   }
 
@@ -97,7 +95,7 @@ export function ContactReveal(props: Props) {
 
   if (contact) {
     return (
-      <div className="space-y-2 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-2 p-5">
         <h2 className="font-medium">{t("contactDetails")}</h2>
         {contact.companyName ? (
           <p className="text-sm text-muted">{contact.companyName}</p>
@@ -133,29 +131,29 @@ export function ContactReveal(props: Props) {
         ) : (
           <p className="text-sm text-muted">{t("noLinkedin")}</p>
         )}
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-surface p-5">
+    <Card elevation="nested" className="space-y-3 p-5">
       <h2 className="font-medium">{t("contactTitle")}</h2>
       <p className="text-sm text-muted">{t("contactHint")}</p>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      <button
+      <Button
         type="button"
-        className={buttonSecondaryClassName}
+        variant="secondary"
         disabled={loading}
         onClick={() => void reveal()}
       >
         {loading ? t("revealing") : t("revealContact")}
-      </button>
+      </Button>
       <p className="text-xs text-muted">
         {t("currentPlan")}: {t(`tiers.${tier}`)} ·{" "}
         <Link href="/billing" className="underline">
           {t("manageBilling")}
         </Link>
       </p>
-    </div>
+    </Card>
   );
 }

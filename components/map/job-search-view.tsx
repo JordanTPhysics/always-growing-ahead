@@ -7,11 +7,8 @@ import { ClusteredMap } from "@/components/map/clustered-map";
 import { BottomSheet } from "@/components/map/bottom-sheet";
 import { PostcodeInput } from "@/components/map/postcode-input";
 import { SaveSearchButton } from "@/components/search/save-search-button";
-import {
-  buttonPrimaryClassName,
-  buttonSecondaryClassName,
-  inputClassName,
-} from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
+import { inputClassName } from "@/components/ui/forms";
 import type { JobSearchResult, JobType } from "@/lib/db/types";
 import {
   RADIUS_PRESETS_MI,
@@ -98,6 +95,13 @@ export function JobSearchView() {
   const [salaryMax, setSalaryMax] = useState("");
   const [postedWithinDays, setPostedWithinDays] = useState("");
   const [skillId, setSkillId] = useState("");
+  const [field, setField] = useState("");
+  const [debouncedField, setDebouncedField] = useState("");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedField(field), 300);
+    return () => window.clearTimeout(timer);
+  }, [field]);
 
   useEffect(() => {
     let cancelled = false;
@@ -116,6 +120,7 @@ export function JobSearchView() {
     origin?.lat ?? "",
     origin?.lng ?? "",
     radius,
+    debouncedField,
     jobType,
     salaryMin,
     salaryMax,
@@ -147,6 +152,7 @@ export function JobSearchView() {
         if (salaryMax) params.set("salaryMax", salaryMax);
         if (postedWithinDays) params.set("postedWithinDays", postedWithinDays);
         if (skillId) params.set("skillIds", skillId);
+        if (debouncedField.trim()) params.set("field", debouncedField.trim());
 
         const res = await fetch(`/api/jobs?${params}`);
         const data = await res.json();
@@ -164,7 +170,7 @@ export function JobSearchView() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [queryKey, origin, radius, jobType, salaryMin, salaryMax, postedWithinDays, skillId, tCommon]);
+  }, [queryKey, origin, radius, debouncedField, jobType, salaryMin, salaryMax, postedWithinDays, skillId, tCommon]);
 
   const selected = useMemo(
     () => jobs.find((j) => j.id === selectedId) ?? null,
@@ -209,9 +215,10 @@ export function JobSearchView() {
           setOrigin({ lat: result.lat, lng: result.lng });
         }}
       />
-      <button
+      <Button
         type="button"
-        className={buttonSecondaryClassName + " w-full"}
+        variant="secondary"
+        className="w-full"
         onClick={() => {
           void (async () => {
             const pos = await getCurrentPosition();
@@ -226,7 +233,18 @@ export function JobSearchView() {
         }}
       >
         {t("nearMe")}
-      </button>
+      </Button>
+
+      <label className="block space-y-1.5">
+        <span className="text-sm font-medium">{t("field")}</span>
+        <input
+          className={inputClassName}
+          type="search"
+          value={field}
+          placeholder={t("fieldPlaceholder")}
+          onChange={(e) => setField(e.target.value)}
+        />
+      </label>
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t("radius")}</legend>
@@ -328,13 +346,13 @@ export function JobSearchView() {
         </select>
       </label>
 
-      <button
+      <Button
         type="button"
-        className={buttonPrimaryClassName + " w-full"}
+        className="w-full"
         onClick={applyFilters}
       >
         {t("applyFilters")}
-      </button>
+      </Button>
     </div>
   );
 
@@ -356,6 +374,7 @@ export function JobSearchView() {
               postcode,
               origin,
               radius,
+              field,
               jobType,
               salaryMin,
               salaryMax,
@@ -363,13 +382,13 @@ export function JobSearchView() {
               skillId,
             })}
           />
-          <button
+          <Button
             type="button"
-            className={buttonSecondaryClassName}
+            variant="secondary"
             onClick={() => setFiltersOpen(true)}
           >
             {t("filters")}
-          </button>
+          </Button>
           <div className="flex rounded-md border border-border">
             <button
               type="button"
@@ -512,12 +531,11 @@ export function JobSearchView() {
                 {selected.description}
               </p>
             ) : null}
-            <Link
-              href={`/jobs/${selected.id}`}
-              className={buttonPrimaryClassName + " w-full"}
-            >
-              {t("viewFull")}
-            </Link>
+            <Button asChild className="w-full">
+              <Link href={`/jobs/${selected.id}`}>
+                {t("viewFull")}
+              </Link>
+            </Button>
           </div>
         ) : null}
       </BottomSheet>

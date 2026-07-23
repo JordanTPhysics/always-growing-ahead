@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";
 
 type Suggestion = { id: string; label: string };
@@ -130,17 +131,19 @@ export function PostcodeInput({
             }
           }}
         />
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="default"
           disabled={disabled || loading || !value.trim()}
           onClick={() => void resolveTyped()}
-          className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-border bg-surface px-3 text-sm font-medium hover:bg-background-soft disabled:opacity-50"
+          className="shrink-0 px-3"
         >
           {loading ? "…" : "↵"}
-        </button>
+        </Button>
       </div>
       {open && suggestions.length > 0 ? (
-        <ul className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-surface shadow-lg">
+        <ul className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-surface shadow-panel">
           {suggestions.map((s) => (
             <li key={s.id}>
               <button

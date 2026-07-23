@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { BillingPlans } from "@/components/billing/billing-plans";
 import { PageHeader } from "@/components/ui/forms";
+import { PageSection } from "@/components/ui/card";
 import { getUserById } from "@/lib/db/repositories/users";
 import { isStripeConfigured } from "@/lib/stripe/client";
 
@@ -23,7 +24,7 @@ export default async function BillingPage({
   const user = await getUserById(Number(session.user.id));
 
   return (
-    <div className="space-y-6">
+    <PageSection>
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
       <BillingPlans
         currentTier={session.user.tier}
@@ -32,6 +33,6 @@ export default async function BillingPage({
         success={query.success === "1"}
         canceled={query.canceled === "1"}
       />
-    </div>
+    </PageSection>
   );
 }

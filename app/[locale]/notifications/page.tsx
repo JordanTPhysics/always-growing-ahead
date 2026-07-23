@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
-import { PageHeader, buttonSecondaryClassName } from "@/components/ui/forms";
+import { PageHeader } from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
+import { Card, PageSection } from "@/components/ui/card";
 
 type Notification = {
   id: number;
@@ -42,25 +44,25 @@ export default function NotificationsPage() {
   }
 
   return (
-    <>
+    <PageSection>
       <PageHeader
         title={t("title")}
         subtitle={t("subtitle")}
         actions={
-          <button
+          <Button
             type="button"
-            className={buttonSecondaryClassName}
+            variant="secondary"
             onClick={() => void markRead()}
           >
             {t("markAllRead")}
-          </button>
+          </Button>
         }
       />
       <div className="space-y-3">
         {notifications.length === 0 ? (
-          <p className="rounded-lg border border-border bg-surface p-5 text-muted">
+          <Card elevation="nested" className="p-5 text-muted">
             {t("empty")}
-          </p>
+          </Card>
         ) : (
           notifications.map((notification) => {
             const content = (
@@ -79,11 +81,9 @@ export default function NotificationsPage() {
                 </p>
               </>
             );
-            const className = `block rounded-lg border p-4 ${
-              notification.read_at
-                ? "border-border bg-surface"
-                : "border-accent/40 bg-background-soft"
-            }`;
+            const className = notification.read_at
+              ? "block"
+              : "block rounded-lg";
 
             return notification.link_url ? (
               <Link
@@ -92,7 +92,16 @@ export default function NotificationsPage() {
                 className={className}
                 onClick={() => void markRead(notification.id)}
               >
-                {content}
+                <Card
+                  elevation="nested"
+                  className={
+                    notification.read_at
+                      ? "p-4"
+                      : "border-accent/40 bg-background-soft/60 p-4"
+                  }
+                >
+                  {content}
+                </Card>
               </Link>
             ) : (
               <button
@@ -101,12 +110,21 @@ export default function NotificationsPage() {
                 className={`${className} w-full text-start`}
                 onClick={() => void markRead(notification.id)}
               >
-                {content}
+                <Card
+                  elevation="nested"
+                  className={
+                    notification.read_at
+                      ? "p-4"
+                      : "border-accent/40 bg-background-soft/60 p-4"
+                  }
+                >
+                  {content}
+                </Card>
               </button>
             );
           })
         )}
       </div>
-    </>
+    </PageSection>
   );
 }

@@ -2,9 +2,11 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "@/lib/i18n/routing";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function NotificationBell({
-  className = "relative rounded-md border border-border bg-white px-3 py-1.5 hover:bg-background-soft",
+  className = cn(buttonVariants({ variant: "secondary", size: "sm" }), "relative"),
   children,
 }: {
   className?: string;

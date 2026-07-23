@@ -4,6 +4,7 @@ import { getJobById, listJobSkills } from "@/lib/db/repositories/jobs";
 import { getJsonJobById } from "@/lib/mock/jobs-store";
 import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import { PageHeader } from "@/components/ui/forms";
+import { Card, PageSection } from "@/components/ui/card";
 import { ContactReveal } from "@/components/billing/contact-reveal";
 
 export default async function JobDetailPage({
@@ -27,13 +28,13 @@ export default async function JobDetailPage({
     })) ?? (await listJobSkills(job.id));
 
   return (
-    <article className="space-y-6">
+    <PageSection>
       <PageHeader
         title={job.title}
         subtitle={job.company_name ?? t("company")}
       />
 
-      <div className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           {job.job_type ? (
             <div>
@@ -94,11 +95,11 @@ export default async function JobDetailPage({
             </ul>
           </div>
         ) : null}
-      </div>
+      </Card>
 
       {job.status === "active" ? (
         <ContactReveal target="job" jobId={job.id} />
       ) : null}
-    </article>
+    </PageSection>
   );
 }

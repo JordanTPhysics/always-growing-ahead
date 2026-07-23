@@ -40,6 +40,18 @@ export default async function HomePage({
         >
           {t("nav.hire")}
         </Link>
+        <Link
+          href="/help"
+          className="inline-flex min-h-11 items-center rounded-md border border-border bg-surface px-5 py-2.5"
+        >
+          {t("nav.help")}
+        </Link>
+        <Link
+          href="/pricing"
+          className="inline-flex min-h-11 items-center rounded-md border border-border bg-surface px-5 py-2.5"
+        >
+          {t("nav.pricing")}
+        </Link>
         {!session ? (
           <Link
             href="/sign-up"

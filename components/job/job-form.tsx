@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/lib/i18n/routing";
+import { Button } from "@/components/ui/button";
+import { Card, PageSection } from "@/components/ui/card";
 import {
   Field,
   FormModeTabs,
   PageHeader,
-  buttonPrimaryClassName,
-  buttonSecondaryClassName,
   inputClassName,
   type FormMode,
 } from "@/components/ui/forms";
@@ -136,7 +136,7 @@ export function JobForm({ jobId, embedded = false, onSaved }: Props) {
   );
 
   const preview = (
-    <article className="space-y-4 rounded-lg border border-border bg-surface p-5">
+    <Card elevation="nested" className="space-y-4 p-5">
       <div>
         <h2 className="text-2xl font-semibold tracking-tight">
           {title || t("createTitle")}
@@ -198,7 +198,7 @@ export function JobForm({ jobId, embedded = false, onSaved }: Props) {
           </ul>
         </div>
       ) : null}
-    </article>
+    </Card>
   );
 
   const editor = (
@@ -209,7 +209,7 @@ export function JobForm({ jobId, embedded = false, onSaved }: Props) {
         void save("draft");
       }}
     >
-      <div className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <Field label={t("jobTitle")}>
           <input
             className={inputClassName}
@@ -304,9 +304,9 @@ export function JobForm({ jobId, embedded = false, onSaved }: Props) {
             onChange={(e) => setRequirements(e.target.value)}
           />
         </Field>
-      </div>
+      </Card>
 
-      <div className="space-y-3 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-3 p-5">
         <h2 className="text-lg font-medium">{t("skills")}</h2>
         <div className="flex flex-wrap gap-2">
           {catalog.map((skill) => {
@@ -317,7 +317,7 @@ export function JobForm({ jobId, embedded = false, onSaved }: Props) {
                 type="button"
                 className={`min-h-11 rounded-md border px-3 py-1.5 text-sm ${
                   selected
-                    ? "border-accent bg-background text-muted"
+                    ? "border-accent bg-background text-white"
                     : "border-border"
                 }`}
                 onClick={() => {
@@ -341,40 +341,39 @@ export function JobForm({ jobId, embedded = false, onSaved }: Props) {
             );
           })}
         </div>
-      </div>
+      </Card>
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <div className="flex flex-wrap gap-3">
-        <button
+        <Button
           type="button"
-          className={buttonSecondaryClassName}
+          variant="secondary"
           disabled={saving}
           onClick={() => void save("draft")}
         >
           {t("saveDraft")}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className={buttonPrimaryClassName}
           disabled={saving}
           onClick={() => void save("active")}
         >
           {t("publish")}
-        </button>
+        </Button>
       </div>
     </form>
   );
 
-  return (
-    <div className="space-y-6">
+  const content = (
+    <>
       {!embedded ? (
         <PageHeader
           title={jobId ? t("editTitle") : t("createTitle")}
           actions={
-            <Link href="/employer/jobs" className={buttonSecondaryClassName}>
-              {tCommon("actions.back")}
-            </Link>
+            <Button asChild variant="secondary">
+              <Link href="/employer/jobs">{tCommon("actions.back")}</Link>
+            </Button>
           }
         />
       ) : null}
@@ -385,6 +384,12 @@ export function JobForm({ jobId, embedded = false, onSaved }: Props) {
         editLabel={tCommon("actions.edit")}
       />
       {mode === "preview" ? preview : editor}
-    </div>
+    </>
   );
+
+  if (embedded) {
+    return <div className="space-y-6">{content}</div>;
+  }
+
+  return <PageSection>{content}</PageSection>;
 }

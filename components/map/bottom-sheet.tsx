@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   open: boolean;
@@ -71,8 +72,8 @@ export function BottomSheet({
         aria-labelledby={title ? titleId : undefined}
         className={
           desktopSidePanel
-            ? "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-lg lg:inset-y-0 lg:start-0 lg:end-auto lg:max-h-none lg:w-[min(24rem,100%)] lg:rounded-none lg:border-y-0 lg:border-e lg:border-s-0 lg:shadow-none"
-            : "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-lg"
+            ? "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel lg:inset-y-0 lg:start-0 lg:end-auto lg:max-h-none lg:w-[min(24rem,100%)] lg:rounded-none lg:border-y-0 lg:border-e lg:border-s-0 lg:shadow-none"
+            : "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel"
         }
         style={
           dragY
@@ -98,13 +99,14 @@ export function BottomSheet({
           ) : (
             <span />
           )}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted hover:bg-background-soft hover:text-text"
           >
             ×
-          </button>
+          </Button>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>

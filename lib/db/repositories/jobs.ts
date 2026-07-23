@@ -101,6 +101,10 @@ export async function searchJobs(
     }
   }
 
+  if (filters.field?.trim()) {
+    where.push("j.title LIKE ?");
+    params.push(`%${filters.field.trim()}%`);
+  }
   if (filters.jobType) {
     where.push("j.job_type = ?");
     params.push(filters.jobType);

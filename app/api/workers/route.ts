@@ -157,9 +157,19 @@ export async function GET(request: Request) {
   const jobType = searchParams.get("jobType");
   const availability = searchParams.get("availability");
   const skillIds = searchParams.get("skillIds");
+  const field = searchParams.get("field");
   const search = searchParams.get("search");
 
-  if (search === "1" || lat || lng || radius || jobType || availability || skillIds) {
+  if (
+    search === "1" ||
+    lat ||
+    lng ||
+    radius ||
+    field ||
+    jobType ||
+    availability ||
+    skillIds
+  ) {
     if (mock) {
       const workers = await searchMockWorkers({
         lat: lat != null ? Number(lat) : undefined,
@@ -168,6 +178,7 @@ export async function GET(request: Request) {
           radius === "nationwide" || radius == null
             ? null
             : Number(radius),
+        field: field?.trim() || undefined,
         jobType: (jobType as JobType | null) || undefined,
         availability: (availability as Availability | null) || undefined,
       });
@@ -181,6 +192,7 @@ export async function GET(request: Request) {
         radius === "nationwide" || radius == null
           ? null
           : Number(radius),
+      field: field?.trim() || undefined,
       jobType: (jobType as JobType | null) || undefined,
       availability: (availability as Availability | null) || undefined,
       skillIds: skillIds

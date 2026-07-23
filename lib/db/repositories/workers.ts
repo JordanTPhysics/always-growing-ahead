@@ -415,6 +415,10 @@ export async function searchPublicWorkers(
     }
   }
 
+  if (filters.field?.trim()) {
+    where.push("w.headline LIKE ?");
+    params.push(`%${filters.field.trim()}%`);
+  }
   if (filters.availability) {
     where.push("w.availability = ?");
     params.push(filters.availability);

@@ -4,10 +4,8 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import type { Tier } from "@/lib/entitlements";
-import {
-  buttonPrimaryClassName,
-  buttonSecondaryClassName,
-} from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 type Props = {
   currentTier: Tier;
@@ -92,6 +90,7 @@ export function BillingPlans({
         t("features.search"),
         t("features.workerProfile"),
         t("features.contact"),
+        t("features.education"),
       ],
     },
     {
@@ -102,6 +101,7 @@ export function BillingPlans({
         t("features.search"),
         t("features.workerProfile"),
         t("features.contact"),
+        t("features.education"),
         t("features.postJobs"),
       ],
     },
@@ -143,9 +143,10 @@ export function BillingPlans({
             liveTier === "basic" || liveTier === "advanced";
 
           return (
-            <div
+            <Card
               key={plan.id}
-              className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-5"
+              elevation="nested"
+              className="flex flex-col gap-4 p-5"
             >
               <div>
                 <h2 className="text-xl font-semibold">{plan.name}</h2>
@@ -161,9 +162,10 @@ export function BillingPlans({
                   {t("currentBadge")}
                 </p>
               ) : needsPortal ? (
-                <button
+                <Button
                   type="button"
-                  className={`${buttonSecondaryClassName} mt-auto`}
+                  variant="secondary"
+                  className="mt-auto"
                   disabled={!stripeConfigured || loading !== null}
                   onClick={() => void openPortal()}
                 >
@@ -172,31 +174,31 @@ export function BillingPlans({
                     : isDowngrade
                       ? t("changePlan")
                       : t("upgradeViaPortal")}
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
-                  className={`${buttonPrimaryClassName} mt-auto`}
+                  className="mt-auto"
                   disabled={!stripeConfigured || loading !== null}
                   onClick={() => void startCheckout(plan.id)}
                 >
                   {loading === plan.id ? t("redirecting") : t("subscribe")}
-                </button>
+                </Button>
               )}
-            </div>
+            </Card>
           );
         })}
       </div>
 
       {hasStripeCustomer ? (
-        <button
+        <Button
           type="button"
-          className={buttonSecondaryClassName}
+          variant="secondary"
           disabled={!stripeConfigured || loading !== null}
           onClick={() => void openPortal()}
         >
           {loading === "portal" ? t("openingPortal") : t("manageBilling")}
-        </button>
+        </Button>
       ) : null}
     </div>
   );

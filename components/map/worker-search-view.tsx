@@ -7,11 +7,8 @@ import { ClusteredMap } from "@/components/map/clustered-map";
 import { BottomSheet } from "@/components/map/bottom-sheet";
 import { PostcodeInput } from "@/components/map/postcode-input";
 import { SaveSearchButton } from "@/components/search/save-search-button";
-import {
-  buttonPrimaryClassName,
-  buttonSecondaryClassName,
-  inputClassName,
-} from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
+import { inputClassName } from "@/components/ui/forms";
 import type { JobType, WorkerSearchResult } from "@/lib/db/types";
 import {
   RADIUS_PRESETS_MI,
@@ -92,6 +89,13 @@ export function WorkerSearchView() {
   const [jobType, setJobType] = useState("");
   const [availability, setAvailability] = useState("");
   const [skillId, setSkillId] = useState("");
+  const [field, setField] = useState("");
+  const [debouncedField, setDebouncedField] = useState("");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedField(field), 300);
+    return () => window.clearTimeout(timer);
+  }, [field]);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,6 +114,7 @@ export function WorkerSearchView() {
     origin?.lat ?? "",
     origin?.lng ?? "",
     radius,
+    debouncedField,
     jobType,
     availability,
     skillId,
@@ -137,6 +142,7 @@ export function WorkerSearchView() {
         if (jobType) params.set("jobType", jobType);
         if (availability) params.set("availability", availability);
         if (skillId) params.set("skillIds", skillId);
+        if (debouncedField.trim()) params.set("field", debouncedField.trim());
 
         const res = await fetch(`/api/workers?${params}`);
         const data = await res.json();
@@ -154,7 +160,7 @@ export function WorkerSearchView() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [queryKey, origin, radius, jobType, availability, skillId, tCommon]);
+  }, [queryKey, origin, radius, debouncedField, jobType, availability, skillId, tCommon]);
 
   const selected = useMemo(
     () => workers.find((w) => w.id === selectedId) ?? null,
@@ -198,9 +204,10 @@ export function WorkerSearchView() {
           setOrigin({ lat: result.lat, lng: result.lng });
         }}
       />
-      <button
+      <Button
         type="button"
-        className={buttonSecondaryClassName + " w-full"}
+        variant="secondary"
+        className="w-full"
         onClick={() => {
           void (async () => {
             const pos = await getCurrentPosition();
@@ -215,7 +222,18 @@ export function WorkerSearchView() {
         }}
       >
         {t("nearMe")}
-      </button>
+      </Button>
+
+      <label className="block space-y-1.5">
+        <span className="text-sm font-medium">{t("field")}</span>
+        <input
+          className={inputClassName}
+          type="search"
+          value={field}
+          placeholder={t("fieldPlaceholder")}
+          onChange={(e) => setField(e.target.value)}
+        />
+      </label>
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t("radius")}</legend>
@@ -296,13 +314,13 @@ export function WorkerSearchView() {
         </select>
       </label>
 
-      <button
+      <Button
         type="button"
-        className={buttonPrimaryClassName + " w-full"}
+        className="w-full"
         onClick={applyFilters}
       >
         {t("applyFilters")}
-      </button>
+      </Button>
     </div>
   );
 
@@ -324,18 +342,19 @@ export function WorkerSearchView() {
               postcode,
               origin,
               radius,
+              field,
               jobType,
               availability,
               skillId,
             })}
           />
-          <button
+          <Button
             type="button"
-            className={buttonSecondaryClassName}
+            variant="secondary"
             onClick={() => setFiltersOpen(true)}
           >
             {t("filters")}
-          </button>
+          </Button>
           <div className="flex rounded-md border border-border">
             <button
               type="button"
@@ -469,12 +488,11 @@ export function WorkerSearchView() {
             {selected.bio ? (
               <p className="line-clamp-4 text-sm text-muted">{selected.bio}</p>
             ) : null}
-            <Link
-              href={`/workers/${selected.id}`}
-              className={buttonPrimaryClassName + " w-full"}
-            >
-              {t("viewFull")}
-            </Link>
+            <Button asChild className="w-full">
+              <Link href={`/workers/${selected.id}`}>
+                {t("viewFull")}
+              </Link>
+            </Button>
           </div>
         ) : null}
       </BottomSheet>

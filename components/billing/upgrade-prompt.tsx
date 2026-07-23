@@ -2,7 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
-import { buttonPrimaryClassName } from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 
 type Props = {
   title?: string;
@@ -18,19 +19,19 @@ export function UpgradePrompt({
   const t = useTranslations("billing");
 
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-surface p-5">
-      <h2 className="text-lg font-medium text-text">
+    <Card elevation="nested" className="space-y-3 p-5">
+      <CardTitle className="text-lg font-medium">
         {title ?? t("upgradeTitle")}
-      </h2>
-      <p className="text-sm text-muted">{description}</p>
+      </CardTitle>
+      <CardDescription>{description}</CardDescription>
       <p className="text-xs text-muted">
         {requiredTier === "advanced"
           ? t("requiresAdvanced")
           : t("requiresBasic")}
       </p>
-      <Link href="/billing" className={buttonPrimaryClassName}>
-        {t("viewPlans")}
-      </Link>
-    </div>
+      <Button asChild>
+        <Link href="/pricing">{t("viewPlans")}</Link>
+      </Button>
+    </Card>
   );
 }

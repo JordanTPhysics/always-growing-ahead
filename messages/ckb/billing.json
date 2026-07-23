@@ -1,17 +1,17 @@
 {
   "title": "Billing & plans",
-  "subtitle": "Unlock contact details with Basic, or post jobs with Advanced.",
+  "subtitle": "Upgrade to Worker or Employer. All paid plans are billed yearly.",
   "upgradeTitle": "Upgrade to continue",
   "viewPlans": "View plans",
-  "requiresBasic": "Requires Basic or Advanced.",
-  "requiresAdvanced": "Requires Advanced.",
-  "upgradeToPostTitle": "Advanced plan required",
-  "upgradeToPostBody": "Posting and managing jobs needs an Advanced subscription.",
-  "upgradeToPostCta": "Upgrade to Advanced",
-  "upgradeToProfileTitle": "Basic plan required",
-  "upgradeToProfileBody": "Creating a worker profile needs at least a Basic subscription.",
-  "contactLocked": "Contact details are available on Basic and Advanced plans.",
-  "signInToContact": "Sign in with a Basic or Advanced plan to view contact details.",
+  "requiresBasic": "Requires Worker or Employer.",
+  "requiresAdvanced": "Requires Employer.",
+  "upgradeToPostTitle": "Employer plan required",
+  "upgradeToPostBody": "Posting and managing jobs needs an Employer subscription.",
+  "upgradeToPostCta": "Upgrade to Employer",
+  "upgradeToProfileTitle": "Worker plan required",
+  "upgradeToProfileBody": "Creating a worker profile needs at least a Worker subscription.",
+  "contactLocked": "Contact details are available on Worker and Employer plans.",
+  "signInToContact": "Sign in with a Worker or Employer plan to view contact details.",
   "signIn": "Sign in",
   "verifyEmailFirst": "Verify your email before viewing contact info.",
   "contactTitle": "Contact",
@@ -30,18 +30,19 @@
   "currentPlan": "Current plan",
   "manageBilling": "Manage billing",
   "tiers": {
-    "none": "None",
-    "basic": "Basic",
-    "advanced": "Advanced"
+    "none": "Free",
+    "basic": "Worker",
+    "advanced": "Employer"
   },
   "prices": {
-    "basic": "From Stripe · monthly",
-    "advanced": "From Stripe · monthly"
+    "basic": "£10 per year",
+    "advanced": "£100 per year"
   },
   "features": {
     "search": "Map search for jobs and workers",
     "workerProfile": "Create and edit a worker profile",
     "contact": "Reveal contact info on listings",
+    "education": "Access PDF and video education guides",
     "postJobs": "Create and manage job postings"
   },
   "currentBadge": "Your current plan",

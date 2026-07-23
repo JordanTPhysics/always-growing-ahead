@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { Card, PageSection } from "@/components/ui/card";
 import {
   Field,
   FormModeTabs,
   PageHeader,
-  buttonPrimaryClassName,
-  buttonSecondaryClassName,
   inputClassName,
   type FormMode,
 } from "@/components/ui/forms";
@@ -238,7 +238,7 @@ export function WorkerProfileForm() {
 
   const preview = (
     <article className="space-y-6">
-      <div className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <div className="flex flex-wrap items-start gap-4">
           {photoUrl ? (
             <img
@@ -374,13 +374,13 @@ export function WorkerProfileForm() {
             )}
           </div>
         ) : null}
-      </div>
+      </Card>
     </article>
   );
 
   const editor = (
     <form onSubmit={onSave} className="space-y-8">
-      <section className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <Field label={t("headline")}>
           <input
             className={inputClassName}
@@ -398,9 +398,9 @@ export function WorkerProfileForm() {
                 className="h-16 w-16 rounded-md object-cover"
               />
             ) : null}
-            <button
+            <Button
               type="button"
-              className={buttonSecondaryClassName}
+              variant="secondary"
               disabled={photoBusy}
               onClick={() => {
                 void (async () => {
@@ -432,7 +432,7 @@ export function WorkerProfileForm() {
               }}
             >
               {photoBusy ? t("photoUploading") : t("addPhoto")}
-            </button>
+            </Button>
           </div>
         </Field>
         <Field label={t("bio")}>
@@ -462,9 +462,9 @@ export function WorkerProfileForm() {
             onChange={(e) => setAddress(e.target.value)}
           />
         </Field>
-      </section>
+      </Card>
 
-      <section className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <Field label={t("desiredJobTypes")}>
           <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map((type) => {
@@ -475,7 +475,7 @@ export function WorkerProfileForm() {
                   type="button"
                   className={`min-h-11 rounded-md border px-3 py-1.5 text-sm ${
                     active
-                      ? "border-accent bg-background text-muted"
+                      ? "border-accent bg-background text-white"
                       : "border-border"
                   }`}
                   onClick={() =>
@@ -566,9 +566,9 @@ export function WorkerProfileForm() {
             </Field>
           </div>
         </div>
-      </section>
+      </Card>
 
-      <section className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <div>
           <h2 className="text-lg font-medium">{t("skills")}</h2>
           <p className="text-sm text-muted">{t("skillsHint")}</p>
@@ -582,7 +582,7 @@ export function WorkerProfileForm() {
                 type="button"
                 className={`min-h-11 rounded-md border px-3 py-1.5 text-sm ${
                   active
-                    ? "border-accent bg-background text-muted"
+                    ? "border-accent bg-background text-white"
                     : "border-border"
                 }`}
                 onClick={() =>
@@ -605,22 +605,22 @@ export function WorkerProfileForm() {
             value={customSkill}
             onChange={(e) => setCustomSkill(e.target.value)}
           />
-          <button
+          <Button
             type="button"
-            className={buttonSecondaryClassName}
+            variant="secondary"
             onClick={addCustomSkill}
           >
             {t("addSkill")}
-          </button>
+          </Button>
         </div>
-      </section>
+      </Card>
 
-      <section className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-medium">{t("experience")}</h2>
-          <button
+          <Button
             type="button"
-            className={buttonSecondaryClassName}
+            variant="secondary"
             onClick={() =>
               setExperience((prev) => [
                 ...prev,
@@ -635,7 +635,7 @@ export function WorkerProfileForm() {
             }
           >
             {t("addExperience")}
-          </button>
+          </Button>
         </div>
         {experience.map((entry, index) => (
           <div
@@ -718,14 +718,14 @@ export function WorkerProfileForm() {
             </div>
           </div>
         ))}
-      </section>
+      </Card>
 
-      <section className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-medium">{t("qualifications")}</h2>
-          <button
+          <Button
             type="button"
-            className={buttonSecondaryClassName}
+            variant="secondary"
             onClick={() =>
               setQualifications((prev) => [
                 ...prev,
@@ -739,7 +739,7 @@ export function WorkerProfileForm() {
             }
           >
             {t("addQualification")}
-          </button>
+          </Button>
         </div>
         {qualifications.map((entry, index) => (
           <div
@@ -794,14 +794,13 @@ export function WorkerProfileForm() {
             </Field>
           </div>
         ))}
-      </section>
+      </Card>
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {message ? <p className="text-sm text-muted">{message}</p> : null}
 
-      <button
+      <Button
         type="submit"
-        className={buttonPrimaryClassName}
         disabled={saving}
       >
         {saving
@@ -809,12 +808,12 @@ export function WorkerProfileForm() {
           : exists
             ? t("updateCta")
             : t("createCta")}
-      </button>
+      </Button>
     </form>
   );
 
   return (
-    <div className="space-y-6">
+    <PageSection>
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
       <FormModeTabs
         mode={mode}
@@ -823,6 +822,6 @@ export function WorkerProfileForm() {
         editLabel={tCommon("actions.edit")}
       />
       {mode === "preview" ? preview : editor}
-    </div>
+    </PageSection>
   );
 }

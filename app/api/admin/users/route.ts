@@ -1,25 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { jsonError, requireSession } from "@/lib/api/auth";
-import {
-  isAdmin,
-  listRecentUsers,
-  setUserRole,
-} from "@/lib/db/repositories/users";
+import { requireAdmin } from "@/lib/api/admin";
+import { jsonError } from "@/lib/api/auth";
+import { listRecentUsers, setUserRole } from "@/lib/db/repositories/users";
 
 const schema = z.object({
   userId: z.number().int().positive(),
   role: z.enum(["user", "admin"]),
 });
-
-async function requireAdmin() {
-  const { session, error } = await requireSession();
-  if (error) return { session: null, error };
-  if (!(await isAdmin(Number(session.user.id)))) {
-    return { session: null, error: jsonError("Forbidden", 403) };
-  }
-  return { session, error: null };
-}
 
 export async function GET() {
   const { error } = await requireAdmin();

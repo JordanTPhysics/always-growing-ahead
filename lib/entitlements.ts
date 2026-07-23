@@ -13,3 +13,7 @@ export function canCreateWorkerProfile(tier: Tier) {
   // Until a free/trial tier exists, require at least Basic.
   return tier === "basic" || tier === "advanced";
 }
+
+export function canViewEducation(tier: Tier) {
+  return tier === "basic" || tier === "advanced";
+}

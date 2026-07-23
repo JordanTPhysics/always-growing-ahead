@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { JobForm } from "@/components/job/job-form";
-import { buttonPrimaryClassName, buttonSecondaryClassName } from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 type JobSummary = {
   id: number;
@@ -52,13 +53,13 @@ export function EmployerJobsPanel({ enabled }: Props) {
       <section className="space-y-4 border-t border-border pt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">{t("createTitle")}</h2>
-          <button
+          <Button
             type="button"
-            className={buttonSecondaryClassName}
+            variant="secondary"
             onClick={() => setCreating(false)}
           >
             {tCommon("actions.cancel")}
-          </button>
+          </Button>
         </div>
         <JobForm
           embedded
@@ -76,13 +77,13 @@ export function EmployerJobsPanel({ enabled }: Props) {
       <section className="space-y-4 border-t border-border pt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">{t("editTitle")}</h2>
-          <button
+          <Button
             type="button"
-            className={buttonSecondaryClassName}
+            variant="secondary"
             onClick={() => setEditingId(null)}
           >
             {tCommon("actions.cancel")}
-          </button>
+          </Button>
         </div>
         <JobForm
           embedded
@@ -100,13 +101,9 @@ export function EmployerJobsPanel({ enabled }: Props) {
     <section className="space-y-4 border-t border-border pt-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold">{t("myJobsTitle")}</h2>
-        <button
-          type="button"
-          className={buttonPrimaryClassName}
-          onClick={() => setCreating(true)}
-        >
+        <Button type="button" onClick={() => setCreating(true)}>
           {t("createTitle")}
-        </button>
+        </Button>
       </div>
 
       {loading ? (
@@ -114,34 +111,36 @@ export function EmployerJobsPanel({ enabled }: Props) {
       ) : jobs.length === 0 ? (
         <p className="text-sm text-muted">{t("emptyMine")}</p>
       ) : (
-        <ul className="divide-y divide-border rounded-lg border border-border bg-surface">
-          {jobs.map((job) => (
-            <li
-              key={job.id}
-              className="flex flex-wrap items-center justify-between gap-3 px-4 py-4"
-            >
-              <div>
-                <p className="font-medium">{job.title}</p>
-                <p className="text-sm text-muted">
-                  {t(`statuses.${job.status}`)}
-                  {job.postcode ? ` · ${job.postcode}` : ""}
-                </p>
-              </div>
-              <div className="flex gap-3 text-sm">
-                <Link href={`/jobs/${job.id}`} className="underline">
-                  {t("viewJob")}
-                </Link>
-                <button
-                  type="button"
-                  className="underline"
-                  onClick={() => setEditingId(job.id)}
-                >
-                  {tCommon("actions.edit")}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <Card elevation="nested" className="divide-y divide-border overflow-hidden p-0">
+          <ul className="divide-y divide-border">
+            {jobs.map((job) => (
+              <li
+                key={job.id}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+              >
+                <div>
+                  <p className="font-medium">{job.title}</p>
+                  <p className="text-sm text-muted">
+                    {t(`statuses.${job.status}`)}
+                    {job.postcode ? ` · ${job.postcode}` : ""}
+                  </p>
+                </div>
+                <div className="flex gap-3 text-sm">
+                  <Link href={`/jobs/${job.id}`} className="underline">
+                    {t("viewJob")}
+                  </Link>
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={() => setEditingId(job.id)}
+                  >
+                    {tCommon("actions.edit")}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
     </section>
   );

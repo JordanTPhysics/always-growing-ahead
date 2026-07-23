@@ -5,6 +5,8 @@
   "listView": "List",
   "location": "City or postcode",
   "locationPlaceholder": "e.g. Leeds or SW1A 1AA",
+  "field": "Role or occupation",
+  "fieldPlaceholder": "e.g. accountant, dishwasher",
   "radius": "Search radius",
   "radiusMiles": "{miles} mi",
   "nationwide": "Nationwide",

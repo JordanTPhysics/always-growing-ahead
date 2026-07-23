@@ -1,0 +1,82 @@
+{
+  "title": "Help & tutorials",
+  "subtitle": "Answers to common questions and step-by-step guides for using AGA.",
+  "tutorialsTitle": "How to use AGA",
+  "faqTitle": "Frequently asked questions",
+  "educationCta": "Want more detail? Browse PDF and video guides in the Education library.",
+  "educationLink": "Browse Education",
+  "pricingLink": "View pricing",
+  "tutorialItems": {
+    "account": {
+      "title": "Create your account",
+      "step1": "Choose Sign up from the header or home page.",
+      "step2": "Enter your email and password, then confirm your account.",
+      "step3": "Verify your email before revealing contact details on listings."
+    },
+    "findJobs": {
+      "title": "Find work near you",
+      "step1": "Open Find work from the navigation menu.",
+      "step2": "Enter a city or postcode, choose a role, and set a search radius.",
+      "step3": "Switch between Map and List views to browse matching jobs.",
+      "step4": "Open a job to read the full description and reveal employer contact details."
+    },
+    "workerProfile": {
+      "title": "Set up your worker profile",
+      "step1": "Subscribe to a Basic or Advanced plan from Billing.",
+      "step2": "Open My profile and complete your skills, availability, and location.",
+      "step3": "Publish your profile so employers can find you in worker search."
+    },
+    "hireWorkers": {
+      "title": "Find and contact workers",
+      "step1": "Open Hire from the navigation menu.",
+      "step2": "Filter by location, role, and desired job type.",
+      "step3": "View a worker profile and reveal contact details with a Basic or Advanced plan."
+    },
+    "postJobs": {
+      "title": "Post and manage jobs",
+      "step1": "Subscribe to the Advanced plan from Billing.",
+      "step2": "Open My jobs and create a new listing with title, description, and location.",
+      "step3": "Publish the job so workers can find it on the map and in search results."
+    },
+    "billing": {
+      "title": "Manage your plan",
+      "step1": "Open Pricing or Billing from the navigation menu to compare Free, Worker, and Employer plans.",
+      "step2": "Worker (£10/year) unlocks worker profiles, contact reveals, and education guides; Employer (£100/year) adds job posting.",
+      "step3": "Use Manage billing to update payment details or change your subscription."
+    }
+  },
+  "faqItems": {
+    "whatIsAga": {
+      "question": "What is AGA?",
+      "answer": "AGA is a UK job marketplace where workers find local roles and employers hire nearby talent. Search on a map, manage profiles, and connect when both sides are ready."
+    },
+    "freeSearch": {
+      "question": "Can I search without a paid plan?",
+      "answer": "Yes. Browsing jobs and workers on the map is free. A Worker or Employer plan is required to reveal contact details, create a worker profile, or access education guides. Posting jobs requires Employer."
+    },
+    "plans": {
+      "question": "What is the difference between the plans?",
+      "answer": "Free lets you search the map without viewing contact details. Worker (£10/year) adds a worker profile, job search with contact reveals, and education guides. Employer (£100/year) includes everything in Worker plus posting jobs and full app access."
+    },
+    "revealContact": {
+      "question": "How does revealing contact details work?",
+      "answer": "When you reveal contact info on a job or worker profile, phone, email, and LinkedIn (if provided) become visible to you. The other party is notified, and the action is logged for safety."
+    },
+    "contactShared": {
+      "question": "Is my contact information shared automatically?",
+      "answer": "No. Your contact details are only shown to someone who has an eligible plan and explicitly reveals them on your listing."
+    },
+    "verifyEmail": {
+      "question": "Why do I need to verify my email?",
+      "answer": "Email verification helps protect the marketplace. You must verify your address before revealing contact details."
+    },
+    "language": {
+      "question": "How do I change the language?",
+      "answer": "Use the Language control in the header to switch between English, Arabic, and Central Kurdish. The site layout adjusts for right-to-left languages automatically."
+    },
+    "moreGuides": {
+      "question": "Where can I find more guides?",
+      "answer": "Visit the Education page for downloadable PDFs and video walkthroughs published by the AGA team."
+    }
+  }
+}

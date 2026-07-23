@@ -1,17 +1,17 @@
 {
   "title": "الفوترة والخطط",
-  "subtitle": "افتح بيانات التواصل مع Basic، أو انشر الوظائف مع Advanced.",
+  "subtitle": "رقِّ إلى خطة العامل أو صاحب العمل. جميع الخطط المدفوعة تُفوتر سنويًا.",
   "upgradeTitle": "قم بالترقية للمتابعة",
   "viewPlans": "عرض الخطط",
-  "requiresBasic": "يتطلب Basic أو Advanced.",
-  "requiresAdvanced": "يتطلب Advanced.",
-  "upgradeToPostTitle": "مطلوب خطة Advanced",
-  "upgradeToPostBody": "نشر وإدارة الوظائف يتطلب اشتراك Advanced.",
-  "upgradeToPostCta": "الترقية إلى Advanced",
-  "upgradeToProfileTitle": "مطلوب خطة Basic",
-  "upgradeToProfileBody": "إنشاء ملف عامل يتطلب اشتراك Basic على الأقل.",
-  "contactLocked": "بيانات التواصل متاحة في خطتي Basic و Advanced.",
-  "signInToContact": "سجّل الدخول بخطة Basic أو Advanced لعرض بيانات التواصل.",
+  "requiresBasic": "يتطلب خطة العامل أو صاحب العمل.",
+  "requiresAdvanced": "يتطلب خطة صاحب العمل.",
+  "upgradeToPostTitle": "مطلوب خطة صاحب العمل",
+  "upgradeToPostBody": "نشر وإدارة الوظائف يتطلب اشتراك صاحب العمل.",
+  "upgradeToPostCta": "الترقية إلى صاحب العمل",
+  "upgradeToProfileTitle": "مطلوب خطة العامل",
+  "upgradeToProfileBody": "إنشاء ملف عامل يتطلب اشتراك العامل على الأقل.",
+  "contactLocked": "بيانات التواصل متاحة في خطتي العامل وصاحب العمل.",
+  "signInToContact": "سجّل الدخول بخطة العامل أو صاحب العمل لعرض بيانات التواصل.",
   "signIn": "تسجيل الدخول",
   "verifyEmailFirst": "تحقق من بريدك الإلكتروني قبل عرض بيانات التواصل.",
   "contactTitle": "التواصل",
@@ -30,18 +30,19 @@
   "currentPlan": "الخطة الحالية",
   "manageBilling": "إدارة الفوترة",
   "tiers": {
-    "none": "لا شيء",
-    "basic": "Basic",
-    "advanced": "Advanced"
+    "none": "مجاني",
+    "basic": "عامل",
+    "advanced": "صاحب عمل"
   },
   "prices": {
-    "basic": "عبر Stripe · شهريًا",
-    "advanced": "عبر Stripe · شهريًا"
+    "basic": "£10 سنويًا",
+    "advanced": "£100 سنويًا"
   },
   "features": {
     "search": "بحث بالخريطة عن الوظائف والعاملين",
     "workerProfile": "إنشاء وتعديل ملف العامل",
     "contact": "إظهار بيانات التواصل في الإعلانات",
+    "education": "الوصول إلى أدلة PDF والفيديو التعليمية",
     "postJobs": "إنشاء وإدارة إعلانات الوظائف"
   },
   "currentBadge": "خطتك الحالية",

@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
+import { Button } from "@/components/ui/button";
+import { Card, PageSection } from "@/components/ui/card";
 import {
   Field,
   FormModeTabs,
   PageHeader,
-  buttonPrimaryClassName,
-  buttonSecondaryClassName,
   inputClassName,
   type FormMode,
 } from "@/components/ui/forms";
@@ -80,7 +80,7 @@ export function EmployerProfileForm() {
   if (loading) return <p className="text-muted">{tCommon("status.loading")}</p>;
 
   const preview = (
-    <article className="space-y-4 rounded-lg border border-border bg-surface p-5">
+    <Card elevation="nested" className="space-y-4 p-5">
       <div className="flex flex-wrap items-start gap-4">
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -142,12 +142,12 @@ export function EmployerProfileForm() {
           ) : null}
         </div>
       )}
-    </article>
+    </Card>
   );
 
   const editor = (
     <form onSubmit={onSave} className="space-y-6">
-      <div className="space-y-4 rounded-lg border border-border bg-surface p-5">
+      <Card elevation="nested" className="space-y-4 p-5">
         <Field label={t("companyName")}>
           <input
             className={inputClassName}
@@ -209,28 +209,28 @@ export function EmployerProfileForm() {
             />
           </Field>
         </div>
-      </div>
+      </Card>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {message ? <p className="text-sm text-muted">{message}</p> : null}
-      <button type="submit" className={buttonPrimaryClassName} disabled={saving}>
+      <Button type="submit" disabled={saving}>
         {saving
           ? tCommon("status.loading")
           : exists
             ? t("updateCta")
             : t("createCta")}
-      </button>
+      </Button>
     </form>
   );
 
   return (
-    <div className="space-y-6">
+    <PageSection>
       <PageHeader
         title={t("title")}
         subtitle={t("subtitle")}
         actions={
-          <Link href="/workers" className={buttonSecondaryClassName}>
-            {tCommon("nav.hire")}
-          </Link>
+          <Button asChild variant="secondary">
+            <Link href="/workers">{tCommon("nav.hire")}</Link>
+          </Button>
         }
       />
       <FormModeTabs
@@ -241,6 +241,6 @@ export function EmployerProfileForm() {
       />
       {mode === "preview" ? preview : editor}
       <EmployerJobsPanel enabled={exists} />
-    </div>
+    </PageSection>
   );
 }

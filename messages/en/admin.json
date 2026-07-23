@@ -1,6 +1,11 @@
 {
   "title": "Admin dashboard",
-  "subtitle": "Review proposed skills and manage user access.",
+  "subtitle": "Manage skills, users, education uploads, and locale translations.",
+  "tabs": {
+    "access": "Skills & users",
+    "education": "Education",
+    "translations": "Translations"
+  },
   "pendingSkills": "Pending skills",
   "users": "Recent users",
   "noPendingSkills": "There are no pending skill proposals.",
@@ -8,5 +13,45 @@
   "reject": "Reject",
   "role": "Role",
   "tier": "Tier",
-  "email": "Email"
+  "email": "Email",
+  "education": {
+    "heading": "Education guides",
+    "hint": "Upload PDF or video files and publish localized titles for the Education page.",
+    "empty": "No education resources yet.",
+    "add": "Add guide",
+    "edit": "Edit guide",
+    "topic": "Topic",
+    "titleEn": "Title (English)",
+    "titleAr": "Title (Arabic)",
+    "titleCkb": "Title (Kurdish Sorani)",
+    "descriptionEn": "Description (English)",
+    "descriptionAr": "Description (Arabic)",
+    "descriptionCkb": "Description (Kurdish Sorani)",
+    "sortOrder": "Sort order",
+    "published": "Published",
+    "file": "PDF or video file",
+    "replaceFile": "Replace file",
+    "currentFile": "Current file",
+    "mediaType": "Type",
+    "save": "Save guide",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "uploading": "Uploading…",
+    "saving": "Saving…",
+    "uploadRequired": "Choose a PDF or video file before saving."
+  },
+  "translations": {
+    "heading": "Locale translations",
+    "hint": "Edits write directly to messages/{locale}/{namespace}.json on the server. The messages directory must be writable.",
+    "locale": "Locale",
+    "namespace": "Namespace",
+    "content": "JSON content",
+    "load": "Load",
+    "save": "Save translations",
+    "saving": "Saving…",
+    "saved": "Translations saved.",
+    "invalidJson": "Content must be valid JSON.",
+    "loadError": "Could not load translation file.",
+    "saveError": "Could not save translation file."
+  }
 }

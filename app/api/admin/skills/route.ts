@@ -1,27 +1,18 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { jsonError, requireSession } from "@/lib/api/auth";
+import { requireAdmin } from "@/lib/api/admin";
+import { jsonError } from "@/lib/api/auth";
 import { findOrCreateSkill } from "@/lib/db/repositories/skills";
 import {
   getSkillModerationById,
   listSkillModeration,
   updateSkillModerationStatus,
 } from "@/lib/db/repositories/skill-moderation";
-import { isAdmin } from "@/lib/db/repositories/users";
 
 const schema = z.object({
   id: z.number().int().positive(),
   action: z.enum(["approve", "reject"]),
 });
-
-async function requireAdmin() {
-  const { session, error } = await requireSession();
-  if (error) return { session: null, error };
-  if (!(await isAdmin(Number(session.user.id)))) {
-    return { session: null, error: jsonError("Forbidden", 403) };
-  }
-  return { session, error: null };
-}
 
 export async function GET() {
   const { error } = await requireAdmin();

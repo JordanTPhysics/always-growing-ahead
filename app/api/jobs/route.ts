@@ -116,10 +116,12 @@ export async function GET(request: Request) {
   const salaryMax = searchParams.get("salaryMax");
   const postedWithinDays = searchParams.get("postedWithinDays");
   const skillIds = searchParams.get("skillIds");
+  const field = searchParams.get("field");
   const hasSearch =
     lat ||
     lng ||
     radius ||
+    field ||
     jobType ||
     salaryMin ||
     salaryMax ||
@@ -135,6 +137,7 @@ export async function GET(request: Request) {
           radius === "nationwide" || radius == null
             ? null
             : Number(radius),
+        field: field?.trim() || undefined,
         jobType: (jobType as JobType | null) || undefined,
         salaryMin: salaryMin != null ? Number(salaryMin) : undefined,
         salaryMax: salaryMax != null ? Number(salaryMax) : undefined,
@@ -151,6 +154,7 @@ export async function GET(request: Request) {
         radius === "nationwide" || radius == null
           ? null
           : Number(radius),
+      field: field?.trim() || undefined,
       jobType: (jobType as JobType | null) || undefined,
       salaryMin: salaryMin != null ? Number(salaryMin) : undefined,
       salaryMax: salaryMax != null ? Number(salaryMax) : undefined,

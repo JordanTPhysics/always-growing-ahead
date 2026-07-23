@@ -1,0 +1,38 @@
+{
+  "title": "Pricing",
+  "subtitle": "Choose the plan that fits how you use AGA. All paid plans are billed yearly.",
+  "perYear": "per year",
+  "currentPlan": "Your current plan",
+  "getStarted": "Get started free",
+  "subscribe": "Subscribe",
+  "managePlan": "Manage plan",
+  "signInToSubscribe": "Sign in to subscribe",
+  "tiers": {
+    "free": {
+      "name": "Free",
+      "price": "£0",
+      "summary": "Browse the marketplace at no cost.",
+      "feature1": "Search jobs and workers on the map",
+      "feature2": "Filter by location, role, and radius",
+      "feature3": "View job and profile summaries without contact details"
+    },
+    "worker": {
+      "name": "Worker",
+      "price": "£10",
+      "summary": "Find work and connect with employers.",
+      "feature1": "Create and manage your worker profile",
+      "feature2": "Search for jobs near you",
+      "feature3": "Reveal employer contact details",
+      "feature4": "Access PDF and video education guides"
+    },
+    "employer": {
+      "name": "Employer",
+      "price": "£100",
+      "summary": "Full access for hiring and managing your team.",
+      "feature1": "Everything in Worker",
+      "feature2": "Post and manage job listings",
+      "feature3": "Search for workers and reveal contact details",
+      "feature4": "Access every part of the app from one account"
+    }
+  }
+}

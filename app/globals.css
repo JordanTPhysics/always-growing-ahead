@@ -8,8 +8,23 @@
   --muted: #95b8a3;
   --accent: #0c0a02;
   --accent-soft: #e4f2eb;
+  --background-soft: #e4f2eb;
   --danger: #9b2c2c;
   --border: #1f6b4a;
+  --border-strong: #0a3a1f;
+  --shadow-panel:
+    0 4px 8px rgb(12 10 2 / 0.16),
+    0 12px 32px rgb(11 72 36 / 0.32),
+    0 24px 56px rgb(11 72 36 / 0.22);
+  --shadow-panel-sm:
+    0 3px 6px rgb(12 10 2 / 0.14),
+    0 8px 22px rgb(11 72 36 / 0.26);
+  --shadow-button:
+    0 3px 6px rgb(12 10 2 / 0.18),
+    0 8px 22px rgb(11 72 36 / 0.34);
+  --shadow-button-hover:
+    0 6px 12px rgb(12 10 2 / 0.22),
+    0 14px 36px rgb(11 72 36 / 0.42);
 }
 
 @theme inline {
@@ -21,6 +36,7 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-background-soft: var(--background-soft);
   --color-danger: var(--danger);
   --font-sans: var(--font-latin);
   --font-arabic: var(--font-arabic-face);
@@ -57,4 +73,44 @@ textarea,
 select,
 button {
   font: inherit;
+}
+
+@utility shadow-panel {
+  box-shadow: var(--shadow-panel);
+}
+
+@utility shadow-panel-sm {
+  box-shadow: var(--shadow-panel-sm);
+}
+
+@utility shadow-button {
+  box-shadow: var(--shadow-button);
+}
+
+@utility shadow-button-hover {
+  box-shadow: var(--shadow-button-hover);
+}
+
+@utility pricing-card-free {
+  background: radial-gradient(
+    ellipse 120% 90% at 100% 0%,
+    var(--background) 0%,
+    #ffffff 55%
+  );
+}
+
+@utility pricing-card-worker {
+  background: radial-gradient(
+    ellipse 120% 90% at 100% 0%,
+    #ffffff 0%,
+    var(--background) 55%
+  );
+}
+
+@utility pricing-card-employer {
+  background: radial-gradient(
+    ellipse 120% 90% at 100% 0%,
+    var(--foreground) 0%,
+    var(--background) 55%
+  );
 }

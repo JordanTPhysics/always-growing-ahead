@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { controlTrackClassName } from "@/lib/ui-styles";
+import { cn } from "@/lib/utils";
 
 export function PageHeader({
   title,
@@ -10,7 +13,7 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-text">
           {title}
@@ -56,34 +59,28 @@ export function FormModeTabs({
   editLabel: string;
 }) {
   return (
-    <div className="flex rounded-md border border-border bg-surface p-1">
-      <button
+    <div className={cn("flex", controlTrackClassName)}>
+      <Button
         type="button"
-        className={`min-h-10 flex-1 rounded px-3 text-sm ${
-          mode === "preview" ? "bg-background text-white" : "hover:bg-background-soft"
-        }`}
+        variant={mode === "preview" ? "default" : "ghost"}
+        size="sm"
+        className="min-h-10 flex-1 rounded"
         onClick={() => onChange("preview")}
       >
         {previewLabel}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        className={`min-h-10 flex-1 rounded px-3 text-sm ${
-          mode === "edit" ? "bg-foreground text-white" : "hover:bg-background-soft"
-        }`}
+        variant={mode === "edit" ? "accent" : "ghost"}
+        size="sm"
+        className="min-h-10 flex-1 rounded"
         onClick={() => onChange("edit")}
       >
         {editLabel}
-      </button>
+      </Button>
     </div>
   );
 }
 
 export const inputClassName =
   "w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none ring-accent focus:ring-2";
-
-export const buttonPrimaryClassName =
-  "inline-flex min-h-11 items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-muted hover:opacity-90 disabled:opacity-50";
-
-export const buttonSecondaryClassName =
-  "inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium hover:bg-background-soft disabled:opacity-50";
