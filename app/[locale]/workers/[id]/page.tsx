@@ -10,6 +10,7 @@ import { stripProfileContact } from "@/lib/profiles/contact";
 import { PageHeader } from "@/components/ui/forms";
 import { Card, PageSection } from "@/components/ui/card";
 import { ContactReveal } from "@/components/billing/contact-reveal";
+import { FavouriteButton } from "@/components/favourites/favourite-button";
 
 export default async function WorkerPublicPage({
   params,
@@ -48,6 +49,7 @@ export default async function WorkerPublicPage({
       <PageHeader
         title={profile.headline ?? t("title")}
         subtitle={profile.bio ?? undefined}
+        actions={<FavouriteButton targetType="worker" targetId={workerId} />}
       />
 
       <Card elevation="nested" className="space-y-4 p-5">

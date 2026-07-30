@@ -13,6 +13,7 @@ import {
   type FormMode,
 } from "@/components/ui/forms";
 import { EmployerJobsPanel } from "@/components/profile/employer-jobs-panel";
+import { FavouritesPanel } from "@/components/favourites/favourites-panel";
 
 export function EmployerProfileForm() {
   const t = useTranslations("employer-profile");
@@ -30,6 +31,7 @@ export function EmployerProfileForm() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [activelyHiring, setActivelyHiring] = useState(false);
 
   useEffect(() => {
     fetch("/api/employers?mine=1")
@@ -44,6 +46,7 @@ export function EmployerProfileForm() {
           setContactEmail(data.profile.contact_email ?? "");
           setContactPhone(data.profile.contact_phone ?? "");
           setLinkedinUrl(data.profile.linkedin_url ?? "");
+          setActivelyHiring(data.profile.actively_hiring ?? false);
         }
       })
       .finally(() => setLoading(false));
@@ -65,6 +68,7 @@ export function EmployerProfileForm() {
         contact_email: contactEmail || null,
         contact_phone: contactPhone || null,
         linkedin_url: linkedinUrl || null,
+        actively_hiring: activelyHiring,
       }),
     });
     setSaving(false);
@@ -178,6 +182,17 @@ export function EmployerProfileForm() {
             onChange={(e) => setLogoUrl(e.target.value)}
           />
         </Field>
+        <Field label={t("activelyHiring")}>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={activelyHiring}
+              onChange={(e) => setActivelyHiring(e.target.checked)}
+              className="size-4 rounded border-border"
+            />
+            <span>{t("activelyHiringHint")}</span>
+          </label>
+        </Field>
         <div className="space-y-3 border-t border-border pt-4">
           <div>
             <h3 className="font-medium">{t("contactSection")}</h3>
@@ -241,6 +256,7 @@ export function EmployerProfileForm() {
       />
       {mode === "preview" ? preview : editor}
       <EmployerJobsPanel enabled={exists} />
+      <FavouritesPanel />
     </PageSection>
   );
 }

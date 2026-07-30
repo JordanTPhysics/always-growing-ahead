@@ -7,6 +7,7 @@ import { ClusteredMap } from "@/components/map/clustered-map";
 import { BottomSheet } from "@/components/map/bottom-sheet";
 import { PostcodeInput } from "@/components/map/postcode-input";
 import { SaveSearchButton } from "@/components/search/save-search-button";
+import { FavouriteButton } from "@/components/favourites/favourite-button";
 import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";
 import type { JobSearchResult, JobType } from "@/lib/db/types";
@@ -50,25 +51,32 @@ function JobCard({
   const salary = formatSalary(job.salary_min, job.salary_max, salaryTypeLabel);
   const distance = formatDistance(job.distance_m);
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(job.id)}
-      className={`w-full rounded-md border px-3 py-3 text-start transition hover:bg-background/80 ${
+    <div
+      className={`w-full rounded-md border px-3 py-3 transition hover:bg-background/80 ${
         selected
           ? "border-accent bg-background"
           : "border-border bg-surface hover:border-accent/40"
       }`}
     >
-      <p className="font-medium">{job.title}</p>
-      <p className="mt-1 text-sm text-muted">
-        {job.company_name ?? companyFallback}
-        {job.postcode ? ` · ${job.postcode}` : ""}
-        {jobTypeLabel ? ` · ${jobTypeLabel}` : ""}
-      </p>
-      <p className="mt-1 text-sm text-muted">
-        {[salary, distance].filter(Boolean).join(" · ")}
-      </p>
-    </button>
+      <div className="flex items-start gap-2">
+        <button
+          type="button"
+          onClick={() => onSelect(job.id)}
+          className="min-w-0 flex-1 text-start"
+        >
+          <p className="font-medium">{job.title}</p>
+          <p className="mt-1 text-sm text-muted">
+            {job.company_name ?? companyFallback}
+            {job.postcode ? ` · ${job.postcode}` : ""}
+            {jobTypeLabel ? ` · ${jobTypeLabel}` : ""}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            {[salary, distance].filter(Boolean).join(" · ")}
+          </p>
+        </button>
+        <FavouriteButton targetType="job" targetId={job.id} />
+      </div>
+    </div>
   );
 }
 
@@ -185,6 +193,7 @@ export function JobSearchView() {
           id: j.id,
           lat: Number(j.location_lat),
           lng: Number(j.location_lng),
+          active: j.employer_actively_hiring ?? false,
           properties: { title: j.title },
         })),
     [jobs]
@@ -422,6 +431,8 @@ export function JobSearchView() {
         <div className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center md:block">
           {view === "map" ? (
             <ClusteredMap
+              searchMode="jobs"
+              searchModeLabel={t("title")}
               className="h-full max-h-[95%] w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
               points={mapPoints}
               selectedId={selectedId}
@@ -505,10 +516,13 @@ export function JobSearchView() {
       >
         {selected ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted">
-              {selected.company_name ?? tJobs("company")}
-              {selected.postcode ? ` · ${selected.postcode}` : ""}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm text-muted">
+                {selected.company_name ?? tJobs("company")}
+                {selected.postcode ? ` · ${selected.postcode}` : ""}
+              </p>
+              <FavouriteButton targetType="job" targetId={selected.id} />
+            </div>
             {selected.job_type ? (
               <p className="text-sm">{tJobs(`jobTypes.${selected.job_type}`)}</p>
             ) : null}

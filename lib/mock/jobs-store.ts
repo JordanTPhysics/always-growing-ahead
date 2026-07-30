@@ -89,10 +89,14 @@ export function listJsonJobsByEmployer(employerId: number): Job[] {
 export function listJsonPublicJobs(): JobSearchResult[] {
   return readJobs()
     .jobs.filter((j) => j.job.status === "active")
-    .map((j) => ({
-      ...withCompanyName(j.job),
-      distance_m: null,
-    }));
+    .map((j) => {
+      const employer = getJsonEmployerById(j.job.employer_id);
+      return {
+        ...withCompanyName(j.job),
+        distance_m: null,
+        employer_actively_hiring: employer?.actively_hiring ?? false,
+      };
+    });
 }
 
 /** Geocode and persist any active jobs missing map coordinates. */

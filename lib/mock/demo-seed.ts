@@ -36,6 +36,7 @@ export function ensureDemoJsonSeeded(): void {
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
+    actively_hiring: true,
     created_at: stamp,
     updated_at: stamp,
   };
@@ -81,6 +82,7 @@ export function ensureDemoJsonSeeded(): void {
       desired_salary_max: 32000,
       availability: "immediate",
       visibility: "public",
+      actively_looking: true,
       contact_email: null,
       contact_phone: null,
       linkedin_url: null,
@@ -109,6 +111,7 @@ export function ensureDemoJsonSeeded(): void {
       desired_salary_max: 15,
       availability: "2_weeks",
       visibility: "public",
+      actively_looking: false,
       contact_email: null,
       contact_phone: null,
       linkedin_url: null,

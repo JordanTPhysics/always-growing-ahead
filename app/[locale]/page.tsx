@@ -1,6 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { SponsoredCarousel } from "@/components/sponsored/sponsored-carousel";
 import { Link } from "@/lib/i18n/routing";
 import { auth } from "@/auth";
+import { sponsoredItems } from "@/lib/sponsored/content";
 
 export default async function HomePage({
   params,
@@ -14,6 +16,7 @@ export default async function HomePage({
 
   return (
     <section className="space-y-8">
+      <SponsoredCarousel items={sponsoredItems} />
       <div className="max-w-2xl space-y-4">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted">
           {t("appName")}
@@ -26,6 +29,8 @@ export default async function HomePage({
           one account — on web or in the native app shell.
         </p>
       </div>
+
+      
 
       <div className="flex flex-wrap gap-3 font-semibold">
         <Link
@@ -61,6 +66,8 @@ export default async function HomePage({
           </Link>
         ) : null}
       </div>
+      <SponsoredCarousel items={sponsoredItems.reverse()} />
+
     </section>
   );
 }

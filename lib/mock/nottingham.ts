@@ -311,6 +311,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 30000,
     availability: "immediate",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -334,6 +335,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 15,
     availability: "2_weeks",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -357,6 +359,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 14,
     availability: "immediate",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -380,6 +383,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 180,
     availability: "immediate",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -403,6 +407,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 32000,
     availability: "1_month",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -426,6 +431,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 33000,
     availability: "immediate",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -449,6 +455,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 20000,
     availability: "2_weeks",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -472,6 +479,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 26000,
     availability: "immediate",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -495,6 +503,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 30000,
     availability: "immediate",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -518,6 +527,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 34000,
     availability: "2_weeks",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -541,6 +551,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 24000,
     availability: "1_month",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -564,6 +575,7 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     desired_salary_max: 13,
     availability: "immediate",
     visibility: "public",
+    actively_looking: false,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,
@@ -573,6 +585,10 @@ const MOCK_WORKERS: WorkerSearchResult[] = [
     top_skills: "Cleaning",
   },
 ];
+
+for (const worker of MOCK_WORKERS) {
+  worker.actively_looking = worker.id % 2 === 1;
+}
 
 function coords(dLat: number, dLng: number) {
   const p = offset(C.latitude, C.longitude, dLat, dLng);
@@ -665,7 +681,11 @@ export async function searchMockJobs(
   }
 
   jobs.sort((a, b) => (a.distance_m ?? Infinity) - (b.distance_m ?? Infinity));
-  return jobs.slice(0, filters.limit ?? 100);
+  return jobs.slice(0, filters.limit ?? 100).map((job) => ({
+    ...job,
+    employer_actively_hiring:
+      job.employer_actively_hiring ?? job.id % 2 === 1,
+  }));
 }
 
 export async function searchMockWorkers(
@@ -700,6 +720,7 @@ export async function searchMockWorkers(
   );
   return workers.slice(0, filters.limit ?? 100).map((worker) => ({
     ...worker,
+    actively_looking: worker.actively_looking ?? worker.id % 2 === 1,
     contact_email: null,
     contact_phone: null,
     linkedin_url: null,

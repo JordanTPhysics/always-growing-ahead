@@ -13,5 +13,7 @@
   "createCta": "Create employer profile",
   "updateCta": "Save company profile",
   "empty": "You don't have an employer profile yet.",
+  "activelyHiring": "Actively hiring",
+  "activelyHiringHint": "Show on the map as actively hiring (highlighted job markers)",
   "neededForJobs": "Create an employer profile before posting jobs."
 }

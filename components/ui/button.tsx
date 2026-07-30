@@ -6,21 +6,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md border text-sm font-medium transition-[box-shadow,background-color,opacity] disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
+  "inline-flex items-center justify-center gap-2 rounded-md border text-sm font-medium text-text disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "border-[var(--border-strong)] bg-background text-white shadow-button hover:opacity-95 hover:shadow-button-hover",
+          "button-3d button-fill-dark border-[var(--border-strong)] bg-background text-white [--button-silhouette-bg:var(--border-strong)] hover:opacity-95",
         secondary:
-          "border-border bg-surface text-text shadow-button hover:bg-background-soft hover:shadow-button-hover",
+          "button-3d button-fill-light border-border bg-surface [--button-silhouette-bg:var(--border)] hover:bg-background-soft",
         accent:
-          "border-[#7a5519] bg-foreground text-white shadow-button hover:opacity-95 hover:shadow-button-hover",
+          "button-3d button-fill-dark border-[#7a5519] bg-foreground [--button-silhouette-bg:#7a5519] hover:opacity-95",
         ghost:
-          "border-transparent bg-transparent text-text shadow-none hover:bg-background-soft hover:text-text",
+          "button-fill-light border-transparent bg-transparent shadow-none transition-[background-color,opacity] hover:bg-background-soft",
         outline:
-          "border-border bg-surface text-text shadow-button hover:bg-background-soft hover:shadow-button-hover",
-        link: "border-transparent bg-transparent text-text shadow-none underline-offset-4 hover:underline",
+          "button-3d button-fill-light border-border bg-surface text-background [--button-silhouette-bg:var(--border)] hover:bg-background-soft",
+        link: "button-fill-light border-transparent bg-transparent shadow-none underline-offset-4 transition-[opacity] hover:underline",
       },
       size: {
         default: "min-h-11 px-4 py-2",
@@ -36,6 +36,21 @@ const buttonVariants = cva(
   }
 );
 
+const silhouetteWrapClassName: Partial<
+  Record<NonNullable<VariantProps<typeof buttonVariants>["variant"]>, string>
+> = {
+  default: "[--button-silhouette-bg:var(--border-strong)]",
+  secondary: "[--button-silhouette-bg:var(--border)]",
+  accent: "[--button-silhouette-bg:#7a5519]",
+  outline: "[--button-silhouette-bg:var(--border)]",
+};
+
+function is3dVariant(
+  variant: VariantProps<typeof buttonVariants>["variant"]
+): variant is keyof typeof silhouetteWrapClassName {
+  return variant !== "ghost" && variant !== "link";
+}
+
 function Button({
   className,
   variant,
@@ -47,13 +62,25 @@ function Button({
     asChild?: boolean;
   }) {
   const Comp = asChild ? Slot : "button";
+  const classes = cn(buttonVariants({ variant, size, className }));
+
+  const face = (
+    <Comp data-slot="button" className={classes} {...props} />
+  );
+
+  if (!is3dVariant(variant)) {
+    return face;
+  }
 
   return (
-    <Comp
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
+    <span
+      className={cn(
+        "button-3d-wrap rounded-md",
+        silhouetteWrapClassName[variant ?? "default"]
+      )}
+    >
+      {face}
+    </span>
   );
 }
 

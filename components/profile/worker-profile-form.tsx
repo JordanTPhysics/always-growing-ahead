@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/forms";
 import { PostcodeInput } from "@/components/map/postcode-input";
 import { captureOrPickImage } from "@/lib/native/camera";
+import { FavouritesPanel } from "@/components/favourites/favourites-panel";
 
 type Skill = { id: number; name: string; category: string | null };
 
@@ -65,6 +66,7 @@ export function WorkerProfileForm() {
   const [salaryMax, setSalaryMax] = useState("");
   const [availability, setAvailability] = useState("immediate");
   const [visibility, setVisibility] = useState<"public" | "hidden">("public");
+  const [activelyLooking, setActivelyLooking] = useState(false);
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
@@ -114,6 +116,7 @@ export function WorkerProfileForm() {
           );
           setAvailability(data.profile.availability ?? "immediate");
           setVisibility(data.profile.visibility ?? "public");
+          setActivelyLooking(data.profile.actively_looking ?? false);
           setContactEmail(data.profile.contact_email ?? "");
           setContactPhone(data.profile.contact_phone ?? "");
           setLinkedinUrl(data.profile.linkedin_url ?? "");
@@ -198,6 +201,7 @@ export function WorkerProfileForm() {
       desired_salary_max: salaryMax ? Number(salaryMax) : null,
       availability,
       visibility,
+      actively_looking: activelyLooking,
       contact_email: contactEmail || null,
       contact_phone: contactPhone || null,
       linkedin_url: linkedinUrl || null,
@@ -534,6 +538,17 @@ export function WorkerProfileForm() {
               <option value="hidden">{t("visibilityHidden")}</option>
             </select>
           </Field>
+          <Field label={t("activelyLooking")}>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={activelyLooking}
+                onChange={(e) => setActivelyLooking(e.target.checked)}
+                className="size-4 rounded border-border"
+              />
+              <span>{t("activelyLookingHint")}</span>
+            </label>
+          </Field>
           <div className="space-y-3 border-t border-border pt-4">
             <div>
               <h3 className="font-medium">{t("contactSection")}</h3>
@@ -822,6 +837,7 @@ export function WorkerProfileForm() {
         editLabel={tCommon("actions.edit")}
       />
       {mode === "preview" ? preview : editor}
+      <FavouritesPanel />
     </PageSection>
   );
 }

@@ -1,0 +1,19 @@
+{
+  "title": "Saved favourites",
+  "subtitle": "Jobs, workers, and companies you have starred.",
+  "add": "Add to favourites",
+  "remove": "Remove from favourites",
+  "empty": "You have not saved any favourites yet.",
+  "untitled": "Untitled",
+  "filters": {
+    "all": "All",
+    "jobs": "Jobs",
+    "workers": "Workers",
+    "companies": "Companies"
+  },
+  "types": {
+    "job": "Job",
+    "worker": "Worker",
+    "employer": "Company"
+  }
+}

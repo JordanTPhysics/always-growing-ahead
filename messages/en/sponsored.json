@@ -1,0 +1,7 @@
+{
+  "badge": "Sponsored",
+  "ariaLabel": "Sponsored promotions",
+  "slideIndicators": "Choose a sponsored slide",
+  "goToSlide": "Go to slide {number}",
+  "slideStatus": "Slide {current} of {total}: {title}"
+}

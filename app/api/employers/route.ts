@@ -24,6 +24,7 @@ const schema = z.object({
   contact_email: z.string().max(255).optional().nullable(),
   contact_phone: z.string().max(30).optional().nullable(),
   linkedin_url: z.string().max(500).optional().nullable(),
+  actively_hiring: z.boolean().optional(),
 });
 
 export async function GET(request: Request) {

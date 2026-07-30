@@ -1,6 +1,8 @@
 import { pool } from "@/lib/db/pool";
 import type { Tier } from "@/lib/entitlements";
 import type { User, UserRole } from "@/lib/db/types";
+import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
+import { getMockUserById } from "@/lib/mock/test-accounts";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 type UserRow = User & RowDataPacket;
@@ -57,6 +59,11 @@ export async function setUserRole(
 }
 
 export async function isAdmin(userId: number): Promise<boolean> {
+  if (isMockMapDataEnabled()) {
+    const mockUser = getMockUserById(userId);
+    if (mockUser) return mockUser.role === "admin";
+  }
+
   const [rows] = await pool.execute<
     (RowDataPacket & { role: UserRole })[]
   >("SELECT role FROM users WHERE id = ? LIMIT 1", [userId]);

@@ -6,6 +6,8 @@ import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import { PageHeader } from "@/components/ui/forms";
 import { Card, PageSection } from "@/components/ui/card";
 import { ContactReveal } from "@/components/billing/contact-reveal";
+import { FavouriteButton } from "@/components/favourites/favourite-button";
+import { Link } from "@/lib/i18n/routing";
 
 export default async function JobDetailPage({
   params,
@@ -31,8 +33,24 @@ export default async function JobDetailPage({
     <PageSection>
       <PageHeader
         title={job.title}
-        subtitle={job.company_name ?? t("company")}
+        subtitle={
+          [job.postcode, job.address_text].filter(Boolean).join(", ") ||
+          (job.job_type ? t(`jobTypes.${job.job_type}`) : undefined)
+        }
+        actions={<FavouriteButton targetType="job" targetId={job.id} />}
       />
+
+      {job.company_name ? (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <Link
+            href={`/employers/${job.employer_id}`}
+            className="font-medium text-text underline-offset-2 hover:underline"
+          >
+            {job.company_name}
+          </Link>
+          <FavouriteButton targetType="employer" targetId={job.employer_id} />
+        </div>
+      ) : null}
 
       <Card elevation="nested" className="space-y-4 p-5">
         <dl className="grid gap-3 text-sm sm:grid-cols-2">

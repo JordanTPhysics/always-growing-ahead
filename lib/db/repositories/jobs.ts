@@ -137,7 +137,7 @@ export async function searchJobs(
     : "j.published_at DESC";
 
   const [rows] = await pool.execute<JobSearchRow[]>(
-    `SELECT j.*, e.company_name, ${distanceSelect}
+    `SELECT j.*, e.company_name, e.actively_hiring AS employer_actively_hiring, ${distanceSelect}
      FROM jobs j
      JOIN employer_profiles e ON e.id = j.employer_id
      WHERE ${where.join(" AND ")}
@@ -148,6 +148,7 @@ export async function searchJobs(
 
   return rows.map((row) => ({
     ...row,
+    employer_actively_hiring: Boolean(row.employer_actively_hiring),
     distance_m:
       row.distance_m == null ? null : Number(row.distance_m),
     location_lat:

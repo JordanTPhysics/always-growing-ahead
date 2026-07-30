@@ -1,6 +1,10 @@
 {
   "title": "نرخەکان",
   "subtitle": "ئەو پلانە هەڵبژێرە کە لەگەڵ بەکارهێنانی AGA‑ت دەگونجێت. هەموو پلانی پارەدار ساڵانە دەدرێت.",
+  "billingToggleLabel": "ماوەی پارەدان",
+  "billingMonthly": "مانگانە",
+  "billingYearly": "ساڵانە",
+  "perMonth": "مانگانە",
   "perYear": "ساڵانە",
   "currentPlan": "پلانی ئێستات",
   "getStarted": "بەخۆڕایی دەست پێ بکە",

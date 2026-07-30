@@ -19,6 +19,8 @@
   "visibility": "ظهور الملف",
   "visibilityPublic": "عام",
   "visibilityHidden": "مخفي",
+  "activelyLooking": "أبحث بنشاط عن عمل",
+  "activelyLookingHint": "عرض على الخريطة كباحث نشط عن عمل (علامة اليد المرفوعة)",
   "contactSection": "بيانات التواصل",
   "contactHint": "تظهر لأصحاب العمل فقط بعد كشف بيانات التواصل (Basic+).",
   "contactEmail": "البريد الإلكتروني",

@@ -1,6 +1,10 @@
 {
   "title": "الأسعار",
   "subtitle": "اختر الخطة التي تناسب طريقة استخدامك لـ AGA. جميع الخطط المدفوعة تُفوتر سنويًا.",
+  "billingToggleLabel": "فترة الفوترة",
+  "billingMonthly": "شهري",
+  "billingYearly": "سنوي",
+  "perMonth": "شهريًا",
   "perYear": "سنويًا",
   "currentPlan": "خطتك الحالية",
   "getStarted": "ابدأ مجانًا",

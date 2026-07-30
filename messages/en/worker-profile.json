@@ -19,6 +19,8 @@
   "visibility": "Profile visibility",
   "visibilityPublic": "Public",
   "visibilityHidden": "Hidden",
+  "activelyLooking": "Actively looking for work",
+  "activelyLookingHint": "Show on the map as actively looking (raised-hand marker)",
   "contactSection": "Contact details",
   "contactHint": "Shown to employers only after they reveal contact info (Basic+).",
   "contactEmail": "Email",

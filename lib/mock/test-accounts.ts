@@ -25,6 +25,7 @@ export type MockTestAccount = {
  * Fixed mock logins used when USE_MOCK_MAP_DATA=1.
  * - full@aga.test → advanced (worker + employer / full subscription)
  * - worker@aga.test → basic (worker subscription only)
+ * - admin@aga.test → admin (advanced + admin role)
  */
 export const MOCK_TEST_ACCOUNTS: MockTestAccount[] = [
   {
@@ -44,6 +45,15 @@ export const MOCK_TEST_ACCOUNTS: MockTestAccount[] = [
     subscription_tier: "basic",
     role: "user",
     label: "Worker subscription (Basic)",
+  },
+  {
+    id: 3,
+    email: "admin@aga.test",
+    password: MOCK_TEST_PASSWORD,
+    password_hash: PASSWORD_HASH,
+    subscription_tier: "advanced",
+    role: "admin",
+    label: "Admin",
   },
 ];
 

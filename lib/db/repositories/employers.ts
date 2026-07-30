@@ -12,6 +12,7 @@ export type EmployerProfileInput = {
   contact_email?: string | null;
   contact_phone?: string | null;
   linkedin_url?: string | null;
+  actively_hiring?: boolean;
 };
 
 export async function getEmployerByUserId(
@@ -21,7 +22,9 @@ export async function getEmployerByUserId(
     "SELECT * FROM employer_profiles WHERE user_id = ? LIMIT 1",
     [userId]
   );
-  return rows[0] ?? null;
+  return rows[0]
+    ? { ...rows[0], actively_hiring: Boolean(rows[0].actively_hiring) }
+    : null;
 }
 
 export async function getEmployerById(
@@ -31,7 +34,9 @@ export async function getEmployerById(
     "SELECT * FROM employer_profiles WHERE id = ? LIMIT 1",
     [id]
   );
-  return rows[0] ?? null;
+  return rows[0]
+    ? { ...rows[0], actively_hiring: Boolean(rows[0].actively_hiring) }
+    : null;
 }
 
 export async function createEmployerProfile(
@@ -41,8 +46,8 @@ export async function createEmployerProfile(
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO employer_profiles
       (user_id, company_name, company_description, logo_url, website_url,
-       contact_email, contact_phone, linkedin_url)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       contact_email, contact_phone, linkedin_url, actively_hiring)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       input.company_name ?? null,
@@ -52,6 +57,7 @@ export async function createEmployerProfile(
       input.contact_email ?? null,
       input.contact_phone ?? null,
       input.linkedin_url ?? null,
+      input.actively_hiring ? 1 : 0,
     ]
   );
   const profile = await getEmployerById(result.insertId);
@@ -74,7 +80,8 @@ export async function updateEmployerProfile(
       website_url = ?,
       contact_email = ?,
       contact_phone = ?,
-      linkedin_url = ?
+      linkedin_url = ?,
+      actively_hiring = ?
      WHERE id = ?`,
     [
       input.company_name !== undefined
@@ -94,6 +101,13 @@ export async function updateEmployerProfile(
       input.linkedin_url !== undefined
         ? input.linkedin_url
         : current.linkedin_url,
+      (
+        input.actively_hiring !== undefined
+          ? input.actively_hiring
+          : current.actively_hiring
+      )
+        ? 1
+        : 0,
       employerId,
     ]
   );

@@ -1,0 +1,7 @@
+{
+  "badge": "إعلان",
+  "ariaLabel": "عروض ممولة",
+  "slideIndicators": "اختر شريحة إعلانية",
+  "goToSlide": "الانتقال إلى الشريحة {number}",
+  "slideStatus": "الشريحة {current} من {total}: {title}"
+}

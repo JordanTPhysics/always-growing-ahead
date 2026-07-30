@@ -1,0 +1,7 @@
+{
+  "badge": "سپۆنسەرکراو",
+  "ariaLabel": "پێشنیارە سپۆنسەرکراوەکان",
+  "slideIndicators": "سلایدێکی سپۆنسەرکراو هەڵبژێرە",
+  "goToSlide": "بچۆ بۆ سلایدی {number}",
+  "slideStatus": "سلایدی {current} لە {total}: {title}"
+}

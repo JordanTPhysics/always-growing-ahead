@@ -62,6 +62,21 @@ export type Notification = {
   created_at: Date;
 };
 
+export type FavouriteTargetType = "job" | "worker" | "employer";
+
+export type Favourite = {
+  id: number;
+  user_id: number;
+  target_type: FavouriteTargetType;
+  target_id: number;
+  created_at: Date;
+};
+
+export type FavouriteListItem = Favourite & {
+  label: string | null;
+  subtitle: string | null;
+};
+
 export type SavedSearchKind = "jobs" | "workers";
 
 export type SavedSearch = {
@@ -108,6 +123,7 @@ export type WorkerProfile = {
   desired_salary_max: number | null;
   availability: Availability | null;
   visibility: Visibility;
+  actively_looking: boolean;
   contact_email: string | null;
   contact_phone: string | null;
   linkedin_url: string | null;
@@ -153,6 +169,7 @@ export type EmployerProfile = {
   contact_email: string | null;
   contact_phone: string | null;
   linkedin_url: string | null;
+  actively_hiring: boolean;
   created_at: Date;
   updated_at?: Date;
 };
@@ -181,6 +198,7 @@ export type Job = {
 
 export type JobSearchResult = Job & {
   distance_m: number | null;
+  employer_actively_hiring?: boolean;
 };
 
 export type WorkerSearchResult = WorkerProfile & {

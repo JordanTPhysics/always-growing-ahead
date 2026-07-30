@@ -7,6 +7,7 @@ import { ClusteredMap } from "@/components/map/clustered-map";
 import { BottomSheet } from "@/components/map/bottom-sheet";
 import { PostcodeInput } from "@/components/map/postcode-input";
 import { SaveSearchButton } from "@/components/search/save-search-button";
+import { FavouriteButton } from "@/components/favourites/favourite-button";
 import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";
 import type { JobType, WorkerSearchResult } from "@/lib/db/types";
@@ -46,24 +47,31 @@ function WorkerCard({
 }) {
   const distance = formatDistance(worker.distance_m);
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(worker.id)}
-      className={`w-full rounded-md border px-3 py-3 text-start transition ${
+    <div
+      className={`w-full rounded-md border px-3 py-3 transition ${
         selected
           ? "border-accent bg-background-soft"
           : "border-border bg-surface hover:border-accent/40"
       }`}
     >
-      <p className="font-medium">{worker.headline ?? unnamed}</p>
-      <p className="mt-1 text-sm text-muted">
-        {worker.postcode ?? worker.address_text ?? ""}
-        {availabilityLabel ? ` · ${availabilityLabel}` : ""}
-      </p>
-      <p className="mt-1 text-sm text-muted">
-        {[worker.top_skills, distance].filter(Boolean).join(" · ")}
-      </p>
-    </button>
+      <div className="flex items-start gap-2">
+        <button
+          type="button"
+          onClick={() => onSelect(worker.id)}
+          className="min-w-0 flex-1 text-start"
+        >
+          <p className="font-medium">{worker.headline ?? unnamed}</p>
+          <p className="mt-1 text-sm text-muted">
+            {worker.postcode ?? worker.address_text ?? ""}
+            {availabilityLabel ? ` · ${availabilityLabel}` : ""}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            {[worker.top_skills, distance].filter(Boolean).join(" · ")}
+          </p>
+        </button>
+        <FavouriteButton targetType="worker" targetId={worker.id} />
+      </div>
+    </div>
   );
 }
 
@@ -175,6 +183,7 @@ export function WorkerSearchView() {
           id: w.id,
           lat: Number(w.location_lat),
           lng: Number(w.location_lng),
+          active: w.actively_looking,
           properties: { title: w.headline ?? "" },
         })),
     [workers]
@@ -388,6 +397,8 @@ export function WorkerSearchView() {
         <div className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center md:block">
           {view === "map" ? (
             <ClusteredMap
+              searchMode="workers"
+              searchModeLabel={t("title")}
               className="h-full max-h-80% w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
               points={mapPoints}
               selectedId={selectedId}
@@ -469,11 +480,14 @@ export function WorkerSearchView() {
       >
         {selected ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted">
-              {[selected.address_text, selected.postcode]
-                .filter(Boolean)
-                .join(", ")}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm text-muted">
+                {[selected.address_text, selected.postcode]
+                  .filter(Boolean)
+                  .join(", ")}
+              </p>
+              <FavouriteButton targetType="worker" targetId={selected.id} />
+            </div>
             {selected.availability ? (
               <p className="text-sm">
                 {tWorker(`availabilityOptions.${selected.availability}`)}

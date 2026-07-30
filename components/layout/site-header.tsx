@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/lib/i18n/routing";
 import { activeLocales, locales, type ActiveLocale } from "@/lib/i18n/locales";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -14,11 +14,60 @@ type Props = {
   user: { email: string; tier: string; role?: string } | null;
 };
 
+type NavLabelKey =
+  | "home"
+  | "findWork"
+  | "hire"
+  | "education"
+  | "marketplace"
+  | "help"
+  | "pricing"
+  | "privacy"
+  | "workerProfile"
+  | "employerProfile"
+  | "myJobs"
+  | "billing"
+  | "notifications"
+  | "admin";
+
+type NavItem = {
+  href: string;
+  labelKey: NavLabelKey;
+  signedInOnly?: boolean;
+};
+
+const publicNavItems: NavItem[] = [
+  { href: "/", labelKey: "home" },
+  { href: "/jobs", labelKey: "findWork" },
+  { href: "/workers", labelKey: "hire" },
+  { href: "/education", labelKey: "education" },
+  { href: "/marketplace", labelKey: "marketplace" },
+  { href: "/help", labelKey: "help" },
+  { href: "/pricing", labelKey: "pricing" },
+  { href: "/privacy", labelKey: "privacy" },
+];
+
+const accountNavItems: NavItem[] = [
+  { href: "/worker/profile", labelKey: "workerProfile", signedInOnly: true },
+  { href: "/employer/profile", labelKey: "employerProfile", signedInOnly: true },
+  { href: "/employer/jobs", labelKey: "myJobs", signedInOnly: true },
+  { href: "/billing", labelKey: "billing", signedInOnly: true },
+  { href: "/admin", labelKey: "admin", signedInOnly: true },
+  { href: "/notifications", labelKey: "notifications", signedInOnly: true },
+];
+
 const menuItemClassName =
-  "block w-full px-3 py-2.5 text-start text-sm text-text hover:bg-background-soft";
+  "block w-full px-3 py-2.5 text-start text-sm text-background hover:bg-background-soft";
 
 function emailInitials(email: string) {
   return email.trim().slice(0, 2).toUpperCase() || "?";
+}
+
+function navItemsForUser(user: Props["user"]) {
+  return [...publicNavItems, ...accountNavItems].filter((item) => {
+    if (item.signedInOnly) return Boolean(user);
+    return true;
+  });
 }
 
 function LanguageSelect() {
@@ -49,11 +98,139 @@ function LanguageSelect() {
   );
 }
 
-export function SiteHeader({ user }: Props) {
+function MobileMenuPanel({
+  user,
+  menuId,
+  localeMenuId,
+  localeOpen,
+  setLocaleOpen,
+  onClose,
+}: {
+  user: Props["user"];
+  menuId: string;
+  localeMenuId: string;
+  localeOpen: boolean;
+  setLocaleOpen: (open: boolean | ((value: boolean) => boolean)) => void;
+  onClose: () => void;
+}) {
   const t = useTranslations("common");
   const pathname = usePathname();
   const router = useRouter();
   const locale = useLocale() as ActiveLocale;
+
+  return (
+    <div
+      id={menuId}
+      role="menu"
+      className="absolute end-0 top-full z-30 mt-2 max-h-[min(32rem,calc(100dvh-5rem))] w-56 overflow-y-auto rounded-md border border-border bg-surface text-text shadow-panel"
+    >
+      {user ? (
+        <p className="truncate px-3 py-2.5 text-xs text-muted">{user.email}</p>
+      ) : null}
+      {navItemsForUser(user).map((item) =>
+        item.labelKey === "notifications" ? (
+          <NotificationBell
+            key={item.href}
+            className={`${menuItemClassName} flex items-center justify-between gap-2`}
+          >
+            {t(`nav.${item.labelKey}`)}
+          </NotificationBell>
+        ) : (
+          <Link
+            key={item.href}
+            href={item.href}
+            role="menuitem"
+            className={menuItemClassName}
+            onClick={onClose}
+          >
+            {t(`nav.${item.labelKey}`)}
+          </Link>
+        )
+      )}
+      <div role="none">
+        <button
+          type="button"
+          role="menuitem"
+          aria-expanded={localeOpen}
+          aria-controls={localeMenuId}
+          aria-haspopup="menu"
+          className={`${menuItemClassName} flex items-center justify-between`}
+          onClick={() => setLocaleOpen((open) => !open)}
+        >
+          <span>{t("language")}</span>
+          <span aria-hidden="true" className="text-muted">
+            {localeOpen ? "▾" : "▸"}
+          </span>
+        </button>
+        {localeOpen ? (
+          <div id={localeMenuId} role="menu" className="bg-background-soft/50">
+            {activeLocales.map((code) => (
+              <button
+                key={code}
+                type="button"
+                role="menuitemradio"
+                aria-checked={locale === code}
+                className={`${menuItemClassName} pl-6 ${
+                  locale === code ? "font-medium" : ""
+                }`}
+                onClick={() => {
+                  onClose();
+                  router.replace(pathname, { locale: code });
+                }}
+              >
+                {locales[code].label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      {user ? (
+        <button
+          type="button"
+          role="menuitem"
+          className={menuItemClassName}
+          onClick={() => {
+            onClose();
+            void signOut({ callbackUrl: `/${locale}` });
+          }}
+        >
+          {t("nav.signOut")}
+        </button>
+      ) : (
+        <>
+          <Link
+            href="/sign-in"
+            role="menuitem"
+            className={menuItemClassName}
+            onClick={onClose}
+          >
+            {t("nav.signIn")}
+          </Link>
+          <Link
+            href="/sign-up"
+            role="menuitem"
+            className={menuItemClassName}
+            onClick={onClose}
+          >
+            {t("nav.signUp")}
+          </Link>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function SiteHeader({ user: initialUser }: Props) {
+  const t = useTranslations("common");
+  const locale = useLocale() as ActiveLocale;
+  const { data: session } = useSession();
+  const user = session?.user
+    ? {
+        email: session.user.email,
+        tier: session.user.tier,
+        role: session.user.role,
+      }
+    : initialUser;
   const [menuOpen, setMenuOpen] = useState(false);
   const [localeOpen, setLocaleOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -96,48 +273,15 @@ export function SiteHeader({ user }: Props) {
           </Link>
           <div className="text-lg mx-auto flex flex-row text-muted text-center">AGA - Always Growing Ahead</div>
           <nav className="hidden items-center gap-4 text-sm sm:flex">
-            <Link href="/jobs" className="text hover:text-text">
-              {t("nav.findWork")}
-            </Link>
-            <Link href="/workers" className="text hover:text-text">
-              {t("nav.hire")}
-            </Link>
-            <Link href="/education" className="text hover:text-text">
-              {t("nav.education")}
-            </Link>
-            <Link href="/help" className="text hover:text-text">
-              {t("nav.help")}
-            </Link>
-            <Link href="/pricing" className="text hover:text-text">
-              {t("nav.pricing")}
-            </Link>
-            {user ? (
-              <>
-                <Link
-                  href="/worker/profile"
-                  className="text hover:text-text"
-                >
-                  {t("nav.myProfile")}
-                </Link>
-                <Link
-                  href="/employer/jobs"
-                  className="text hover:text-text"
-                >
-                  {t("nav.myJobs")}
-                </Link>
-                <Link
-                  href="/billing"
-                  className="text hover:text-text"
-                >
-                  {t("nav.billing")}
-                </Link>
-                {user.role === "admin" ? (
-                  <Link href="/admin" className="text hover:text-text">
-                    {t("nav.admin")}
-                  </Link>
-                ) : null}
-              </>
-            ) : null}
+            {navItemsForUser(user).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text hover:text-text"
+              >
+                {t(`nav.${item.labelKey}`)}
+              </Link>
+            ))}
           </nav>
         </div>
 
@@ -160,7 +304,7 @@ export function SiteHeader({ user }: Props) {
                 <LanguageSelect />
               </div>
 
-              <div className="relative md:hidden" ref={menuRef}>
+              <div className="relative" ref={menuRef}>
                 <button
                   type="button"
                   aria-expanded={menuOpen}
@@ -174,120 +318,57 @@ export function SiteHeader({ user }: Props) {
                 </button>
 
                 {menuOpen ? (
-                  <div
-                    id={menuId}
-                    role="menu"
-                    className="absolute end-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-md border border-border bg-surface text-text shadow-panel"
-                  >
-                    <p className="truncate px-3 py-2.5 text-xs text-muted">
-                      {user.email}
-                    </p>
-                    <Link
-                      href="/worker/profile"
-                      role="menuitem"
-                      className={menuItemClassName}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {t("nav.workerProfile")}
-                    </Link>
-                    <Link
-                      href="/employer/profile"
-                      role="menuitem"
-                      className={menuItemClassName}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {t("nav.employerProfile")}
-                    </Link>
-                    <NotificationBell
-                      className={`${menuItemClassName} flex items-center justify-between gap-2`}
-                    >
-                      {t("nav.notifications")}
-                    </NotificationBell>
-                    <Link
-                      href="/help"
-                      role="menuitem"
-                      className={menuItemClassName}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {t("nav.help")}
-                    </Link>
-                    <Link
-                      href="/pricing"
-                      role="menuitem"
-                      className={menuItemClassName}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {t("nav.pricing")}
-                    </Link>
-                    <div role="none">
-                      <button
-                        type="button"
-                        role="menuitem"
-                        aria-expanded={localeOpen}
-                        aria-controls={localeMenuId}
-                        aria-haspopup="menu"
-                        className={`${menuItemClassName} flex items-center justify-between`}
-                        onClick={() => setLocaleOpen((open) => !open)}
-                      >
-                        <span>{t("language")}</span>
-                        <span aria-hidden="true" className="text-muted">
-                          {localeOpen ? "▾" : "▸"}
-                        </span>
-                      </button>
-                      {localeOpen ? (
-                        <div
-                          id={localeMenuId}
-                          role="menu"
-                          className="bg-background-soft/50"
-                        >
-                          {activeLocales.map((code) => (
-                            <button
-                              key={code}
-                              type="button"
-                              role="menuitemradio"
-                              aria-checked={locale === code}
-                              className={`${menuItemClassName} pl-6 ${
-                                locale === code ? "font-medium" : ""
-                              }`}
-                              onClick={() => {
-                                setMenuOpen(false);
-                                router.replace(pathname, { locale: code });
-                              }}
-                            >
-                              {locales[code].label}
-                            </button>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className={menuItemClassName}
-                      onClick={() => {
-                        setMenuOpen(false);
-                        void signOut({ callbackUrl: `/${locale}` });
-                      }}
-                    >
-                      {t("nav.signOut")}
-                    </button>
-                  </div>
+                  <MobileMenuPanel
+                    user={user}
+                    menuId={menuId}
+                    localeMenuId={localeMenuId}
+                    localeOpen={localeOpen}
+                    setLocaleOpen={setLocaleOpen}
+                    onClose={() => setMenuOpen(false)}
+                  />
                 ) : null}
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2 text-sm text-black">
-              <Link
-                href="/sign-in"
-                className="rounded-md px-3 py-1.5 hover:text-text"
-              >
-                {t("nav.signIn")}
-              </Link>
-              <Button asChild size="sm" variant="accent">
-                <Link href="/sign-up">{t("nav.signUp")}</Link>
-              </Button>
-              <LanguageSelect />
-            </div>
+            <>
+              <div className="hidden items-center gap-2 sm:flex">
+                <Link
+                  href="/sign-in"
+                  className="rounded-md px-3 py-1.5 text-sm text-black hover:text-text"
+                >
+                  {t("nav.signIn")}
+                </Link>
+                <Button asChild size="sm" variant="accent">
+                  <Link href="/sign-up">{t("nav.signUp")}</Link>
+                </Button>
+                <LanguageSelect />
+              </div>
+
+              <div className="relative sm:hidden" ref={menuRef}>
+                <button
+                  type="button"
+                  aria-expanded={menuOpen}
+                  aria-controls={menuId}
+                  aria-haspopup="menu"
+                  aria-label={t("nav.menu")}
+                  className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-text"
+                  onClick={() => setMenuOpen((open) => !open)}
+                >
+                  {t("nav.menu")}
+                </button>
+
+                {menuOpen ? (
+                  <MobileMenuPanel
+                    user={user}
+                    menuId={menuId}
+                    localeMenuId={localeMenuId}
+                    localeOpen={localeOpen}
+                    setLocaleOpen={setLocaleOpen}
+                    onClose={() => setMenuOpen(false)}
+                  />
+                ) : null}
+              </div>
+            </>
           )}
         </div>
       </div>

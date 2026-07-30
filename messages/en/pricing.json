@@ -1,6 +1,10 @@
 {
   "title": "Pricing",
   "subtitle": "Choose the plan that fits how you use AGA. All paid plans are billed yearly.",
+  "billingToggleLabel": "Billing period",
+  "billingMonthly": "Monthly",
+  "billingYearly": "Yearly",
+  "perMonth": "per month",
   "perYear": "per year",
   "currentPlan": "Your current plan",
   "getStarted": "Get started free",

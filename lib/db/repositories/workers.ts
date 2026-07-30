@@ -34,6 +34,7 @@ export type WorkerProfileInput = {
   desired_salary_max?: number | null;
   availability?: Availability | null;
   visibility?: Visibility;
+  actively_looking?: boolean;
   contact_email?: string | null;
   contact_phone?: string | null;
   linkedin_url?: string | null;
@@ -43,6 +44,7 @@ function normalizeWorker(row: WorkerRow): WorkerProfile {
   const mapped = mapWorkerRow(row) as WorkerProfile;
   return {
     ...mapped,
+    actively_looking: Boolean(mapped.actively_looking),
     contact_email: mapped.contact_email ?? null,
     contact_phone: mapped.contact_phone ?? null,
     linkedin_url: mapped.linkedin_url ?? null,
@@ -80,12 +82,12 @@ export async function createWorkerProfile(
       user_id, headline, bio, profile_photo_url, cv_file_url,
       location_lat, location_lng, location_point, postcode, address_text,
       desired_job_types, desired_salary_min, desired_salary_max,
-      availability, visibility, contact_email, contact_phone, linkedin_url
+      availability, visibility, actively_looking, contact_email, contact_phone, linkedin_url
     ) VALUES (
       ?, ?, ?, ?, ?,
       ?, ?, IF(? IS NULL OR ? IS NULL, NULL, ST_SRID(POINT(?, ?), 4326)), ?, ?,
       CAST(? AS JSON), ?, ?,
-      ?, ?, ?, ?, ?
+      ?, ?, ?, ?, ?, ?
     )`,
     [
       userId,
@@ -106,6 +108,7 @@ export async function createWorkerProfile(
       input.desired_salary_max ?? null,
       input.availability ?? null,
       input.visibility ?? "public",
+      input.actively_looking ? 1 : 0,
       input.contact_email ?? null,
       input.contact_phone ?? null,
       input.linkedin_url ?? null,
@@ -163,6 +166,10 @@ export async function updateWorkerProfile(
         : current.availability,
     visibility:
       input.visibility !== undefined ? input.visibility : current.visibility,
+    actively_looking:
+      input.actively_looking !== undefined
+        ? input.actively_looking
+        : current.actively_looking,
     contact_email:
       input.contact_email !== undefined
         ? input.contact_email
@@ -190,7 +197,7 @@ export async function updateWorkerProfile(
       postcode = ?, address_text = ?,
       desired_job_types = CAST(? AS JSON),
       desired_salary_min = ?, desired_salary_max = ?,
-      availability = ?, visibility = ?,
+      availability = ?, visibility = ?, actively_looking = ?,
       contact_email = ?, contact_phone = ?, linkedin_url = ?
      WHERE id = ?`,
     [
@@ -211,6 +218,7 @@ export async function updateWorkerProfile(
       next.desired_salary_max,
       next.availability,
       next.visibility,
+      next.actively_looking ? 1 : 0,
       next.contact_email,
       next.contact_phone,
       next.linkedin_url,

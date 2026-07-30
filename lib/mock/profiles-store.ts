@@ -34,6 +34,7 @@ export type WorkerProfileInput = {
   desired_salary_max?: number | null;
   availability?: Availability | null;
   visibility?: Visibility;
+  actively_looking?: boolean;
   contact_email?: string | null;
   contact_phone?: string | null;
   linkedin_url?: string | null;
@@ -47,6 +48,7 @@ export type EmployerProfileInput = {
   contact_email?: string | null;
   contact_phone?: string | null;
   linkedin_url?: string | null;
+  actively_hiring?: boolean;
 };
 
 export type StoredWorkerRecord = {
@@ -84,6 +86,7 @@ function writeEmployers(db: EmployersDb) {
 function reviveWorkerProfile(profile: WorkerProfile): WorkerProfile {
   return {
     ...profile,
+    actively_looking: profile.actively_looking ?? false,
     contact_email: profile.contact_email ?? null,
     contact_phone: profile.contact_phone ?? null,
     linkedin_url: profile.linkedin_url ?? null,
@@ -95,6 +98,7 @@ function reviveWorkerProfile(profile: WorkerProfile): WorkerProfile {
 function reviveEmployerProfile(profile: EmployerProfile): EmployerProfile {
   return {
     ...profile,
+    actively_hiring: profile.actively_hiring ?? false,
     contact_email: profile.contact_email ?? null,
     contact_phone: profile.contact_phone ?? null,
     linkedin_url: profile.linkedin_url ?? null,
@@ -154,6 +158,7 @@ export function createJsonWorkerProfile(
     desired_salary_max: input.desired_salary_max ?? null,
     availability: input.availability ?? null,
     visibility: input.visibility ?? "public",
+    actively_looking: input.actively_looking ?? false,
     contact_email: input.contact_email ?? null,
     contact_phone: input.contact_phone ?? null,
     linkedin_url: input.linkedin_url ?? null,
@@ -223,6 +228,10 @@ export function updateJsonWorkerProfile(
         ? input.availability
         : current.profile.availability,
     visibility: input.visibility ?? current.profile.visibility,
+    actively_looking:
+      input.actively_looking !== undefined
+        ? input.actively_looking
+        : current.profile.actively_looking,
     contact_email:
       input.contact_email !== undefined
         ? input.contact_email
@@ -389,6 +398,7 @@ export function createJsonEmployerProfile(
     contact_email: input.contact_email ?? null,
     contact_phone: input.contact_phone ?? null,
     linkedin_url: input.linkedin_url ?? null,
+    actively_hiring: input.actively_hiring ?? false,
     created_at: new Date(stamp),
     updated_at: new Date(stamp),
   };
@@ -432,6 +442,10 @@ export function updateJsonEmployerProfile(
       input.linkedin_url !== undefined
         ? input.linkedin_url
         : current.linkedin_url,
+    actively_hiring:
+      input.actively_hiring !== undefined
+        ? input.actively_hiring
+        : current.actively_hiring,
     updated_at: new Date(nowIso()),
   };
 
