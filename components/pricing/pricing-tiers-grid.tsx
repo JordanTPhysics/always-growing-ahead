@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { Button } from "@/components/ui/button";
+import { PillToggle } from "@/components/ui/pill-toggle";
 import { cn } from "@/lib/utils";
 
 type BillingPeriod = "monthly" | "yearly";
@@ -47,28 +48,15 @@ export function PricingTiersGrid({ tiers }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex justify-center">
-        <div
-          role="group"
-          aria-label={t("billingToggleLabel")}
-          data-billing-period={billingPeriod}
-          className="pricing-billing-toggle"
-        >
-          <span aria-hidden="true" className="pricing-billing-toggle-thumb" />
-          {(["monthly", "yearly"] as const).map((period) => {
-            const isActive = billingPeriod === period;
-            return (
-              <button
-                key={period}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => setBillingPeriod(period)}
-                className="pricing-billing-toggle-option"
-              >
-                {t(period === "monthly" ? "billingMonthly" : "billingYearly")}
-              </button>
-            );
-          })}
-        </div>
+        <PillToggle
+          value={billingPeriod}
+          onChange={setBillingPeriod}
+          ariaLabel={t("billingToggleLabel")}
+          options={[
+            { value: "monthly", label: t("billingMonthly") },
+            { value: "yearly", label: t("billingYearly") },
+          ]}
+        />
       </div>
 
       <div

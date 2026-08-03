@@ -21,15 +21,35 @@ export type MapPoint = {
   properties?: Record<string, string | null | undefined>;
 };
 
+type LegendLabels = {
+  standard: string;
+  active: string;
+};
+
 type Props = {
   searchMode: MapSearchMode;
   searchModeLabel?: string;
+  legendLabels?: LegendLabels;
   points: MapPoint[];
   selectedId?: number | null;
   onSelect: (id: number) => void;
   center?: { latitude: number; longitude: number; zoom?: number };
   className?: string;
 };
+
+function getMarkerIcon(searchMode: MapSearchMode, active: boolean) {
+  if (searchMode === "workers") {
+    return {
+      Icon: active ? BsPersonRaisedHand : BsPersonStanding,
+      color: active ? "red" : "green",
+    };
+  }
+
+  return {
+    Icon: active ? FaExclamation : IoIosBriefcase,
+    color: active ? "red" : "blue",
+  };
+}
 
 function SearchModeBadge({
   mode,
@@ -49,6 +69,40 @@ function SearchModeBadge({
   );
 }
 
+function MapLegend({
+  searchMode,
+  labels,
+}: {
+  searchMode: MapSearchMode;
+  labels: LegendLabels;
+}) {
+  const items = [
+    { active: false, label: labels.standard },
+    { active: true, label: labels.active },
+  ] as const;
+
+  return (
+    <div
+      className="pointer-events-none absolute start-3 bottom-3 z-10 flex flex-col gap-1.5 rounded-md border border-border bg-surface/95 px-3 py-2 shadow-sm backdrop-blur-sm"
+      aria-label="Map legend"
+    >
+      {items.map(({ active, label }) => {
+        const { Icon, color } = getMarkerIcon(searchMode, active);
+        return (
+          <div key={label} className="flex items-center gap-2">
+            <Icon
+              className={`shrink-0 drop-shadow-sm ${active ? "size-6" : "size-5"}`}
+              color={color}
+              aria-hidden
+            />
+            <span className="text-xs text-foreground">{label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function MapMarkerContent({
   searchMode,
   active,
@@ -60,16 +114,10 @@ function MapMarkerContent({
   hovered: boolean;
   title?: string;
 }) {
+  const { Icon, color } = getMarkerIcon(searchMode, active);
   const iconClassName = active
     ? "size-8 text-amber-600 drop-shadow-md"
     : "size-7 text-foreground drop-shadow-sm";
-
-  let Icon = IoIosBriefcase;
-  if (searchMode === "workers") {
-    Icon = active ? BsPersonRaisedHand : BsPersonStanding;
-  } else {
-    Icon = active ? FaExclamation : IoIosBriefcase;
-  }
 
   return (
     <div
@@ -82,11 +130,7 @@ function MapMarkerContent({
           hovered ? "scale-110" : "scale-100"
         }`}
       >
-        <Icon
-          className={iconClassName}
-          color={active ? "red" : searchMode === "workers" ? "green" : "blue"}
-          aria-hidden
-        />
+        <Icon className={iconClassName} color={color} aria-hidden />
       </div>
     </div>
   );
@@ -96,6 +140,7 @@ export function ClusteredMap({
   className,
   searchMode,
   searchModeLabel,
+  legendLabels,
   points,
   selectedId = null,
   onSelect,
@@ -128,6 +173,9 @@ export function ClusteredMap({
   return (
     <div className={`relative ${className ?? ""}`}>
       <SearchModeBadge mode={searchMode} label={searchModeLabel} />
+      {legendLabels ? (
+        <MapLegend searchMode={searchMode} labels={legendLabels} />
+      ) : null}
       <APIProvider apiKey={apiKey} libraries={["marker"]}>
         <Map
           className="h-full w-full"

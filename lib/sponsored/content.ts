@@ -12,17 +12,20 @@ export const sponsoredItems: SponsoredItem[] = [
     href: "https://www.cscs.uk.com/",
     title: "Get your CSCS card before your first site day",
     description: "Book the health, safety & environment test and card application in one place.",
+    imageUrl: "/images/cscs.jpg",
   },
   {
     id: "toolstation",
     href: "https://www.toolstation.com/",
     title: "Trade tools & PPE delivered next day",
     description: "Hard hats, boots, and power tools from stores across the UK.",
+    imageUrl: "/images/PPE-saves-logo.jpg",
   },
   {
     id: "city-guilds",
     href: "https://www.cityandguilds.com/",
     title: "Level up with a recognised trade qualification",
     description: "Apprenticeships and NVQs in electrical, plumbing, carpentry, and more.",
+    imageUrl: "/images/sponsored/city-guilds.png",
   },
 ];

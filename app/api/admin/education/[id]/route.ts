@@ -9,14 +9,15 @@ import {
   getEducationResourceById,
   updateEducationResource,
 } from "@/lib/db/repositories/education";
+import { EDUCATION_MEDIA_TYPES } from "@/lib/education/media-types";
 
 const updateSchema = z.object({
   topic: z.string().trim().min(1).max(255).optional(),
-  media_type: z.enum(["pdf", "video"]).optional(),
+  media_type: z.enum(EDUCATION_MEDIA_TYPES).optional(),
   file_url: z.string().trim().min(1).max(500).optional(),
   file_name: z.string().trim().min(1).max(255).optional(),
   mime_type: z.string().trim().min(1).max(100).optional(),
-  byte_size: z.number().int().positive().optional(),
+  byte_size: z.coerce.number().int().positive().optional(),
   title_en: z.string().trim().min(1).max(255).optional(),
   title_ar: z.string().trim().max(255).nullable().optional(),
   title_ckb: z.string().trim().max(255).nullable().optional(),

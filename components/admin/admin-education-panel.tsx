@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, inputClassName } from "@/components/ui/forms";
 import type { EducationMediaType, EducationResource } from "@/lib/db/types";
+import { EDUCATION_MEDIA_TYPES } from "@/lib/education/media-types";
 
 type FormState = {
   topic: string;
@@ -124,8 +125,13 @@ export function AdminEducationPanel() {
         file_url: data.url,
         file_name: data.fileName,
         mime_type: data.mimeType,
-        byte_size: data.byteSize,
-        media_type: data.mediaType,
+        byte_size: Number(data.byteSize) || 0,
+        media_type:
+          data.fileKind === "pdf"
+            ? "pdf"
+            : current.media_type === "pdf"
+              ? ""
+              : current.media_type,
       }));
     } finally {
       setUploading(false);
@@ -134,6 +140,12 @@ export function AdminEducationPanel() {
 
   async function save() {
     if (!form.file_url || !form.media_type) {
+      setError(
+        !form.file_url ? t("uploadRequired") : t("mediaTypeRequired")
+      );
+      return;
+    }
+    if (!form.byte_size || form.byte_size <= 0) {
       setError(t("uploadRequired"));
       return;
     }
@@ -146,7 +158,7 @@ export function AdminEducationPanel() {
         file_url: form.file_url,
         file_name: form.file_name,
         mime_type: form.mime_type,
-        byte_size: form.byte_size,
+        byte_size: Number(form.byte_size),
         title_en: form.title_en,
         title_ar: form.title_ar || null,
         title_ckb: form.title_ckb || null,
@@ -324,6 +336,25 @@ export function AdminEducationPanel() {
                 }
               />
             </Field>
+            <Field label={t("mediaType")}>
+              <select
+                className={inputClassName}
+                value={form.media_type}
+                onChange={(e) =>
+                  setForm((current) => ({
+                    ...current,
+                    media_type: e.target.value as EducationMediaType | "",
+                  }))
+                }
+              >
+                <option value="">{t("mediaTypePlaceholder")}</option>
+                {EDUCATION_MEDIA_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {t(`mediaTypes.${type}`)}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <div className="block space-y-1.5 sm:col-span-2">
               <span className="text-sm font-medium text-text">
                 {form.file_url ? t("replaceFile") : t("file")}
@@ -389,7 +420,8 @@ export function AdminEducationPanel() {
               <div>
                 <p className="font-medium">{resource.title_en}</p>
                 <p className="text-sm text-muted">
-                  {resource.topic} · {t("mediaType")}: {resource.media_type}
+                  {resource.topic} · {t("mediaType")}:{" "}
+                  {t(`mediaTypes.${resource.media_type}`)}
                   {resource.is_published ? "" : " · draft"}
                 </p>
               </div>

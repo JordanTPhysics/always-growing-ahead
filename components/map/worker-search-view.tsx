@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/routing";
+import { useRouter } from "@/lib/i18n/routing";
+import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import { ClusteredMap } from "@/components/map/clustered-map";
 import { BottomSheet } from "@/components/map/bottom-sheet";
 import { PostcodeInput } from "@/components/map/postcode-input";
@@ -80,6 +81,8 @@ export function WorkerSearchView() {
   const tWorker = useTranslations("worker-profile");
   const tJobs = useTranslations("jobs");
   const tCommon = useTranslations("common");
+  const router = useRouter();
+  const { requireAuth } = useRequireAuth();
 
   const [view, setView] = useState<ViewMode>("map");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -200,6 +203,13 @@ export function WorkerSearchView() {
   const applyFilters = useCallback(() => {
     setFiltersOpen(false);
   }, []);
+
+  const selectWorker = useCallback(
+    (id: number) => {
+      requireAuth(() => setSelectedId(id));
+    },
+    [requireAuth]
+  );
 
   const filtersPanel = (
     <div className="space-y-4">
@@ -399,10 +409,14 @@ export function WorkerSearchView() {
             <ClusteredMap
               searchMode="workers"
               searchModeLabel={t("title")}
+              legendLabels={{
+                standard: t("legendStandard"),
+                active: t("legendActive"),
+              }}
               className="h-full max-h-80% w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
               points={mapPoints}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={selectWorker}
               center={mapCenter}
             />
           ) : (
@@ -416,7 +430,7 @@ export function WorkerSearchView() {
                       key={worker.id}
                       worker={worker}
                       selected={selectedId === worker.id}
-                      onSelect={setSelectedId}
+                      onSelect={selectWorker}
                       unnamed={t("unnamedWorker")}
                       availabilityLabel={
                         worker.availability
@@ -448,7 +462,7 @@ export function WorkerSearchView() {
                   key={worker.id}
                   worker={worker}
                   selected={selectedId === worker.id}
-                  onSelect={setSelectedId}
+                  onSelect={selectWorker}
                   unnamed={t("unnamedWorker")}
                   availabilityLabel={
                     worker.availability
@@ -502,10 +516,14 @@ export function WorkerSearchView() {
             {selected.bio ? (
               <p className="line-clamp-4 text-sm text-muted">{selected.bio}</p>
             ) : null}
-            <Button asChild className="w-full">
-              <Link href={`/workers/${selected.id}`}>
-                {t("viewFull")}
-              </Link>
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() =>
+                requireAuth(() => router.push(`/workers/${selected.id}`))
+              }
+            >
+              {t("viewFull")}
             </Button>
           </div>
         ) : null}

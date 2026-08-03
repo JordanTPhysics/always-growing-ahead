@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
+import { auth } from "@/auth";
 import { Link } from "@/lib/i18n/routing";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { HelpQueryForm } from "@/components/help/help-query-form";
+import { getUserById } from "@/lib/db/repositories/users";
 
 const tutorialKeys = [
   "account",
@@ -36,6 +38,18 @@ function tutorialSteps(key: (typeof tutorialKeys)[number], t: Awaited<ReturnType
 
 export async function HelpContent() {
   const t = await getTranslations("help");
+  const session = await auth();
+  let prefill: { name: string; email: string; phone: string } | null = null;
+  if (session?.user?.id) {
+    const user = await getUserById(Number(session.user.id));
+    if (user) {
+      prefill = {
+        name: user.username ?? "",
+        email: user.email,
+        phone: user.phone ?? "",
+      };
+    }
+  }
 
   return (
     <div className="space-y-10">
@@ -90,14 +104,12 @@ export async function HelpContent() {
       <Card elevation="nested" className="flex flex-wrap items-center justify-between gap-4 p-5">
         <p className="max-w-2xl text-sm text-muted">{t("educationCta")}</p>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="secondary">
-            <Link href="/pricing">{t("pricingLink")}</Link>
-          </Button>
-          <Button asChild variant="accent">
-            <Link href="/education">{t("educationLink")}</Link>
-          </Button>
+          <Link href="/pricing">{t("pricingLink")}</Link>
+          <Link href="/education">{t("educationLink")}</Link>
         </div>
       </Card>
+
+      <HelpQueryForm prefill={prefill} />
     </div>
   );
 }

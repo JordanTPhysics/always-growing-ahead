@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/routing";
+import { useRouter } from "@/lib/i18n/routing";
+import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import { ClusteredMap } from "@/components/map/clustered-map";
 import { BottomSheet } from "@/components/map/bottom-sheet";
 import { PostcodeInput } from "@/components/map/postcode-input";
@@ -84,6 +85,8 @@ export function JobSearchView() {
   const t = useTranslations("job-search");
   const tJobs = useTranslations("jobs");
   const tCommon = useTranslations("common");
+  const router = useRouter();
+  const { requireAuth } = useRequireAuth();
 
   const [view, setView] = useState<ViewMode>("map");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -211,6 +214,13 @@ export function JobSearchView() {
     setFiltersOpen(false);
     // queryKey deps already drive refetch; toggling a noop state isn't needed
   }, []);
+
+  const selectJob = useCallback(
+    (id: number) => {
+      requireAuth(() => setSelectedId(id));
+    },
+    [requireAuth]
+  );
 
   const filtersPanel = (
     <div className="space-y-4">
@@ -433,10 +443,14 @@ export function JobSearchView() {
             <ClusteredMap
               searchMode="jobs"
               searchModeLabel={t("title")}
+              legendLabels={{
+                standard: t("legendStandard"),
+                active: t("legendActive"),
+              }}
               className="h-full max-h-[95%] w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
               points={mapPoints}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={selectJob}
               center={mapCenter}
             />
           ) : (
@@ -450,7 +464,7 @@ export function JobSearchView() {
                       key={job.id}
                       job={job}
                       selected={selectedId === job.id}
-                      onSelect={setSelectedId}
+                      onSelect={selectJob}
                       companyFallback={tJobs("company")}
                       jobTypeLabel={
                         job.job_type ? tJobs(`jobTypes.${job.job_type}`) : null
@@ -483,7 +497,7 @@ export function JobSearchView() {
                   key={job.id}
                   job={job}
                   selected={selectedId === job.id}
-                  onSelect={setSelectedId}
+                  onSelect={selectJob}
                   companyFallback={tJobs("company")}
                   jobTypeLabel={
                     job.job_type ? tJobs(`jobTypes.${job.job_type}`) : null
@@ -545,10 +559,14 @@ export function JobSearchView() {
                 {selected.description}
               </p>
             ) : null}
-            <Button asChild className="w-full">
-              <Link href={`/jobs/${selected.id}`}>
-                {t("viewFull")}
-              </Link>
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() =>
+                requireAuth(() => router.push(`/jobs/${selected.id}`))
+              }
+            >
+              {t("viewFull")}
             </Button>
           </div>
         ) : null}

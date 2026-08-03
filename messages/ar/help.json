@@ -6,6 +6,16 @@
   "educationCta": "هل تريد المزيد من التفاصيل؟ تصفّح أدلة PDF والفيديو في مكتبة التعليم.",
   "educationLink": "تصفّح التعليم",
   "pricingLink": "عرض الأسعار",
+  "queryTitle": "ما زلت بحاجة إلى مساعدة؟",
+  "querySubtitle": "إذا لم تجد إجابة في الأسئلة الشائعة، أرسل سؤالك وسيرد عليك فريق AGA.",
+  "queryName": "الاسم",
+  "queryEmail": "البريد الإلكتروني",
+  "queryPhone": "الهاتف",
+  "queryPhoneHint": "اختياري — أضف رقمًا إذا كنت تفضل معاودة الاتصال.",
+  "queryMessage": "سؤالك",
+  "queryMessagePlaceholder": "صف ما تحتاج مساعدة فيه…",
+  "querySubmit": "إرسال السؤال",
+  "querySuccess": "شكرًا — تم إرسال سؤالك. سنرد عبر البريد الإلكتروني في أقرب وقت ممكن.",
   "tutorialItems": {
     "account": {
       "title": "إنشاء حسابك",

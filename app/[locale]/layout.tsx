@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Source_Sans_3, Noto_Sans_Arabic } from "next/font/google";
 import { activeLocales, isActiveLocale, locales } from "@/lib/i18n/locales";
 import { SiteHeader } from "@/components/layout/site-header";
+import { MainShell } from "@/components/layout/main-shell";
 import { Link } from "@/lib/i18n/routing";
 import { AuthSessionProvider } from "@/components/auth/session-provider";
 import { NativeBootstrap } from "@/components/native/native-bootstrap";
@@ -64,9 +65,7 @@ export default async function LocaleLayout({
                   : null
               }
             />
-            <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
-              {children}
-            </main>
+            <MainShell>{children}</MainShell>
             <footer className="border-t border-border bg-surface px-4 py-6 text-center text-sm text-muted">
               AGA · UK ·{" "}
               <Link href="/privacy" className="underline hover:text-text">

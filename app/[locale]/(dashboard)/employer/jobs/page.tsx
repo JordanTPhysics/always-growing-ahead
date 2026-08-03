@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { Link } from "@/lib/i18n/routing";
 import { getEmployerByUserId } from "@/lib/db/repositories/employers";
 import { listJobsByEmployer } from "@/lib/db/repositories/jobs";
@@ -19,8 +18,7 @@ export default async function EmployerJobsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await auth();
-  if (!session?.user) redirect(`/${locale}/sign-in`);
+  const session = await requireAuthOrSignUp(locale);
 
   const t = await getTranslations("jobs");
   const tEmployer = await getTranslations("employer-profile");

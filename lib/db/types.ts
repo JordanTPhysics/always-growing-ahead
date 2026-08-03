@@ -28,8 +28,11 @@ export type Proficiency =
 export type User = {
   id: number;
   email: string;
+  username: string | null;
   password_hash: string | null;
   phone: string | null;
+  city: string | null;
+  district: string | null;
   preferred_locale: string;
   subscription_tier: Tier;
   role: UserRole;
@@ -75,6 +78,18 @@ export type Favourite = {
 export type FavouriteListItem = Favourite & {
   label: string | null;
   subtitle: string | null;
+};
+
+export type MarketplaceComment = {
+  id: number;
+  listing_id: string;
+  user_id: number;
+  body: string;
+  created_at: Date;
+};
+
+export type MarketplaceCommentListItem = MarketplaceComment & {
+  author_name: string;
 };
 
 export type SavedSearchKind = "jobs" | "workers";
@@ -247,7 +262,18 @@ export type JobSkill = {
   skill_name?: string;
 };
 
-export type EducationMediaType = "pdf" | "video";
+export type EducationMediaType = "pdf" | "short_video" | "lecture";
+
+export type SupportQuery = {
+  id: number;
+  user_id: number | null;
+  name: string | null;
+  email: string;
+  phone: string | null;
+  message: string;
+  locale: string;
+  created_at: Date;
+};
 
 export type EducationResource = {
   id: number;

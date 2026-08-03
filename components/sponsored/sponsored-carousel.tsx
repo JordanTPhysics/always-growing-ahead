@@ -46,7 +46,7 @@ export function SponsoredCarousel({ items, intervalMs = 5000 }: Props) {
         }
       }}
     >
-      <div className="sponsored-carousel-frame max-w-2xl rounded-md p-0.5">
+      <div className="sponsored-carousel-frame max-w-5xl rounded-md p-0.5">
         <div className="relative h-20 overflow-hidden rounded-md bg-surface">
           {items.map((item, index) => {
             const isActive = index === activeIndex;

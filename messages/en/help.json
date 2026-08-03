@@ -6,6 +6,16 @@
   "educationCta": "Want more detail? Browse PDF and video guides in the Education library.",
   "educationLink": "Browse Education",
   "pricingLink": "View pricing",
+  "queryTitle": "Still need help?",
+  "querySubtitle": "If you cannot find an answer in the FAQ, send us your question and the AGA team will get back to you.",
+  "queryName": "Name",
+  "queryEmail": "Email",
+  "queryPhone": "Phone",
+  "queryPhoneHint": "Optional — include a number if you prefer a call back.",
+  "queryMessage": "Your question",
+  "queryMessagePlaceholder": "Describe what you need help with…",
+  "querySubmit": "Send question",
+  "querySuccess": "Thanks — your question has been sent. We will reply by email as soon as we can.",
   "tutorialItems": {
     "account": {
       "title": "Create your account",

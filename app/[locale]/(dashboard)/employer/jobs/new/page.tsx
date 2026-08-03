@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { JobForm } from "@/components/job/job-form";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { canPostJobs } from "@/lib/entitlements";
@@ -13,8 +12,7 @@ export default async function NewJobPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await auth();
-  if (!session?.user) redirect(`/${locale}/sign-in`);
+  const session = await requireAuthOrSignUp(locale);
 
   if (!isMockMapDataEnabled() && !canPostJobs(session.user.tier)) {
     const t = await getTranslations("billing");

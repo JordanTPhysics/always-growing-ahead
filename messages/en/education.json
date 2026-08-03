@@ -1,11 +1,18 @@
 {
   "title": "Education",
-  "subtitle": "PDF and video guides to help you get the most from AGA.",
+  "subtitle": "Short videos, lectures, and PDF guides to help you get the most from AGA.",
   "empty": "No education guides are available yet.",
+  "sectionShortVideos": "Short videos",
+  "sectionShortVideosHint": "Quick walkthroughs and how-tos you can watch in a few minutes.",
+  "sectionLectures": "Lectures",
+  "sectionLecturesHint": "Longer-form talks and deep dives on key topics.",
+  "sectionPdfGuides": "PDF guides",
+  "sectionPdfGuidesHint": "Downloadable reference documents you can read offline.",
   "openPdf": "Open PDF",
   "watchVideo": "Watch video",
   "typePdf": "PDF",
-  "typeVideo": "Video",
+  "typeShortVideo": "Short video",
+  "typeLecture": "Lecture",
   "upgradeTitle": "Worker plan required",
   "upgradeBody": "Education guides are available on Worker and Employer plans."
 }

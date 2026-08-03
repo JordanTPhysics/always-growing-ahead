@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
-import { controlTrackClassName } from "@/lib/ui-styles";
-import { cn } from "@/lib/utils";
+import { PillToggle } from "@/components/ui/pill-toggle";
 
 export function PageHeader({
   title,
@@ -59,26 +57,16 @@ export function FormModeTabs({
   editLabel: string;
 }) {
   return (
-    <div className={cn("flex", controlTrackClassName)}>
-      <Button
-        type="button"
-        variant={mode === "preview" ? "default" : "ghost"}
-        size="sm"
-        className="min-h-10 flex-1 rounded"
-        onClick={() => onChange("preview")}
-      >
-        {previewLabel}
-      </Button>
-      <Button
-        type="button"
-        variant={mode === "edit" ? "accent" : "ghost"}
-        size="sm"
-        className="min-h-10 flex-1 rounded"
-        onClick={() => onChange("edit")}
-      >
-        {editLabel}
-      </Button>
-    </div>
+    <PillToggle
+      value={mode}
+      onChange={onChange}
+      fullWidth
+      ariaLabel={`${previewLabel} / ${editLabel}`}
+      options={[
+        { value: "preview", label: previewLabel },
+        { value: "edit", label: editLabel },
+      ]}
+    />
   );
 }
 

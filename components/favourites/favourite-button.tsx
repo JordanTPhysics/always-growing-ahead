@@ -65,7 +65,7 @@ export function FavouriteButton({
           { method: "DELETE" }
         );
         if (response.status === 401) {
-          router.push("/sign-in");
+          router.push("/sign-up");
           return;
         }
         if (response.ok) {
@@ -81,7 +81,7 @@ export function FavouriteButton({
         body: JSON.stringify({ targetType, targetId }),
       });
       if (response.status === 401) {
-        router.push("/sign-in");
+        router.push("/sign-up");
         return;
       }
       if (response.ok) {

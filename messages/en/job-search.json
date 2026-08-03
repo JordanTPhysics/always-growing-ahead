@@ -22,5 +22,7 @@
   "listDesktopHint": "Results are shown in the list panel. Switch to Map to browse on the map.",
   "nearMe": "Use my location",
   "nearMeLabel": "Near me",
-  "nearMeFailed": "Could not get your location. Check permissions and try again."
+  "nearMeFailed": "Could not get your location. Check permissions and try again.",
+  "legendStandard": "Job listing",
+  "legendActive": "Actively hiring"
 }

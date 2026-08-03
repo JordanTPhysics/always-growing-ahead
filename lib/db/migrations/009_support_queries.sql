@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS support_queries (
+  id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id    BIGINT UNSIGNED NULL,
+  name       VARCHAR(100),
+  email      VARCHAR(255) NOT NULL,
+  phone      VARCHAR(30),
+  message    TEXT NOT NULL,
+  locale     VARCHAR(10) DEFAULT 'en',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);

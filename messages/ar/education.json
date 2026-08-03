@@ -1,11 +1,18 @@
 {
   "title": "التعليم",
-  "subtitle": "أدلة PDF ومقاطع فيديو لمساعدتك على الاستفادة القصوى من AGA.",
+  "subtitle": "مقاطع فيديو قصيرة ومحاضرات وأدلة PDF لمساعدتك على الاستفادة القصوى من AGA.",
   "empty": "لا تتوفر أدلة تعليمية بعد.",
+  "sectionShortVideos": "مقاطع فيديو قصيرة",
+  "sectionShortVideosHint": "شروحات سريعة يمكنك مشاهدتها في دقائق.",
+  "sectionLectures": "محاضرات",
+  "sectionLecturesHint": "محاضرات أطول وشرح معمّق للمواضيع الأساسية.",
+  "sectionPdfGuides": "أدلة PDF",
+  "sectionPdfGuidesHint": "مستندات مرجعية قابلة للتنزيل للقراءة دون اتصال.",
   "openPdf": "فتح PDF",
   "watchVideo": "مشاهدة الفيديو",
   "typePdf": "PDF",
-  "typeVideo": "فيديو",
+  "typeShortVideo": "فيديو قصير",
+  "typeLecture": "محاضرة",
   "upgradeTitle": "مطلوب خطة العامل",
   "upgradeBody": "أدلة التعليم متاحة في خطتي العامل وصاحب العمل."
 }

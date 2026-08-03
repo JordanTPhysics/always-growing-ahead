@@ -4,16 +4,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { marketplacePosts } from "@/lib/marketplace/content";
 import { MarketplacePostCard } from "@/components/marketplace/marketplace-post-card";
+import { MarketplaceCommentsPanel } from "@/components/marketplace/marketplace-comments-panel";
+import { useMarketplaceCommentCounts } from "@/components/marketplace/use-marketplace-comment-counts";
 import { useMarketplaceLikes } from "@/components/marketplace/use-marketplace-likes";
 
 export function MarketplaceFeed() {
   const t = useTranslations("marketplace");
   const locale = useLocale();
   const { isLiked, toggleLike } = useMarketplaceLikes();
+  const { getCount, setCount } = useMarketplaceCommentCounts();
   const [activeIndex, setActiveIndex] = useState(0);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
+
+  const commentsPost = commentsPostId
+    ? marketplacePosts.find((post) => post.id === commentsPostId) ?? null
+    : null;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -94,7 +102,9 @@ export function MarketplaceFeed() {
             <MarketplacePostCard
               post={post}
               liked={isLiked(post.id)}
+              commentCount={getCount(post.id)}
               onToggleLike={() => toggleLike(post.id)}
+              onOpenComments={() => setCommentsPostId(post.id)}
               onShare={() => void sharePost(post.id, post.title)}
               isActive={activeIndex === index}
             />
@@ -109,6 +119,16 @@ export function MarketplaceFeed() {
         >
           {shareMessage}
         </div>
+      ) : null}
+
+      {commentsPost ? (
+        <MarketplaceCommentsPanel
+          listingId={commentsPost.id}
+          listingTitle={commentsPost.title}
+          open
+          onClose={() => setCommentsPostId(null)}
+          onCountChange={(count) => setCount(commentsPost.id, count)}
+        />
       ) : null}
     </div>
   );

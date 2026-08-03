@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { getPublicWorkerBundle } from "@/lib/db/repositories/workers";
 import {
   getMockWorkerById,
@@ -19,6 +20,7 @@ export default async function WorkerPublicPage({
 }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
+  await requireAuthOrSignUp(locale);
   const t = await getTranslations("worker-profile");
   const workerId = Number(id);
 

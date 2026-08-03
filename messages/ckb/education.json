@@ -1,11 +1,18 @@
 {
   "title": "پەروەردە",
-  "subtitle": "ڕێنمایی PDF و ڤیدیۆ بۆ ئەوەی باشترین سوود لە AGA وەربگریت.",
+  "subtitle": "ڤیدیۆی کورت، وانە و ڕێنمایی PDF بۆ ئەوەی باشترین سوود لە AGA وەربگریت.",
   "empty": "هێشتا هیچ ڕێنماییەکی پەروەردەیی بەردەست نییە.",
+  "sectionShortVideos": "ڤیدیۆی کورت",
+  "sectionShortVideosHint": "ڕێنمایی خێرا کە لە چەند خولەکدا دەتوانیت بیبینیت.",
+  "sectionLectures": "وانەکان",
+  "sectionLecturesHint": "وتار و شیکردنەوەی درێژتر لەسەر بابەتە گرنگەکان.",
+  "sectionPdfGuides": "ڕێنمایی PDF",
+  "sectionPdfGuidesHint": "بەڵگەی ئامادەکراو بۆ داگرتن و خوێندنەوە بەبێ ئینتەرنێت.",
   "openPdf": "کردنەوەی PDF",
   "watchVideo": "سەیرکردنی ڤیدیۆ",
   "typePdf": "PDF",
-  "typeVideo": "ڤیدیۆ",
+  "typeShortVideo": "ڤیدیۆی کورت",
+  "typeLecture": "وانە",
   "upgradeTitle": "پلانی کرێکار پێویستە",
   "upgradeBody": "ڕێنماییەکانی پەروەردە لە پلانی کرێکار و خاوەنکار بەردەستن."
 }

@@ -15,6 +15,14 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return rows[0] ?? null;
 }
 
+export async function getUserByUsername(username: string): Promise<User | null> {
+  const [rows] = await pool.execute<UserRow[]>(
+    "SELECT * FROM users WHERE username = ? LIMIT 1",
+    [username.toLowerCase()]
+  );
+  return rows[0] ?? null;
+}
+
 export async function getUserById(id: number): Promise<User | null> {
   const [rows] = await pool.execute<UserRow[]>(
     "SELECT * FROM users WHERE id = ? LIMIT 1",
@@ -23,18 +31,45 @@ export async function getUserById(id: number): Promise<User | null> {
   return rows[0] ?? null;
 }
 
+/** Map a session user to a real DB id (mock JWT ids may not match MySQL rows). */
+export async function resolveDbUserId(
+  userId: number,
+  email?: string | null
+): Promise<number | null> {
+  if (Number.isInteger(userId) && userId > 0) {
+    const user = await getUserById(userId);
+    if (user) return user.id;
+  }
+
+  if (email) {
+    const user = await getUserByEmail(email);
+    if (user) return user.id;
+  }
+
+  return null;
+}
+
 export async function createUser(input: {
   email: string;
   passwordHash?: string | null;
+  username?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  district?: string | null;
   preferredLocale?: string;
   emailVerifiedAt?: Date | null;
 }): Promise<User> {
   const [result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, password_hash, preferred_locale, email_verified_at)
-     VALUES (?, ?, ?, ?)`,
+    `INSERT INTO users
+      (email, username, password_hash, phone, city, district, preferred_locale, email_verified_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.email.toLowerCase(),
+      input.username?.trim().toLowerCase() ?? null,
       input.passwordHash ?? null,
+      input.phone ?? null,
+      input.city ?? null,
+      input.district ?? null,
       input.preferredLocale ?? "en",
       input.emailVerifiedAt ?? null,
     ]

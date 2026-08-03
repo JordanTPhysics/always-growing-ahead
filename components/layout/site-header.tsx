@@ -332,12 +332,14 @@ export function SiteHeader({ user: initialUser }: Props) {
           ) : (
             <>
               <div className="hidden items-center gap-2 sm:flex">
+                <Button asChild size="sm" variant="default">
                 <Link
                   href="/sign-in"
-                  className="rounded-md px-3 py-1.5 text-sm text-black hover:text-text"
                 >
                   {t("nav.signIn")}
                 </Link>
+                </Button>
+
                 <Button asChild size="sm" variant="accent">
                   <Link href="/sign-up">{t("nav.signUp")}</Link>
                 </Button>

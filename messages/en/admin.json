@@ -1,6 +1,7 @@
 {
   "title": "Admin dashboard",
   "subtitle": "Manage skills, users, education uploads, and locale translations.",
+  "tabsLabel": "Admin sections",
   "tabs": {
     "access": "Skills & users",
     "education": "Education",
@@ -16,7 +17,7 @@
   "email": "Email",
   "education": {
     "heading": "Education guides",
-    "hint": "Upload PDF or video files and publish localized titles for the Education page.",
+    "hint": "Upload PDF or video files, choose short video / lecture / PDF, and publish localized titles for the Education page.",
     "empty": "No education resources yet.",
     "add": "Add guide",
     "edit": "Edit guide",
@@ -33,6 +34,13 @@
     "replaceFile": "Replace file",
     "currentFile": "Current file",
     "mediaType": "Type",
+    "mediaTypePlaceholder": "Choose a type…",
+    "mediaTypeRequired": "Choose short video, lecture, or PDF before saving.",
+    "mediaTypes": {
+      "short_video": "Short video",
+      "lecture": "Lecture",
+      "pdf": "PDF guide"
+    },
     "save": "Save guide",
     "cancel": "Cancel",
     "delete": "Delete",

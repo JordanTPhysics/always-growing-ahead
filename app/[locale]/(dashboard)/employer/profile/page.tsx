@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { EmployerProfileForm } from "@/components/profile/employer-profile-form";
 
 export default async function EmployerProfilePage({
@@ -10,8 +9,7 @@ export default async function EmployerProfilePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await auth();
-  if (!session?.user) redirect(`/${locale}/sign-in`);
+  await requireAuthOrSignUp(locale);
 
   return <EmployerProfileForm />;
 }

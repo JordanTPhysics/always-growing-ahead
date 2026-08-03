@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { WorkerProfileForm } from "@/components/profile/worker-profile-form";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { canCreateWorkerProfile } from "@/lib/entitlements";
@@ -12,8 +11,7 @@ export default async function WorkerProfilePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await auth();
-  if (!session?.user) redirect(`/${locale}/sign-in`);
+  const session = await requireAuthOrSignUp(locale);
 
   if (!canCreateWorkerProfile(session.user.tier)) {
     const t = await getTranslations("billing");

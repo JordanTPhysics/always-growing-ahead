@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { getJobById, listJobSkills } from "@/lib/db/repositories/jobs";
 import { getJsonJobById } from "@/lib/mock/jobs-store";
 import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
@@ -16,6 +17,7 @@ export default async function JobDetailPage({
 }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
+  await requireAuthOrSignUp(locale);
   const t = await getTranslations("jobs");
   const jobId = Number(id);
 

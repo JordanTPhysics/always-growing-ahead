@@ -62,8 +62,11 @@ function toUser(account: MockTestAccount): User {
   return {
     id: account.id,
     email: account.email,
+    username: null,
     password_hash: account.password_hash,
     phone: null,
+    city: null,
+    district: null,
     preferred_locale: "en",
     subscription_tier: account.subscription_tier,
     role: account.role,

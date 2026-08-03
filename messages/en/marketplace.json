@@ -3,10 +3,16 @@
   "subtitle": "Browse tools, gear, and services from tradespeople near you",
   "feedLabel": "Marketplace listings feed",
   "like": "Like",
+  "comment": "Comment",
   "share": "Share",
   "by": "by",
   "mute": "Mute video",
   "unmute": "Unmute video",
   "linkCopied": "Link copied to clipboard",
-  "shareFailed": "Could not share — try copying the link manually"
+  "shareFailed": "Could not share — try copying the link manually",
+  "commentsTitle": "Comments · {title}",
+  "noComments": "No comments yet. Be the first to ask a question.",
+  "addComment": "Add a comment",
+  "commentPlaceholder": "Ask about condition, collection, or availability…",
+  "postComment": "Post comment"
 }

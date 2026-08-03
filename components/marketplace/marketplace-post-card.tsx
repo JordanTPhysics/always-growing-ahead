@@ -2,14 +2,25 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { MdFavorite, MdFavoriteBorder, MdShare, MdVolumeOff, MdVolumeUp } from "react-icons/md";
+import {
+  MdChatBubbleOutline,
+  MdFavorite,
+  MdFavoriteBorder,
+  MdShare,
+  MdVolumeOff,
+  MdVolumeUp,
+} from "react-icons/md";
+import { Link } from "@/lib/i18n/routing";
 import type { MarketplacePost } from "@/lib/marketplace/types";
+import { marketplaceSellerHref } from "@/lib/marketplace/types";
 import { cn } from "@/lib/utils";
 
 type Props = {
   post: MarketplacePost;
   liked: boolean;
+  commentCount: number;
   onToggleLike: () => void;
+  onOpenComments: () => void;
   onShare: () => void;
   isActive: boolean;
 };
@@ -22,7 +33,9 @@ function formatCount(value: number) {
 export function MarketplacePostCard({
   post,
   liked,
+  commentCount,
   onToggleLike,
+  onOpenComments,
   onShare,
   isActive,
 }: Props) {
@@ -97,7 +110,13 @@ export function MarketplacePostCard({
               {post.price}
             </span>
             <span className="text-sm text-white/80">
-              {t("by")} {post.seller}
+              {t("by")}{" "}
+              <Link
+                href={marketplaceSellerHref(post.seller)}
+                className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-2.5 py-0.5 font-medium text-white transition hover:bg-white/20"
+              >
+                {post.seller.displayName}
+              </Link>
             </span>
           </div>
         </div>
@@ -114,6 +133,14 @@ export function MarketplacePostCard({
             ) : (
               <MdFavoriteBorder className="h-7 w-7" />
             )}
+          </ActionButton>
+
+          <ActionButton
+            label={t("comment")}
+            count={commentCount}
+            onClick={onOpenComments}
+          >
+            <MdChatBubbleOutline className="h-7 w-7" />
           </ActionButton>
 
           <ActionButton label={t("share")} onClick={onShare}>

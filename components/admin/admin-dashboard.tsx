@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, PageSection } from "@/components/ui/card";
-import { controlTrackClassName } from "@/lib/ui-styles";
+import { PillToggle } from "@/components/ui/pill-toggle";
 import { AdminEducationPanel } from "@/components/admin/admin-education-panel";
 import { AdminTranslationsPanel } from "@/components/admin/admin-translations-panel";
-import { cn } from "@/lib/utils";
 
 type PendingSkill = {
   id: number;
@@ -64,32 +63,17 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className={cn("flex flex-wrap gap-1 justify-between", controlTrackClassName)}>
-        <Button
-          type="button"
-          variant={tab === "access" ? "accent" : "ghost"}
-          size="sm"
-          onClick={() => setTab("access")}
-        >
-          {t("tabs.access")}
-        </Button>
-        <Button
-          type="button"
-          variant={tab === "education" ? "accent" : "ghost"}
-          size="sm"
-          onClick={() => setTab("education")}
-        >
-          {t("tabs.education")}
-        </Button>
-        <Button
-          type="button"
-          variant={tab === "translations" ? "accent" : "ghost"}
-          size="sm"
-          onClick={() => setTab("translations")}
-        >
-          {t("tabs.translations")}
-        </Button>
-      </div>
+      <PillToggle
+        value={tab}
+        onChange={setTab}
+        fullWidth
+        ariaLabel={t("tabsLabel")}
+        options={[
+          { value: "access", label: t("tabs.access") },
+          { value: "education", label: t("tabs.education") },
+          { value: "translations", label: t("tabs.translations") },
+        ]}
+      />
 
       {tab === "access" ? (
         <div className="grid gap-8 lg:grid-cols-2">

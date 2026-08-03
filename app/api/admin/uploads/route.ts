@@ -4,26 +4,49 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { jsonError } from "@/lib/api/auth";
 import { requireAdmin } from "@/lib/api/admin";
-import type { EducationMediaType } from "@/lib/db/types";
 
 export const runtime = "nodejs";
 
 const PDF_MAX_BYTES = 25 * 1024 * 1024;
 const VIDEO_MAX_BYTES = 200 * 1024 * 1024;
 
-const ALLOWED: Record<
-  string,
-  { mediaType: EducationMediaType; ext: string; maxBytes: number }
-> = {
-  "application/pdf": { mediaType: "pdf", ext: "pdf", maxBytes: PDF_MAX_BYTES },
-  "video/mp4": { mediaType: "video", ext: "mp4", maxBytes: VIDEO_MAX_BYTES },
-  "video/webm": { mediaType: "video", ext: "webm", maxBytes: VIDEO_MAX_BYTES },
+type FileKind = "pdf" | "video";
+
+type AllowedFile = {
+  fileKind: FileKind;
+  ext: string;
+  maxBytes: number;
+};
+
+const ALLOWED_MIMES: Record<string, AllowedFile> = {
+  "application/pdf": { fileKind: "pdf", ext: "pdf", maxBytes: PDF_MAX_BYTES },
+  "application/x-pdf": { fileKind: "pdf", ext: "pdf", maxBytes: PDF_MAX_BYTES },
+  "video/mp4": { fileKind: "video", ext: "mp4", maxBytes: VIDEO_MAX_BYTES },
+  "video/webm": { fileKind: "video", ext: "webm", maxBytes: VIDEO_MAX_BYTES },
   "video/quicktime": {
-    mediaType: "video",
+    fileKind: "video",
     ext: "mov",
     maxBytes: VIDEO_MAX_BYTES,
   },
 };
+
+const EXTENSIONS: Record<string, AllowedFile> = {
+  pdf: { fileKind: "pdf", ext: "pdf", maxBytes: PDF_MAX_BYTES },
+  mp4: { fileKind: "video", ext: "mp4", maxBytes: VIDEO_MAX_BYTES },
+  webm: { fileKind: "video", ext: "webm", maxBytes: VIDEO_MAX_BYTES },
+  mov: { fileKind: "video", ext: "mov", maxBytes: VIDEO_MAX_BYTES },
+};
+
+function resolveAllowedFile(file: File): AllowedFile | null {
+  const mime = file.type.trim().toLowerCase();
+  if (mime && mime !== "application/octet-stream") {
+    const byMime = ALLOWED_MIMES[mime];
+    if (byMime) return byMime;
+  }
+
+  const ext = path.extname(file.name).replace(/^\./, "").toLowerCase();
+  return EXTENSIONS[ext] ?? null;
+}
 
 export async function POST(request: Request) {
   const { session, error } = await requireAdmin();
@@ -35,18 +58,21 @@ export async function POST(request: Request) {
   const file = form.get("file");
   if (!(file instanceof File)) return jsonError("Missing file");
 
-  const mime = file.type || "application/octet-stream";
-  const allowed = ALLOWED[mime];
+  const allowed = resolveAllowedFile(file);
   if (!allowed) {
     return jsonError(
       "Unsupported file type. Use PDF, MP4, WebM, or QuickTime."
     );
   }
 
+  if (file.size <= 0) {
+    return jsonError("File is empty.");
+  }
+
   if (file.size > allowed.maxBytes) {
     const maxMb = Math.round(allowed.maxBytes / (1024 * 1024));
     return jsonError(
-      `${allowed.mediaType === "pdf" ? "PDF" : "Video"} too large (max ${maxMb}MB)`
+      `${allowed.fileKind === "pdf" ? "PDF" : "Video"} too large (max ${maxMb}MB)`
     );
   }
 
@@ -65,11 +91,15 @@ export async function POST(request: Request) {
   await writeFile(path.join(dir, filename), buffer);
 
   const url = `/uploads/education/${userId}/${filename}`;
+  const mimeType =
+    file.type.trim() ||
+    (allowed.fileKind === "pdf" ? "application/pdf" : "application/octet-stream");
+
   return NextResponse.json({
     url,
     fileName: file.name || filename,
-    mimeType: mime,
+    mimeType,
     byteSize: buffer.byteLength,
-    mediaType: allowed.mediaType,
+    fileKind: allowed.fileKind,
   });
 }
