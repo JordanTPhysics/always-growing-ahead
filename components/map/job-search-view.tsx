@@ -37,26 +37,37 @@ const JOB_TYPES: JobType[] = [
 function JobCard({
   job,
   selected,
+  hovered,
   onSelect,
+  onHoverChange,
   companyFallback,
   jobTypeLabel,
   salaryTypeLabel,
 }: {
   job: JobSearchResult;
   selected: boolean;
+  hovered: boolean;
   onSelect: (id: number) => void;
+  onHoverChange: (id: number | null) => void;
   companyFallback: string;
   jobTypeLabel: string | null;
   salaryTypeLabel: string | null;
 }) {
   const salary = formatSalary(job.salary_min, job.salary_max, salaryTypeLabel);
   const distance = formatDistance(job.distance_m);
+  const mutedClass = `mt-1 text-sm transition-colors duration-200 ease-out motion-reduce:transition-none ${
+    hovered ? "text-white" : "text-muted"
+  }`;
   return (
     <div
-      className={`w-full rounded-md border px-3 py-3 transition hover:bg-background/80 ${
-        selected
-          ? "border-accent bg-background"
-          : "border-border bg-surface hover:border-accent/40"
+      onMouseEnter={() => onHoverChange(job.id)}
+      onMouseLeave={() => onHoverChange(null)}
+      className={`w-full rounded-md border px-3 py-3 transition-[color,background-color,border-color] duration-200 ease-out motion-reduce:transition-none ${
+        hovered
+          ? "border-accent bg-background text-white"
+          : selected
+            ? "border-accent bg-background"
+            : "border-border bg-surface"
       }`}
     >
       <div className="flex items-start gap-2">
@@ -66,12 +77,12 @@ function JobCard({
           className="min-w-0 flex-1 text-start"
         >
           <p className="font-medium">{job.title}</p>
-          <p className="mt-1 text-sm text-muted">
+          <p className={mutedClass}>
             {job.company_name ?? companyFallback}
             {job.postcode ? ` · ${job.postcode}` : ""}
             {jobTypeLabel ? ` · ${jobTypeLabel}` : ""}
           </p>
-          <p className="mt-1 text-sm text-muted">
+          <p className={mutedClass}>
             {[salary, distance].filter(Boolean).join(" · ")}
           </p>
         </button>
@@ -95,6 +106,7 @@ export function JobSearchView() {
   const [jobs, setJobs] = useState<JobSearchResult[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   const [postcode, setPostcode] = useState("");
   const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(
@@ -234,25 +246,26 @@ export function JobSearchView() {
           setOrigin({ lat: result.lat, lng: result.lng });
         }}
       />
-      <Button
-        type="button"
-        variant="secondary"
-        className="w-full"
-        onClick={() => {
-          void (async () => {
-            const pos = await getCurrentPosition();
-            if (!pos) {
-              setError(t("nearMeFailed"));
-              return;
-            }
-            setOrigin(pos);
-            setPostcode(t("nearMeLabel"));
-            track("near_me", { kind: "jobs" });
-          })();
-        }}
-      >
-        {t("nearMe")}
-      </Button>
+      <div className="flex justify-center">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            void (async () => {
+              const pos = await getCurrentPosition();
+              if (!pos) {
+                setError(t("nearMeFailed"));
+                return;
+              }
+              setOrigin(pos);
+              setPostcode(t("nearMeLabel"));
+              track("near_me", { kind: "jobs" });
+            })();
+          }}
+        >
+          {t("nearMe")}
+        </Button>
+      </div>
 
       <label className="block space-y-1.5">
         <span className="text-sm font-medium">{t("field")}</span>
@@ -365,13 +378,11 @@ export function JobSearchView() {
         </select>
       </label>
 
-      <Button
-        type="button"
-        className="w-full"
-        onClick={applyFilters}
-      >
-        {t("applyFilters")}
-      </Button>
+      <div className="flex justify-center">
+        <Button type="button" onClick={applyFilters}>
+          {t("applyFilters")}
+        </Button>
+      </div>
     </div>
   );
 
@@ -387,7 +398,7 @@ export function JobSearchView() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <SaveSearchButton
+          {/* <SaveSearchButton
             kind="jobs"
             getFilters={() => ({
               postcode,
@@ -400,15 +411,17 @@ export function JobSearchView() {
               postedWithinDays,
               skillId,
             })}
-          />
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setFiltersOpen(true)}
-          >
-            {t("filters")}
-          </Button>
-          <div className="flex rounded-md border border-border">
+          /> */}
+          <div className="lg:hidden">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setFiltersOpen(true)}
+            >
+              {t("filters")}
+            </Button>
+          </div>
+          <div className="flex rounded-md border border-border md:hidden">
             <button
               type="button"
               className={`min-h-11 px-3 text-sm ${view === "map" ? "bg-background text-white" : ""}`}
@@ -434,7 +447,7 @@ export function JobSearchView() {
       ) : null}
 
       <div className="relative flex min-h-0 flex-1">
-        <aside className="hidden w-72 shrink-0 overflow-y-auto border-e border-border bg-surface p-4 lg:blockS">
+        <aside className="hidden w-72 shrink-0 overflow-y-auto border-e border-border bg-surface p-4 lg:block">
           {filtersPanel}
         </aside>
 
@@ -450,6 +463,8 @@ export function JobSearchView() {
               className="h-full max-h-[95%] w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
               points={mapPoints}
               selectedId={selectedId}
+              hoveredId={hoveredId}
+              onHoverChange={setHoveredId}
               onSelect={selectJob}
               center={mapCenter}
             />
@@ -464,7 +479,9 @@ export function JobSearchView() {
                       key={job.id}
                       job={job}
                       selected={selectedId === job.id}
+                      hovered={hoveredId === job.id}
                       onSelect={selectJob}
+                      onHoverChange={setHoveredId}
                       companyFallback={tJobs("company")}
                       jobTypeLabel={
                         job.job_type ? tJobs(`jobTypes.${job.job_type}`) : null
@@ -497,7 +514,9 @@ export function JobSearchView() {
                   key={job.id}
                   job={job}
                   selected={selectedId === job.id}
+                  hovered={hoveredId === job.id}
                   onSelect={selectJob}
+                  onHoverChange={setHoveredId}
                   companyFallback={tJobs("company")}
                   jobTypeLabel={
                     job.job_type ? tJobs(`jobTypes.${job.job_type}`) : null

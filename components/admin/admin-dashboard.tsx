@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, PageSection } from "@/components/ui/card";
 import { PillToggle } from "@/components/ui/pill-toggle";
 import { AdminEducationPanel } from "@/components/admin/admin-education-panel";
+import { AdminNewsPanel } from "@/components/admin/admin-news-panel";
 import { AdminTranslationsPanel } from "@/components/admin/admin-translations-panel";
 
 type PendingSkill = {
@@ -20,7 +21,7 @@ type User = {
   role: "user" | "admin";
 };
 
-type Tab = "access" | "education" | "translations";
+type Tab = "access" | "education" | "news" | "translations";
 
 export function AdminDashboard() {
   const t = useTranslations("admin");
@@ -71,6 +72,7 @@ export function AdminDashboard() {
         options={[
           { value: "access", label: t("tabs.access") },
           { value: "education", label: t("tabs.education") },
+          { value: "news", label: t("tabs.news") },
           { value: "translations", label: t("tabs.translations") },
         ]}
       />
@@ -145,6 +147,7 @@ export function AdminDashboard() {
       ) : null}
 
       {tab === "education" ? <AdminEducationPanel /> : null}
+      {tab === "news" ? <AdminNewsPanel /> : null}
       {tab === "translations" ? <AdminTranslationsPanel /> : null}
     </div>
   );

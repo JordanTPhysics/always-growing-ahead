@@ -1,10 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
-import { EducationLibrary } from "@/components/education/education-library";
+import { EducationHub } from "@/components/education/education-hub";
 import { PageHeader } from "@/components/ui/forms";
 import { PageSection } from "@/components/ui/card";
-import { listPublishedEducationResources } from "@/lib/db/repositories/education";
 import { canViewEducation } from "@/lib/entitlements";
 import { isActiveLocale, type ActiveLocale } from "@/lib/i18n/locales";
 
@@ -19,9 +18,8 @@ export default async function EducationPage({
     : "en";
   setRequestLocale(locale);
 
-  const [t, resources, session] = await Promise.all([
+  const [t, session] = await Promise.all([
     getTranslations("education"),
-    listPublishedEducationResources(),
     auth(),
   ]);
 
@@ -31,7 +29,7 @@ export default async function EducationPage({
     <PageSection>
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
       {canViewEducation(tier) ? (
-        <EducationLibrary locale={locale} resources={resources} />
+        <EducationHub />
       ) : (
         <UpgradePrompt
           title={t("upgradeTitle")}

@@ -1,10 +1,11 @@
 {
   "title": "Admin dashboard",
-  "subtitle": "Manage skills, users, education uploads, and locale translations.",
+  "subtitle": "Manage skills, users, education uploads, news updates, and locale translations.",
   "tabsLabel": "Admin sections",
   "tabs": {
     "access": "Skills & users",
     "education": "Education",
+    "news": "News",
     "translations": "Translations"
   },
   "pendingSkills": "Pending skills",
@@ -47,6 +48,24 @@
     "uploading": "Uploading…",
     "saving": "Saving…",
     "uploadRequired": "Choose a PDF or video file before saving."
+  },
+  "news": {
+    "heading": "News updates",
+    "hint": "Add short excerpts for the homepage scrolling news banner. Published items appear in order, separated by “ / ”.",
+    "empty": "No news excerpts yet.",
+    "add": "Add excerpt",
+    "edit": "Edit excerpt",
+    "bodyEn": "Excerpt (English)",
+    "bodyAr": "Excerpt (Arabic)",
+    "bodyCkb": "Excerpt (Kurdish Sorani)",
+    "bodyRequired": "Enter an English excerpt before saving.",
+    "sortOrder": "Sort order",
+    "published": "Published",
+    "unpublished": "Unpublished",
+    "save": "Save excerpt",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "saving": "Saving…"
   },
   "translations": {
     "heading": "Locale translations",

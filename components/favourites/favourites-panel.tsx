@@ -9,6 +9,10 @@ import { FavouriteButton } from "@/components/favourites/favourite-button";
 import type { FavouriteListItem, FavouriteTargetType } from "@/lib/db/types";
 
 function favouriteHref(favourite: FavouriteListItem): string {
+  if (favourite.target_type === "education") {
+    const base = favourite.link_base ?? "/education";
+    return `${base}#resource-${favourite.target_id}`;
+  }
   if (favourite.target_type === "job") return `/jobs/${favourite.target_id}`;
   if (favourite.target_type === "worker") {
     return `/workers/${favourite.target_id}`;
@@ -94,6 +98,7 @@ export function FavouritesPanel() {
     { key: "job", label: t("filters.jobs") },
     { key: "worker", label: t("filters.workers") },
     { key: "employer", label: t("filters.companies") },
+    { key: "education", label: t("filters.education") },
   ];
 
   return (

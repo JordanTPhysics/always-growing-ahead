@@ -65,7 +65,7 @@ export type Notification = {
   created_at: Date;
 };
 
-export type FavouriteTargetType = "job" | "worker" | "employer";
+export type FavouriteTargetType = "job" | "worker" | "employer" | "education";
 
 export type Favourite = {
   id: number;
@@ -78,6 +78,8 @@ export type Favourite = {
 export type FavouriteListItem = Favourite & {
   label: string | null;
   subtitle: string | null;
+  /** Locale-less path prefix for targets that are not a simple /{type}/{id} route. */
+  link_base: string | null;
 };
 
 export type MarketplaceComment = {
@@ -89,6 +91,18 @@ export type MarketplaceComment = {
 };
 
 export type MarketplaceCommentListItem = MarketplaceComment & {
+  author_name: string;
+};
+
+export type EducationComment = {
+  id: number;
+  resource_id: number;
+  user_id: number;
+  body: string;
+  created_at: Date;
+};
+
+export type EducationCommentListItem = EducationComment & {
   author_name: string;
 };
 
@@ -289,6 +303,18 @@ export type EducationResource = {
   description_en: string | null;
   description_ar: string | null;
   description_ckb: string | null;
+  sort_order: number;
+  is_published: boolean;
+  created_by: number | null;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type NewsExcerpt = {
+  id: number;
+  body_en: string;
+  body_ar: string | null;
+  body_ckb: string | null;
   sort_order: number;
   is_published: boolean;
   created_by: number | null;

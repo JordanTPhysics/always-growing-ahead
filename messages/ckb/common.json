@@ -23,7 +23,13 @@
     "signUp": "خۆتۆمارکردن",
     "signOut": "چوونەدەرەوە",
     "switchToHiring": "گۆڕین بۆ دامەزراندن",
-    "switchToWorking": "گۆڕین بۆ دۆزینەوەی کار"
+    "switchToWorking": "گۆڕین بۆ دۆزینەوەی کار",
+    "groups": {
+      "workers": "کرێکاران",
+      "hiring": "دامەزراندن",
+      "browse": "گەڕان",
+      "extra": "زیاتر"
+    }
   },
   "actions": {
     "save": "Save",
@@ -45,6 +51,11 @@
     "error": "Something went wrong"
   },
   "language": "Language",
+  "news": {
+    "label": "نوێکارییەکانی هەواڵ",
+    "manage": "بەڕێوەبردنی هەواڵ",
+    "empty": "هێشتا هیچ نوێکارییەکی هەواڵ نییە."
+  },
   "footer": {
     "rights": "UK job marketplace"
   }

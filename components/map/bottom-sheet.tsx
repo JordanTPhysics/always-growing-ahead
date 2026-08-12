@@ -72,8 +72,8 @@ export function BottomSheet({
         aria-labelledby={title ? titleId : undefined}
         className={
           desktopSidePanel
-            ? "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel lg:inset-y-0 lg:start-0 lg:end-auto lg:max-h-none lg:w-[min(24rem,100%)] lg:rounded-none lg:border-y-0 lg:border-e lg:border-s-0 lg:shadow-none"
-            : "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel"
+            ? "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel lg:inset-y-0 lg:start-0 lg:end-auto lg:max-h-none lg:w-1/2 lg:rounded-none lg:border-y-0 lg:border-e lg:border-s-0 lg:shadow-none"
+            : "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel lg:inset-x-1/4"
         }
         style={
           dragY

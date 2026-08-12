@@ -32,7 +32,7 @@ export function SaveSearchButton({
   return (
     <span className="inline-flex items-center gap-2">
       <Button type="button" variant="secondary" onClick={() => void saveSearch()}>
-        Save search
+        Save
       </Button>
       {status === "saved" ? <span className="text-xs text-muted">Saved</span> : null}
       {status === "error" ? <span className="text-xs text-danger">Could not save</span> : null}

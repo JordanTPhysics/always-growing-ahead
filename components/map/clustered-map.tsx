@@ -5,7 +5,7 @@ import {
   APIProvider,
   Map,
 } from "@vis.gl/react-google-maps";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FaExclamation } from "react-icons/fa";
 import { MdOutlinePersonPinCircle } from "react-icons/md";
 import { BsPersonRaisedHand, BsPersonStanding } from "react-icons/bs";
@@ -32,6 +32,8 @@ type Props = {
   legendLabels?: LegendLabels;
   points: MapPoint[];
   selectedId?: number | null;
+  hoveredId?: number | null;
+  onHoverChange?: (id: number | null) => void;
   onSelect: (id: number) => void;
   center?: { latitude: number; longitude: number; zoom?: number };
   className?: string;
@@ -143,11 +145,11 @@ export function ClusteredMap({
   legendLabels,
   points,
   selectedId = null,
+  hoveredId = null,
+  onHoverChange,
   onSelect,
   center,
 }: Props) {
-  const [hoverId, setHoverId] = useState<number | null>(null);
-
   const defaultCenter = useMemo(
     () =>
       center
@@ -186,14 +188,14 @@ export function ClusteredMap({
           disableDefaultUI={false}
         >
           {points.map((point) => {
-            const hovered = hoverId === point.id;
+            const hovered = hoveredId === point.id;
             return (
               <AdvancedMarker
                 key={point.id}
                 position={{ lat: point.lat, lng: point.lng }}
                 onClick={() => onSelect(point.id)}
-                onMouseEnter={() => setHoverId(point.id)}
-                onMouseLeave={() => setHoverId(null)}
+                onMouseEnter={() => onHoverChange?.(point.id)}
+                onMouseLeave={() => onHoverChange?.(null)}
               >
                 <MapMarkerContent
                   searchMode={searchMode}

@@ -7,14 +7,16 @@ import {
   listFavouritesForUser,
   removeFavourite,
 } from "@/lib/db/repositories/favourites";
+import { getEducationResourceById } from "@/lib/db/repositories/education";
 import { getEmployerById } from "@/lib/db/repositories/employers";
 import { getJobById } from "@/lib/db/repositories/jobs";
 import { createNotification } from "@/lib/db/repositories/notifications";
 import { getWorkerById } from "@/lib/db/repositories/workers";
+import { educationMediaTypeToSlug } from "@/lib/education/media-types";
 import { dispatchPushToUser } from "@/lib/notifications/push-dispatch";
 import type { FavouriteTargetType } from "@/lib/db/types";
 
-const targetTypeSchema = z.enum(["job", "worker", "employer"]);
+const targetTypeSchema = z.enum(["job", "worker", "employer", "education"]);
 
 const createSchema = z.object({
   targetType: targetTypeSchema,
@@ -29,24 +31,34 @@ function parseTargetIds(raw: string | null): number[] {
     .filter((id) => Number.isInteger(id) && id > 0);
 }
 
-async function resolveOwnerUserId(
+async function resolveFavouriteTarget(
   targetType: FavouriteTargetType,
   targetId: number
-): Promise<number | null> {
+): Promise<{ exists: boolean; ownerUserId: number | null }> {
   if (targetType === "job") {
     const job = await getJobById(targetId);
-    if (!job) return null;
+    if (!job) return { exists: false, ownerUserId: null };
     const employer = await getEmployerById(job.employer_id);
-    return employer?.user_id ?? null;
+    return { exists: true, ownerUserId: employer?.user_id ?? null };
   }
 
   if (targetType === "worker") {
     const worker = await getWorkerById(targetId);
-    return worker?.user_id ?? null;
+    if (!worker) return { exists: false, ownerUserId: null };
+    return { exists: true, ownerUserId: worker.user_id };
+  }
+
+  if (targetType === "education") {
+    const resource = await getEducationResourceById(targetId);
+    if (!resource || !resource.is_published) {
+      return { exists: false, ownerUserId: null };
+    }
+    return { exists: true, ownerUserId: resource.created_by };
   }
 
   const employer = await getEmployerById(targetId);
-  return employer?.user_id ?? null;
+  if (!employer) return { exists: false, ownerUserId: null };
+  return { exists: true, ownerUserId: employer.user_id };
 }
 
 async function notifyOwnerFavourited(
@@ -54,12 +66,20 @@ async function notifyOwnerFavourited(
   targetId: number,
   ownerUserId: number
 ) {
-  const linkUrl =
-    targetType === "job"
-      ? `/jobs/${targetId}`
-      : targetType === "worker"
-        ? `/workers/${targetId}`
-        : `/employers/${targetId}`;
+  let linkUrl: string;
+  if (targetType === "job") {
+    linkUrl = `/jobs/${targetId}`;
+  } else if (targetType === "worker") {
+    linkUrl = `/workers/${targetId}`;
+  } else if (targetType === "education") {
+    const resource = await getEducationResourceById(targetId);
+    const slug = resource
+      ? educationMediaTypeToSlug(resource.media_type)
+      : "short-videos";
+    linkUrl = `/education/${slug}#resource-${targetId}`;
+  } else {
+    linkUrl = `/employers/${targetId}`;
+  }
 
   const copy =
     targetType === "job"
@@ -72,10 +92,15 @@ async function notifyOwnerFavourited(
             title: "Your profile was added to favourites",
             body: "Someone saved your worker profile to their favourites.",
           }
-        : {
-            title: "Your company was added to favourites",
-            body: "Someone saved your company profile to their favourites.",
-          };
+        : targetType === "education"
+          ? {
+              title: "Your education resource was favourited",
+              body: "Someone saved your education guide to their favourites.",
+            }
+          : {
+              title: "Your company was added to favourites",
+              body: "Someone saved your company profile to their favourites.",
+            };
 
   await createNotification({
     userId: ownerUserId,
@@ -133,8 +158,8 @@ export async function POST(request: Request) {
   const userId = Number(session.user.id);
   const { targetType, targetId } = parsed.data;
 
-  const ownerUserId = await resolveOwnerUserId(targetType, targetId);
-  if (ownerUserId == null) return jsonError("Target not found", 404);
+  const target = await resolveFavouriteTarget(targetType, targetId);
+  if (!target.exists) return jsonError("Target not found", 404);
 
   const { favourite, created } = await addFavourite({
     userId,
@@ -142,8 +167,12 @@ export async function POST(request: Request) {
     targetId,
   });
 
-  if (created && ownerUserId !== userId) {
-    await notifyOwnerFavourited(targetType, targetId, ownerUserId);
+  if (
+    created &&
+    target.ownerUserId != null &&
+    target.ownerUserId !== userId
+  ) {
+    await notifyOwnerFavourited(targetType, targetId, target.ownerUserId);
   }
 
   return NextResponse.json({ favourite, favourited: true }, { status: 201 });

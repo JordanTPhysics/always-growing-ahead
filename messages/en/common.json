@@ -23,7 +23,13 @@
     "signUp": "Sign up",
     "signOut": "Sign out",
     "switchToHiring": "Switch to hiring",
-    "switchToWorking": "Switch to finding work"
+    "switchToWorking": "Switch to finding work",
+    "groups": {
+      "workers": "Workers",
+      "hiring": "Hiring",
+      "browse": "Browse",
+      "extra": "Extra"
+    }
   },
   "actions": {
     "save": "Save",
@@ -45,6 +51,11 @@
     "error": "Something went wrong"
   },
   "language": "Language",
+  "news": {
+    "label": "News updates",
+    "manage": "Manage news",
+    "empty": "No news updates yet."
+  },
   "footer": {
     "rights": "UK job marketplace"
   }

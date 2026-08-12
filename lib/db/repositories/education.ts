@@ -41,6 +41,18 @@ export async function listPublishedEducationResources(): Promise<
   return rows.map(mapRow);
 }
 
+export async function listPublishedEducationResourcesByMediaType(
+  mediaType: EducationMediaType
+): Promise<EducationResource[]> {
+  const [rows] = await pool.execute<EducationRow[]>(
+    `SELECT * FROM education_resources
+     WHERE is_published = 1 AND media_type = ?
+     ORDER BY topic ASC, sort_order ASC, id ASC`,
+    [mediaType]
+  );
+  return rows.map(mapRow);
+}
+
 export async function listAllEducationResources(): Promise<EducationResource[]> {
   const [rows] = await pool.execute<EducationRow[]>(
     `SELECT * FROM education_resources

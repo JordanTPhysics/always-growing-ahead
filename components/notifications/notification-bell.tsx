@@ -34,7 +34,7 @@ export function NotificationBell({
   }, []);
 
   const badge = unread ? (
-    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-background px-1 text-center text-xs leading-5 text-white">
+    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-background px-1 text-center text-xs leading-5 text-white mx-2">
       {unread > 99 ? "99+" : unread}
     </span>
   ) : null;
@@ -52,7 +52,7 @@ export function NotificationBell({
         </>
       ) : (
         <>
-          <span aria-hidden="true">🔔</span>
+          <span aria-hidden="true" className="text-xl">🔔</span>
           {badge ? (
             <span className="absolute -end-1 -top-1">{badge}</span>
           ) : null}

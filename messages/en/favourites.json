@@ -1,6 +1,6 @@
 {
   "title": "Saved favourites",
-  "subtitle": "Jobs, workers, and companies you have starred.",
+  "subtitle": "Jobs, workers, companies, and education guides you have starred.",
   "add": "Add to favourites",
   "remove": "Remove from favourites",
   "empty": "You have not saved any favourites yet.",
@@ -9,11 +9,13 @@
     "all": "All",
     "jobs": "Jobs",
     "workers": "Workers",
-    "companies": "Companies"
+    "companies": "Companies",
+    "education": "Education"
   },
   "types": {
     "job": "Job",
     "worker": "Worker",
-    "employer": "Company"
+    "employer": "Company",
+    "education": "Education"
   }
 }

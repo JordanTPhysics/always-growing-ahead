@@ -36,23 +36,34 @@ const JOB_TYPES: JobType[] = [
 function WorkerCard({
   worker,
   selected,
+  hovered,
   onSelect,
+  onHoverChange,
   unnamed,
   availabilityLabel,
 }: {
   worker: WorkerSearchResult;
   selected: boolean;
+  hovered: boolean;
   onSelect: (id: number) => void;
+  onHoverChange: (id: number | null) => void;
   unnamed: string;
   availabilityLabel: string | null;
 }) {
   const distance = formatDistance(worker.distance_m);
+  const mutedClass = `mt-1 text-sm transition-colors duration-200 ease-out motion-reduce:transition-none ${
+    hovered ? "text-white" : "text-muted"
+  }`;
   return (
     <div
-      className={`w-full rounded-md border px-3 py-3 transition ${
-        selected
-          ? "border-accent bg-background-soft"
-          : "border-border bg-surface hover:border-accent/40"
+      onMouseEnter={() => onHoverChange(worker.id)}
+      onMouseLeave={() => onHoverChange(null)}
+      className={`w-full rounded-md border px-3 py-3 transition-[color,background-color,border-color] duration-200 ease-out motion-reduce:transition-none ${
+        hovered
+          ? "border-accent bg-background text-white"
+          : selected
+            ? "border-accent bg-background-soft"
+            : "border-border bg-surface"
       }`}
     >
       <div className="flex items-start gap-2">
@@ -62,11 +73,11 @@ function WorkerCard({
           className="min-w-0 flex-1 text-start"
         >
           <p className="font-medium">{worker.headline ?? unnamed}</p>
-          <p className="mt-1 text-sm text-muted">
+          <p className={mutedClass}>
             {worker.postcode ?? worker.address_text ?? ""}
             {availabilityLabel ? ` · ${availabilityLabel}` : ""}
           </p>
-          <p className="mt-1 text-sm text-muted">
+          <p className={mutedClass}>
             {[worker.top_skills, distance].filter(Boolean).join(" · ")}
           </p>
         </button>
@@ -91,6 +102,7 @@ export function WorkerSearchView() {
   const [workers, setWorkers] = useState<WorkerSearchResult[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   const [postcode, setPostcode] = useState("");
   const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(
@@ -223,25 +235,26 @@ export function WorkerSearchView() {
           setOrigin({ lat: result.lat, lng: result.lng });
         }}
       />
-      <Button
-        type="button"
-        variant="secondary"
-        className="w-full"
-        onClick={() => {
-          void (async () => {
-            const pos = await getCurrentPosition();
-            if (!pos) {
-              setError(t("nearMeFailed"));
-              return;
-            }
-            setOrigin(pos);
-            setPostcode(t("nearMeLabel"));
-            track("near_me", { kind: "workers" });
-          })();
-        }}
-      >
-        {t("nearMe")}
-      </Button>
+      <div className="flex justify-center">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            void (async () => {
+              const pos = await getCurrentPosition();
+              if (!pos) {
+                setError(t("nearMeFailed"));
+                return;
+              }
+              setOrigin(pos);
+              setPostcode(t("nearMeLabel"));
+              track("near_me", { kind: "workers" });
+            })();
+          }}
+        >
+          {t("nearMe")}
+        </Button>
+      </div>
 
       <label className="block space-y-1.5">
         <span className="text-sm font-medium">{t("field")}</span>
@@ -333,13 +346,11 @@ export function WorkerSearchView() {
         </select>
       </label>
 
-      <Button
-        type="button"
-        className="w-full"
-        onClick={applyFilters}
-      >
-        {t("applyFilters")}
-      </Button>
+      <div className="flex justify-center">
+        <Button type="button" onClick={applyFilters}>
+          {t("applyFilters")}
+        </Button>
+      </div>
     </div>
   );
 
@@ -355,7 +366,7 @@ export function WorkerSearchView() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <SaveSearchButton
+          {/* <SaveSearchButton
             kind="workers"
             getFilters={() => ({
               postcode,
@@ -366,15 +377,17 @@ export function WorkerSearchView() {
               availability,
               skillId,
             })}
-          />
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setFiltersOpen(true)}
-          >
-            {t("filters")}
-          </Button>
-          <div className="flex rounded-md border border-border">
+          /> */}
+          <div className="lg:hidden">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setFiltersOpen(true)}
+            >
+              {t("filters")}
+            </Button>
+          </div>
+          <div className="flex rounded-md border border-border md:hidden">
             <button
               type="button"
               className={`min-h-11 px-3 text-sm ${view === "map" ? "bg-background text-white" : ""}`}
@@ -416,6 +429,8 @@ export function WorkerSearchView() {
               className="h-full max-h-80% w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
               points={mapPoints}
               selectedId={selectedId}
+              hoveredId={hoveredId}
+              onHoverChange={setHoveredId}
               onSelect={selectWorker}
               center={mapCenter}
             />
@@ -430,7 +445,9 @@ export function WorkerSearchView() {
                       key={worker.id}
                       worker={worker}
                       selected={selectedId === worker.id}
+                      hovered={hoveredId === worker.id}
                       onSelect={selectWorker}
+                      onHoverChange={setHoveredId}
                       unnamed={t("unnamedWorker")}
                       availabilityLabel={
                         worker.availability
@@ -462,7 +479,9 @@ export function WorkerSearchView() {
                   key={worker.id}
                   worker={worker}
                   selected={selectedId === worker.id}
+                  hovered={hoveredId === worker.id}
                   onSelect={selectWorker}
+                  onHoverChange={setHoveredId}
                   unnamed={t("unnamedWorker")}
                   availabilityLabel={
                     worker.availability

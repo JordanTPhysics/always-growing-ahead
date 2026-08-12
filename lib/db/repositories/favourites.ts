@@ -66,12 +66,26 @@ export async function listFavouritesForUser(
          WHEN 'job' THEN j.title
          WHEN 'worker' THEN w.headline
          WHEN 'employer' THEN e.company_name
+         WHEN 'education' THEN er.title_en
        END AS label,
        CASE f.target_type
          WHEN 'job' THEN je.company_name
          WHEN 'worker' THEN COALESCE(w.postcode, w.address_text)
          WHEN 'employer' THEN e.website_url
-       END AS subtitle
+         WHEN 'education' THEN er.topic
+       END AS subtitle,
+       CASE f.target_type
+         WHEN 'education' THEN
+           CONCAT(
+             '/education/',
+             CASE er.media_type
+               WHEN 'short_video' THEN 'short-videos'
+               WHEN 'lecture' THEN 'lectures'
+               ELSE 'pdf'
+             END
+           )
+         ELSE NULL
+       END AS link_base
      FROM favourites f
      LEFT JOIN jobs j
        ON f.target_type = 'job' AND f.target_id = j.id
@@ -81,6 +95,8 @@ export async function listFavouritesForUser(
        ON f.target_type = 'worker' AND f.target_id = w.id
      LEFT JOIN employer_profiles e
        ON f.target_type = 'employer' AND f.target_id = e.id
+     LEFT JOIN education_resources er
+       ON f.target_type = 'education' AND f.target_id = er.id
      WHERE f.user_id = ?${targetType ? " AND f.target_type = ?" : ""}
      ORDER BY f.created_at DESC`,
     targetType ? [userId, targetType] : [userId]
@@ -90,6 +106,7 @@ export async function listFavouritesForUser(
     ...row,
     label: row.label ?? null,
     subtitle: row.subtitle ?? null,
+    link_base: row.link_base ?? null,
   }));
 }
 
