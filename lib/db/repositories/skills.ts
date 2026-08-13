@@ -1,10 +1,12 @@
 import { pool } from "@/lib/db/pool";
 import type { Skill } from "@/lib/db/types";
+import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 type SkillRow = Skill & RowDataPacket;
 
 export async function listSkills(query?: string): Promise<Skill[]> {
+  if (isMockMapDataEnabled()) return [];
   if (query?.trim()) {
     const [rows] = await pool.execute<SkillRow[]>(
       `SELECT * FROM skills

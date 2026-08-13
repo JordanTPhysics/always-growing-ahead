@@ -4,6 +4,7 @@ import type {
   FavouriteListItem,
   FavouriteTargetType,
 } from "@/lib/db/types";
+import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 type FavouriteRow = Favourite & RowDataPacket;
@@ -59,6 +60,7 @@ export async function listFavouritesForUser(
   userId: number,
   targetType?: FavouriteTargetType
 ): Promise<FavouriteListItem[]> {
+  if (isMockMapDataEnabled()) return [];
   const [rows] = await pool.execute<FavouriteListRow[]>(
     `SELECT
        f.*,
@@ -115,7 +117,7 @@ export async function listFavouritedTargetIds(
   targetType: FavouriteTargetType,
   targetIds: number[]
 ): Promise<number[]> {
-  if (targetIds.length === 0) return [];
+  if (targetIds.length === 0 || isMockMapDataEnabled()) return [];
 
   const placeholders = targetIds.map(() => "?").join(", ");
   const [rows] = await pool.execute<RowDataPacket[]>(

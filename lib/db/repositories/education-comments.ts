@@ -3,6 +3,7 @@ import type {
   EducationComment,
   EducationCommentListItem,
 } from "@/lib/db/types";
+import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 type CommentRow = EducationComment & RowDataPacket;
@@ -87,7 +88,7 @@ export async function createEducationComment(input: {
 export async function countCommentsForEducationResources(
   resourceIds: number[]
 ): Promise<Record<number, number>> {
-  if (resourceIds.length === 0) return {};
+  if (resourceIds.length === 0 || isMockMapDataEnabled()) return {};
 
   const placeholders = resourceIds.map(() => "?").join(", ");
   const [rows] = await pool.execute<RowDataPacket[]>(

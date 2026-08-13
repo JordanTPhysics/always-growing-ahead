@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db/pool";
 import type { Notification } from "@/lib/db/types";
+import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 type NotificationRow = Notification & RowDataPacket;
@@ -28,6 +29,7 @@ export async function listNotificationsForUser(
   userId: number,
   limit = 50
 ): Promise<Notification[]> {
+  if (isMockMapDataEnabled()) return [];
   const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 200);
   const [rows] = await pool.execute<NotificationRow[]>(
     `SELECT * FROM notifications

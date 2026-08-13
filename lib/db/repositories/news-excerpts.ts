@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db/pool";
 import type { NewsExcerpt } from "@/lib/db/types";
+import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 type NewsExcerptRow = Omit<NewsExcerpt, "is_published"> &
@@ -22,6 +23,7 @@ export type NewsExcerptInput = {
 };
 
 export async function listPublishedNewsExcerpts(): Promise<NewsExcerpt[]> {
+  if (isMockMapDataEnabled()) return [];
   const [rows] = await pool.execute<NewsExcerptRow[]>(
     `SELECT * FROM news_excerpts
      WHERE is_published = 1
@@ -31,6 +33,7 @@ export async function listPublishedNewsExcerpts(): Promise<NewsExcerpt[]> {
 }
 
 export async function listAllNewsExcerpts(): Promise<NewsExcerpt[]> {
+  if (isMockMapDataEnabled()) return [];
   const [rows] = await pool.execute<NewsExcerptRow[]>(
     `SELECT * FROM news_excerpts
      ORDER BY sort_order ASC, id ASC`
@@ -41,6 +44,7 @@ export async function listAllNewsExcerpts(): Promise<NewsExcerpt[]> {
 export async function getNewsExcerptById(
   id: number
 ): Promise<NewsExcerpt | null> {
+  if (isMockMapDataEnabled()) return null;
   const [rows] = await pool.execute<NewsExcerptRow[]>(
     "SELECT * FROM news_excerpts WHERE id = ? LIMIT 1",
     [id]

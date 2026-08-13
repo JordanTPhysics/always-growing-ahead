@@ -5,6 +5,7 @@ import type {
   WorkerSearchFilters,
   WorkerSearchResult,
 } from "@/lib/db/types";
+import { isRemoteDatabaseConfigured } from "@/lib/db/config";
 import { NOTTINGHAM_CENTER } from "@/lib/search/constants";
 import { hydrateJsonJobLocations } from "@/lib/mock/jobs-store";
 import { hydrateJsonWorkerLocations } from "@/lib/mock/profiles-store";
@@ -632,8 +633,10 @@ function withinRadius<T extends { distance_m: number | null }>(
 }
 
 export function isMockMapDataEnabled(): boolean {
-  const flag = process.env.USE_MOCK_MAP_DATA ?? process.env.NEXT_PUBLIC_USE_MOCK_MAP_DATA;
-  return flag === "1" || flag === "true";
+  const flag =
+    process.env.USE_MOCK_MAP_DATA ?? process.env.NEXT_PUBLIC_USE_MOCK_MAP_DATA;
+  if (flag === "1" || flag === "true") return true;
+  return !isRemoteDatabaseConfigured();
 }
 
 export function getMockWorkerById(id: number): WorkerSearchResult | null {

@@ -2,12 +2,15 @@ import { pool } from "@/lib/db/pool";
 import type { Tier } from "@/lib/entitlements";
 import type { User, UserRole } from "@/lib/db/types";
 import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
-import { getMockUserById } from "@/lib/mock/test-accounts";
+import { getMockUserByEmail, getMockUserById } from "@/lib/mock/test-accounts";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 type UserRow = User & RowDataPacket;
 
 export async function getUserByEmail(email: string): Promise<User | null> {
+  if (isMockMapDataEnabled()) {
+    return getMockUserByEmail(email);
+  }
   const [rows] = await pool.execute<UserRow[]>(
     "SELECT * FROM users WHERE email = ? LIMIT 1",
     [email.toLowerCase()]
@@ -16,6 +19,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 export async function getUserByUsername(username: string): Promise<User | null> {
+  if (isMockMapDataEnabled()) return null;
   const [rows] = await pool.execute<UserRow[]>(
     "SELECT * FROM users WHERE username = ? LIMIT 1",
     [username.toLowerCase()]
@@ -24,6 +28,9 @@ export async function getUserByUsername(username: string): Promise<User | null> 
 }
 
 export async function getUserById(id: number): Promise<User | null> {
+  if (isMockMapDataEnabled()) {
+    return getMockUserById(id);
+  }
   const [rows] = await pool.execute<UserRow[]>(
     "SELECT * FROM users WHERE id = ? LIMIT 1",
     [id]
@@ -95,8 +102,7 @@ export async function setUserRole(
 
 export async function isAdmin(userId: number): Promise<boolean> {
   if (isMockMapDataEnabled()) {
-    const mockUser = getMockUserById(userId);
-    if (mockUser) return mockUser.role === "admin";
+    return getMockUserById(userId)?.role === "admin";
   }
 
   const [rows] = await pool.execute<

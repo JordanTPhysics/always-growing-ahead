@@ -50,16 +50,14 @@ const googleSecret =
 
 async function resolveUserByEmail(email: string) {
   if (isMockMapDataEnabled()) {
-    const mockUser = getMockUserByEmail(email);
-    if (mockUser) return mockUser;
+    return getMockUserByEmail(email);
   }
   return getUserByEmail(email);
 }
 
 async function resolveUserById(id: number) {
   if (isMockMapDataEnabled()) {
-    const mockUser = getMockUserById(id);
-    if (mockUser) return mockUser;
+    return getMockUserById(id);
   }
   return getUserById(id);
 }
@@ -116,6 +114,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       const existing = await resolveUserByEmail(user.email);
       if (!existing) {
+        if (isMockMapDataEnabled()) return true;
         await createUser({
           email: user.email,
           passwordHash: null,

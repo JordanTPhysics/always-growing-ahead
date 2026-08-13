@@ -3,6 +3,7 @@ import type {
   MarketplaceComment,
   MarketplaceCommentListItem,
 } from "@/lib/db/types";
+import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 type CommentRow = MarketplaceComment & RowDataPacket;
@@ -85,7 +86,7 @@ export async function createMarketplaceComment(input: {
 export async function countCommentsForListings(
   listingIds: string[]
 ): Promise<Record<string, number>> {
-  if (listingIds.length === 0) return {};
+  if (listingIds.length === 0 || isMockMapDataEnabled()) return {};
 
   const placeholders = listingIds.map(() => "?").join(", ");
   const [rows] = await pool.execute<RowDataPacket[]>(
