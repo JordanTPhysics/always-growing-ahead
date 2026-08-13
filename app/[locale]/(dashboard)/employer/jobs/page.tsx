@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import { getEmployerByUserId } from "@/lib/db/repositories/employers";
 import { listJobsByEmployer } from "@/lib/db/repositories/jobs";
 import { listJsonJobsByEmployer } from "@/lib/mock/jobs-store";

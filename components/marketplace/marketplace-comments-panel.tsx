@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/lib/i18n/routing";
+import { useRouter } from "@/lib/i18n/navigation";
 import { BottomSheet } from "@/components/map/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";

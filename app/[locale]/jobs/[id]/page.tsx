@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/ui/forms";
 import { Card, PageSection } from "@/components/ui/card";
 import { ContactReveal } from "@/components/billing/contact-reveal";
 import { FavouriteButton } from "@/components/favourites/favourite-button";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 
 export default async function JobDetailPage({
   params,

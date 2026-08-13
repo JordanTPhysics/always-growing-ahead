@@ -8,7 +8,7 @@ import { EducationCommentsPanel } from "@/components/education/education-comment
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { inputClassName } from "@/components/ui/forms";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import {
   isEducationVideoType,
   type EducationTypeSlug,

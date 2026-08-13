@@ -5,7 +5,7 @@ import { Source_Sans_3, Noto_Sans_Arabic } from "next/font/google";
 import { activeLocales, isActiveLocale, locales } from "@/lib/i18n/locales";
 import { SiteHeader } from "@/components/layout/site-header";
 import { MainShell } from "@/components/layout/main-shell";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import { AuthSessionProvider } from "@/components/auth/session-provider";
 import { NativeBootstrap } from "@/components/native/native-bootstrap";
 import { auth } from "@/auth";
@@ -22,6 +22,8 @@ const arabic = Noto_Sans_Arabic({
   variable: "--font-arabic-face",
   display: "swap",
 });
+
+export const runtime = "nodejs";
 
 export function generateStaticParams() {
   return activeLocales.map((locale) => ({ locale }));

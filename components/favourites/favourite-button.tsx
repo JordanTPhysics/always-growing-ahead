@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/lib/i18n/routing";
+import { useRouter } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { StarIcon } from "@/components/favourites/star-icon";
 import type { FavouriteTargetType } from "@/lib/db/types";

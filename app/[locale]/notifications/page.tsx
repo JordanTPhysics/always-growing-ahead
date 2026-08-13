@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import { PageHeader } from "@/components/ui/forms";
 import { Button } from "@/components/ui/button";
 import { Card, PageSection } from "@/components/ui/card";

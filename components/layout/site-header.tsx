@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link, usePathname, useRouter } from "@/lib/i18n/routing";
+import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
 import { activeLocales, locales, type ActiveLocale } from "@/lib/i18n/locales";
 import { signOut, useSession } from "next-auth/react";
 import { NotificationBell } from "@/components/notifications/notification-bell";

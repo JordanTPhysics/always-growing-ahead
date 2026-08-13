@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { MdOndemandVideo, MdPictureAsPdf, MdSchool } from "react-icons/md";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import {
   EDUCATION_TYPE_SLUGS,
   type EducationTypeSlug,

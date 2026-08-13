@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { getRequestConfig } from "next-intl/server";
 import {
   defaultLocale,
@@ -8,36 +6,24 @@ import {
 } from "@/lib/i18n/locales";
 import { messageNamespaces } from "@/lib/i18n/message-namespaces";
 
+async function loadNamespace(locale: ActiveLocale, namespace: string) {
+  try {
+    return (await import(`../messages/${locale}/${namespace}.json`)).default;
+  } catch {
+    if (locale === defaultLocale) return {};
+    try {
+      return (await import(`../messages/${defaultLocale}/${namespace}.json`))
+        .default;
+    } catch {
+      return {};
+    }
+  }
+}
+
 async function loadMessages(locale: ActiveLocale) {
   const messages: Record<string, unknown> = {};
   for (const namespace of messageNamespaces) {
-    const filePath = path.join(
-      process.cwd(),
-      "messages",
-      locale,
-      `${namespace}.json`
-    );
-    try {
-      const raw = await readFile(filePath, "utf8");
-      messages[namespace] = JSON.parse(raw) as unknown;
-    } catch {
-      if (locale !== defaultLocale) {
-        const fallbackPath = path.join(
-          process.cwd(),
-          "messages",
-          defaultLocale,
-          `${namespace}.json`
-        );
-        try {
-          const raw = await readFile(fallbackPath, "utf8");
-          messages[namespace] = JSON.parse(raw) as unknown;
-        } catch {
-          messages[namespace] = {};
-        }
-      } else {
-        messages[namespace] = {};
-      }
-    }
+    messages[namespace] = await loadNamespace(locale, namespace);
   }
   return messages;
 }

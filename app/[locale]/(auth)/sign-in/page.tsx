@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/lib/i18n/routing";
+import { Link, useRouter } from "@/lib/i18n/navigation";
 import { Field, PageHeader, inputClassName } from "@/components/ui/forms";
 import { Button } from "@/components/ui/button";
 import { PageSection } from "@/components/ui/card";

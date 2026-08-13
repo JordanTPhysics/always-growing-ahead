@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "@/lib/i18n/routing";
+import { useRouter } from "@/lib/i18n/navigation";
 
 export function useRequireAuth() {
   const { status } = useSession();

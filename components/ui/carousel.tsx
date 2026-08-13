@@ -10,7 +10,7 @@ import { LuBicepsFlexed } from "react-icons/lu";
 import { PiMegaphoneBold } from "react-icons/pi";
 
 import useMediaQuery from "@/lib/use-media-query";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 
 const skills: string[] = [
   "Education",

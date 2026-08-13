@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import { Card } from "@/components/ui/card";
 import { HelpQueryForm } from "@/components/help/help-query-form";
 import { getUserById } from "@/lib/db/repositories/users";

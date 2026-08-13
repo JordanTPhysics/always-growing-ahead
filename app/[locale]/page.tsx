@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SponsoredCarousel } from "@/components/sponsored/sponsored-carousel";
 import { NewsUpdatesBanner } from "@/components/news/news-updates-banner";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import { auth } from "@/auth";
 import { sponsoredItems } from "@/lib/sponsored/content";
 import Carousel from "@/components/ui/carousel";

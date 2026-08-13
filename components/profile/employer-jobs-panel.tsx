@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import { JobForm } from "@/components/job/job-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

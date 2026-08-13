@@ -77,12 +77,12 @@ export function canPostJobs(tier: Tier) {
 | File storage | **Cloudflare R2** or **AWS S3** | CVs, profile photos, company logos |
 | Transactional email | **Resend** or **Postmark** | Verification emails, notifications |
 | Push notifications | **Firebase Cloud Messaging** via Capacitor plugin | New contact alerts on mobile |
-| Hosting (web) | **Vercel** | Native Next.js support, edge functions, easy preview deployments |
+| Hosting (web) | **Netlify** | Native Next.js support, edge functions, easy preview deployments |
 
 ### ⚠️ Critical architecture note: Capacitor + Next.js API routes
 Capacitor loads either a **static bundle** or a **live remote URL** in a native WebView — it cannot execute Next.js server-side API routes on-device. Since you're using Next.js API routes for data access, the correct setup is:
 
-- Deploy the full Next.js app (frontend + API routes) to Vercel as normal, with a real public URL (e.g. `app.scanjob.co.uk`).
+- Deploy the full Next.js app (frontend + API routes) to Netlify as normal, with a real public URL (e.g. `app.scanjob.co.uk`).
 - Configure Capacitor to **point the native shell at that live URL** (`server.url` in `capacitor.config.ts`), rather than doing a static `next export`.
 - This gives you a genuine hybrid app: native shell + native plugin access (camera, geolocation, push), while all rendering and data access still goes through your live Next.js deployment.
 - Do **not** use `output: 'export'` in `next.config.js` — that disables API routes, middleware, and dynamic rendering, all of which you need here.

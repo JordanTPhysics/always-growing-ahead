@@ -10,7 +10,7 @@ import {
   MdVolumeOff,
   MdVolumeUp,
 } from "react-icons/md";
-import { Link } from "@/lib/i18n/routing";
+import { Link } from "@/lib/i18n/navigation";
 import type { MarketplacePost } from "@/lib/marketplace/types";
 import { marketplaceSellerHref } from "@/lib/marketplace/types";
 import { cn } from "@/lib/utils";
