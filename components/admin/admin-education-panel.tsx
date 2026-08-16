@@ -109,16 +109,30 @@ export function AdminEducationPanel() {
     setUploading(true);
     setError(null);
     try {
-      const body = new FormData();
-      body.append("file", file);
-      const response = await fetch("/api/admin/uploads", {
+      const init = await fetch("/api/admin/uploads", {
         method: "POST",
-        body,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type,
+          byteSize: file.size,
+        }),
       });
-      const data = await response.json();
-      if (!response.ok) {
+      const data = await init.json();
+      if (!init.ok) {
         setError(data.error ?? "Upload failed");
         return;
+      }
+      if (data.uploadUrl) {
+        const put = await fetch(data.uploadUrl as string, {
+          method: "PUT",
+          headers: { "Content-Type": data.mimeType as string },
+          body: file,
+        });
+        if (!put.ok) {
+          setError("Upload failed");
+          return;
+        }
       }
       setForm((current) => ({
         ...current,

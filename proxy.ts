@@ -9,7 +9,8 @@ export function proxy(request: NextRequest) {
   // Keep API + Auth.js routes out of locale rewriting.
   if (
     request.nextUrl.pathname.startsWith("/api") ||
-    request.nextUrl.pathname.startsWith("/_next")
+    request.nextUrl.pathname.startsWith("/_next") ||
+    request.nextUrl.pathname.startsWith("/uploads")
   ) {
     return NextResponse.next();
   }
@@ -18,5 +19,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_netlify|.*\\..*).*)"],
+  matcher: ["/((?!api|_next|_netlify|uploads|.*\\..*).*)"],
 };

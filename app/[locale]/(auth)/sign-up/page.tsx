@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link, useRouter } from "@/lib/i18n/navigation";
+import { Link } from "@/lib/i18n/navigation";
 import { Field, PageHeader, inputClassName } from "@/components/ui/forms";
 import { Button } from "@/components/ui/button";
 import { PageSection } from "@/components/ui/card";
@@ -17,7 +16,6 @@ export default function SignUpPage() {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
   const locale = useLocale();
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -27,6 +25,9 @@ export default function SignUpPage() {
   const [district, setDistrict] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
+  const [resendPending, setResendPending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const districtOptions = useMemo(() => getDistrictsForCity(city), [city]);
 
@@ -81,24 +82,56 @@ export default function SignUpPage() {
       return;
     }
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
     setPending(false);
-    if (result?.error) {
-      setError(t("invalidCredentials"));
-      return;
-    }
-    router.push("/worker/profile");
-    router.refresh();
+    setCheckEmail(true);
+  }
+
+  async function onResend() {
+    setResendPending(true);
+    setResendMessage(null);
+    const res = await fetch("/api/auth/resend-verification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    setResendPending(false);
+    setResendMessage(res.ok ? t("resendSent") : t("resendFailed"));
+  }
+
+  if (checkEmail) {
+    return (
+      <div className="mx-auto max-w-md">
+        <PageSection>
+          <PageHeader
+            title={t("checkEmailTitle")}
+            subtitle={t("checkEmailBody")}
+          />
+          {resendMessage ? (
+            <p className="mb-3 text-sm text-muted">{resendMessage}</p>
+          ) : null}
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            disabled={resendPending}
+            onClick={() => void onResend()}
+          >
+            {resendPending ? tCommon("status.loading") : t("resendEmail")}
+          </Button>
+          <p className="mt-4 text-sm text-muted">
+            <Link href="/sign-in" className="text-muted underline">
+              {t("submitSignIn")}
+            </Link>
+          </p>
+        </PageSection>
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto max-w-md">
       <PageSection>
-        <PageHeader title={t("signUpTitle")} subtitle={t("devNote")} />
+        <PageHeader title={t("signUpTitle")} subtitle={t("signUpSubtitle")} />
         <form onSubmit={onSubmit} className="space-y-4">
           <Field label={t("email")}>
             <input

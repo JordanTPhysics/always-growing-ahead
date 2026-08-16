@@ -1,4 +1,7 @@
 import Stripe from "stripe";
+import { appBaseUrl } from "@/lib/app-url";
+
+export { appBaseUrl };
 
 let stripe: Stripe | null = null;
 
@@ -22,12 +25,4 @@ export function isStripeConfigured(): boolean {
       process.env.STRIPE_PRICE_ID_BASIC &&
       process.env.STRIPE_PRICE_ID_ADVANCED
   );
-}
-
-export function appBaseUrl(): string {
-  return (
-    process.env.AUTH_URL ??
-    process.env.NEXTAUTH_URL ??
-    "http://localhost:3000"
-  ).replace(/\/$/, "");
 }

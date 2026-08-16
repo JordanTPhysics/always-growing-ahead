@@ -6,6 +6,7 @@ import { EducationTypeLibrary } from "@/components/education/education-type-libr
 import { PageHeader } from "@/components/ui/forms";
 import { PageSection } from "@/components/ui/card";
 import { listPublishedEducationResourcesByMediaType } from "@/lib/db/repositories/education";
+import { resolveStoredFileUrl } from "@/lib/storage";
 import {
   localizedEducationDescription,
   localizedEducationTitle,
@@ -57,14 +58,20 @@ export default async function EducationTypePage({
   ]);
 
   const tier = session?.user?.tier ?? "none";
-  const libraryItems = resources.map((resource) => ({
-    id: resource.id,
-    topic: resource.topic,
-    media_type: resource.media_type,
-    file_url: resource.file_url,
-    title: localizedEducationTitle(resource, locale),
-    description: localizedEducationDescription(resource, locale),
-  }));
+  const canWatch = canViewEducation(tier);
+  const libraryItems = canWatch
+    ? await Promise.all(
+        resources.map(async (resource) => ({
+          id: resource.id,
+          topic: resource.topic,
+          media_type: resource.media_type,
+          file_url:
+            (await resolveStoredFileUrl(resource.file_url)) ?? resource.file_url,
+          title: localizedEducationTitle(resource, locale),
+          description: localizedEducationDescription(resource, locale),
+        }))
+      )
+    : [];
 
   return (
     <PageSection>
@@ -72,7 +79,7 @@ export default async function EducationTypePage({
         title={t(titleKeyBySlug[type])}
         subtitle={t(subtitleKeyBySlug[type])}
       />
-      {canViewEducation(tier) ? (
+      {canWatch ? (
         <EducationTypeLibrary slug={type} resources={libraryItems} />
       ) : (
         <UpgradePrompt

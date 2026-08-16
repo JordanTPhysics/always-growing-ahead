@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
 import { jsonError, requireSession } from "@/lib/api/auth";
+import {
+  isObjectStorageConfigured,
+  keyToStoredUrl,
+  newUploadKey,
+  putObject,
+  writeLocalUpload,
+} from "@/lib/storage";
 import { z } from "zod";
 
 const schema = z.object({
@@ -10,7 +14,9 @@ const schema = z.object({
   folder: z.enum(["profiles", "certificates", "logos"]).optional(),
 });
 
-/** Accepts a data URL and stores under public/uploads (dev/local). Swap for R2/S3 in production. */
+export const runtime = "nodejs";
+
+/** Accepts a data URL. Writes to MinIO when S3_* is set, otherwise public/uploads. */
 export async function POST(request: Request) {
   const { session, error } = await requireSession();
   if (error) return error;
@@ -31,17 +37,17 @@ export async function POST(request: Request) {
   }
 
   const folder = parsed.data.folder ?? "profiles";
-  const userId = session.user.id;
-  const dir = path.join(process.cwd(), "public", "uploads", folder, userId);
-  await mkdir(dir, { recursive: true });
-
-  const filename = `${randomUUID()}.${ext}`;
   const buffer = Buffer.from(match[2], "base64");
   if (buffer.byteLength > 5 * 1024 * 1024) {
     return jsonError("Image too large (max 5MB)");
   }
 
-  await writeFile(path.join(dir, filename), buffer);
-  const url = `/uploads/${folder}/${userId}/${filename}`;
-  return NextResponse.json({ url });
+  const key = newUploadKey(folder, session.user.id, ext);
+  if (isObjectStorageConfigured()) {
+    await putObject(key, buffer, mime);
+  } else {
+    await writeLocalUpload(key, buffer);
+  }
+
+  return NextResponse.json({ url: keyToStoredUrl(key) });
 }

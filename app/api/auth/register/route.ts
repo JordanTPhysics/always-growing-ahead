@@ -6,6 +6,7 @@ import {
   getUserByEmail,
   getUserByUsername,
 } from "@/lib/db/repositories/users";
+import { sendVerificationEmail } from "@/lib/auth/email-verification";
 import { jsonError } from "@/lib/api/auth";
 import { isValidCity, isValidDistrict } from "@/lib/locations/uk-locations";
 
@@ -60,7 +61,6 @@ export async function POST(request: Request) {
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-  // Phase 1: mark verified so contact/posting flows can be exercised before email provider lands.
   const user = await createUser({
     email,
     passwordHash,
@@ -69,11 +69,21 @@ export async function POST(request: Request) {
     city,
     district,
     preferredLocale: parsed.data.preferredLocale ?? "en",
-    emailVerifiedAt: new Date(),
   });
+
+  try {
+    await sendVerificationEmail({
+      userId: user.id,
+      email: user.email,
+      locale: parsed.data.preferredLocale ?? "en",
+    });
+  } catch (err) {
+    console.error("Failed to send verification email", err);
+  }
 
   return NextResponse.json({
     id: user.id,
     email: user.email,
+    verificationRequired: true,
   });
 }

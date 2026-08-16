@@ -16,6 +16,8 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [resendPending, setResendPending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,9 +63,34 @@ export default function SignInPage() {
             />
           </Field>
           {error ? <p className="text-sm text-danger">{error}</p> : null}
+          {resendMessage ? (
+            <p className="text-sm text-muted">{resendMessage}</p>
+          ) : null}
           <Button type="submit" className="w-full" disabled={pending}>
             {pending ? tCommon("status.loading") : t("submitSignIn")}
           </Button>
+          <button
+            type="button"
+            className="w-full text-sm text-muted underline"
+            disabled={resendPending || !email.trim()}
+            onClick={() => {
+              void (async () => {
+                setResendPending(true);
+                setResendMessage(null);
+                const res = await fetch("/api/auth/resend-verification", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email }),
+                });
+                setResendPending(false);
+                setResendMessage(
+                  res.ok ? t("resendSent") : t("resendFailed")
+                );
+              })();
+            }}
+          >
+            {resendPending ? tCommon("status.loading") : t("resendEmail")}
+          </button>
           <Button
             type="button"
             variant="secondary"

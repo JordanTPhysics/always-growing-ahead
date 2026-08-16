@@ -1,0 +1,3 @@
+# Keep shell scripts executable and LF-only so they run on the VPS after a Windows clone.
+*.sh text eol=lf
+infra/install.sh text eol=lf

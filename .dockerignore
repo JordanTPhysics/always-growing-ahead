@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+android
+ios
+public/uploads
+.data
+.netlify
+coverage
+*.md
+!infra/README.md
+.env
+.env.*
+!.env.example
+infra/.env
+

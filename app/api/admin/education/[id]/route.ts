@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { unlink } from "node:fs/promises";
-import path from "node:path";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/api/admin";
 import { jsonError } from "@/lib/api/auth";
@@ -10,6 +8,7 @@ import {
   updateEducationResource,
 } from "@/lib/db/repositories/education";
 import { EDUCATION_MEDIA_TYPES } from "@/lib/education/media-types";
+import { deleteStoredUpload } from "@/lib/storage";
 
 const updateSchema = z.object({
   topic: z.string().trim().min(1).max(255).optional(),
@@ -39,17 +38,7 @@ async function resolveId(params: Promise<{ id: string }>) {
 
 async function tryUnlinkEducationFile(fileUrl: string) {
   if (!fileUrl.startsWith("/uploads/education/")) return;
-  const relativeUrl = fileUrl.replace(/^\//, "");
-  const absolute = path.resolve(process.cwd(), "public", relativeUrl);
-  const uploadsRoot = path.resolve(
-    process.cwd(),
-    "public",
-    "uploads",
-    "education"
-  );
-  const relative = path.relative(uploadsRoot, absolute);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) return;
-  await unlink(absolute).catch(() => undefined);
+  await deleteStoredUpload(fileUrl);
 }
 
 export async function PATCH(request: Request, { params }: Params) {

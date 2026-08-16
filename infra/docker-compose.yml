@@ -1,0 +1,166 @@
+# AGA VPS stack: live + test MySQL, S3-compatible file store.
+#
+#   cd infra
+#   cp .env.example .env   # then edit passwords
+#   docker compose up -d
+#   docker compose --profile tools run --rm migrate
+#   docker compose --profile tools run --rm migrate-test
+
+name: aga
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_TEST_DATABASE: ${MYSQL_TEST_DATABASE}
+      MYSQL_TEST_USER: ${MYSQL_TEST_USER}
+      MYSQL_TEST_PASSWORD: ${MYSQL_TEST_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max-connections=100
+      - --innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL:-128M}
+      - --local-infile=0
+    ports:
+      # App talks to MySQL on the Docker network. Host bind is localhost-only.
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL}
+    command: ["server", "/data", "--console-address", ":9001"]
+    volumes:
+      - minio_data:/data
+    ports:
+      # Console via SSH tunnel only: ssh -L 9001:127.0.0.1:9001 user@vps
+      - "127.0.0.1:9001:9001"
+
+  minio-init:
+    image: minio/mc:latest
+    env_file: .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_LIVE_BUCKET: ${MINIO_LIVE_BUCKET}
+      MINIO_TEST_BUCKET: ${MINIO_TEST_BUCKET}
+    volumes:
+      - ./minio/create-buckets.sh:/create-buckets.sh:ro
+      - ./minio/cors.json:/cors.json:ro
+    entrypoint: ["/bin/sh", "/create-buckets.sh"]
+    depends_on:
+      minio:
+        condition: service_started
+    restart: "no"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      FILES_SITE_ADDRESS: ${FILES_SITE_ADDRESS}
+      APP_SITE_ADDRESS: ${APP_SITE_ADDRESS}
+      ACME_EMAIL: ${ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - minio
+      - app
+
+  app:
+    build:
+      context: ..
+      dockerfile: infra/app/Dockerfile
+      args:
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+        NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID: ${NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID:-}
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      S3_ENDPOINT: http://minio:9000
+      USE_MOCK_MAP_DATA: "0"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 8
+      start_period: 40s
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: infra/migrate/Dockerfile
+    profiles: ["tools"]
+    env_file: .env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  migrate-test:
+    build:
+      context: ..
+      dockerfile: infra/migrate/Dockerfile
+    profiles: ["tools"]
+    env_file: .env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_TEST_USER}
+      DB_PASSWORD: ${MYSQL_TEST_PASSWORD}
+      DB_NAME: ${MYSQL_TEST_DATABASE}
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  minio_data:
+  caddy_data:
+  caddy_config:

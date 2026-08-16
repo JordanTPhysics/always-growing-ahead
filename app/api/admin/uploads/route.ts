@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
 import { jsonError } from "@/lib/api/auth";
 import { requireAdmin } from "@/lib/api/admin";
+import {
+  isObjectStorageConfigured,
+  keyToStoredUrl,
+  newUploadKey,
+  presignPutUrl,
+  writeLocalUpload,
+} from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -16,90 +21,144 @@ type AllowedFile = {
   fileKind: FileKind;
   ext: string;
   maxBytes: number;
+  mimeType: string;
 };
 
 const ALLOWED_MIMES: Record<string, AllowedFile> = {
-  "application/pdf": { fileKind: "pdf", ext: "pdf", maxBytes: PDF_MAX_BYTES },
-  "application/x-pdf": { fileKind: "pdf", ext: "pdf", maxBytes: PDF_MAX_BYTES },
-  "video/mp4": { fileKind: "video", ext: "mp4", maxBytes: VIDEO_MAX_BYTES },
-  "video/webm": { fileKind: "video", ext: "webm", maxBytes: VIDEO_MAX_BYTES },
+  "application/pdf": {
+    fileKind: "pdf",
+    ext: "pdf",
+    maxBytes: PDF_MAX_BYTES,
+    mimeType: "application/pdf",
+  },
+  "application/x-pdf": {
+    fileKind: "pdf",
+    ext: "pdf",
+    maxBytes: PDF_MAX_BYTES,
+    mimeType: "application/pdf",
+  },
+  "video/mp4": {
+    fileKind: "video",
+    ext: "mp4",
+    maxBytes: VIDEO_MAX_BYTES,
+    mimeType: "video/mp4",
+  },
+  "video/webm": {
+    fileKind: "video",
+    ext: "webm",
+    maxBytes: VIDEO_MAX_BYTES,
+    mimeType: "video/webm",
+  },
   "video/quicktime": {
     fileKind: "video",
     ext: "mov",
     maxBytes: VIDEO_MAX_BYTES,
+    mimeType: "video/quicktime",
   },
 };
 
 const EXTENSIONS: Record<string, AllowedFile> = {
-  pdf: { fileKind: "pdf", ext: "pdf", maxBytes: PDF_MAX_BYTES },
-  mp4: { fileKind: "video", ext: "mp4", maxBytes: VIDEO_MAX_BYTES },
-  webm: { fileKind: "video", ext: "webm", maxBytes: VIDEO_MAX_BYTES },
-  mov: { fileKind: "video", ext: "mov", maxBytes: VIDEO_MAX_BYTES },
+  pdf: ALLOWED_MIMES["application/pdf"],
+  mp4: ALLOWED_MIMES["video/mp4"],
+  webm: ALLOWED_MIMES["video/webm"],
+  mov: ALLOWED_MIMES["video/quicktime"],
 };
 
-function resolveAllowedFile(file: File): AllowedFile | null {
-  const mime = file.type.trim().toLowerCase();
+function resolveAllowedFile(
+  fileName: string,
+  contentType: string
+): AllowedFile | null {
+  const mime = contentType.trim().toLowerCase();
   if (mime && mime !== "application/octet-stream") {
     const byMime = ALLOWED_MIMES[mime];
     if (byMime) return byMime;
   }
-
-  const ext = path.extname(file.name).replace(/^\./, "").toLowerCase();
+  const ext = path.extname(fileName).replace(/^\./, "").toLowerCase();
   return EXTENSIONS[ext] ?? null;
 }
 
+function educationKeyForUser(userId: string, key: string): boolean {
+  return (
+    key.startsWith(`uploads/education/${userId}/`) &&
+    !key.includes("..") &&
+    key.split("/").length === 4
+  );
+}
+
+/** JSON init: returns a presigned PUT URL (MinIO) or a same-origin PUT target (local). */
 export async function POST(request: Request) {
   const { session, error } = await requireAdmin();
   if (error) return error;
 
-  const form = await request.formData().catch(() => null);
-  if (!form) return jsonError("Invalid form data");
+  const body = (await request.json().catch(() => null)) as {
+    fileName?: unknown;
+    contentType?: unknown;
+    byteSize?: unknown;
+  } | null;
+  if (!body || typeof body.fileName !== "string") {
+    return jsonError("Invalid upload");
+  }
 
-  const file = form.get("file");
-  if (!(file instanceof File)) return jsonError("Missing file");
+  const fileName = body.fileName.trim();
+  const contentType =
+    typeof body.contentType === "string" ? body.contentType : "";
+  const byteSize = Number(body.byteSize);
+  if (!fileName || !Number.isFinite(byteSize) || byteSize <= 0) {
+    return jsonError("Invalid upload");
+  }
 
-  const allowed = resolveAllowedFile(file);
+  const allowed = resolveAllowedFile(fileName, contentType);
   if (!allowed) {
     return jsonError(
       "Unsupported file type. Use PDF, MP4, WebM, or QuickTime."
     );
   }
 
-  if (file.size <= 0) {
-    return jsonError("File is empty.");
-  }
-
-  if (file.size > allowed.maxBytes) {
+  if (byteSize > allowed.maxBytes) {
     const maxMb = Math.round(allowed.maxBytes / (1024 * 1024));
     return jsonError(
       `${allowed.fileKind === "pdf" ? "PDF" : "Video"} too large (max ${maxMb}MB)`
     );
   }
 
-  const userId = session!.user.id;
-  const dir = path.join(
-    process.cwd(),
-    "public",
-    "uploads",
-    "education",
-    userId
-  );
-  await mkdir(dir, { recursive: true });
-
-  const filename = `${randomUUID()}.${allowed.ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, filename), buffer);
-
-  const url = `/uploads/education/${userId}/${filename}`;
-  const mimeType =
-    file.type.trim() ||
-    (allowed.fileKind === "pdf" ? "application/pdf" : "application/octet-stream");
+  const key = newUploadKey("education", session!.user.id, allowed.ext);
+  const mimeType = allowed.mimeType;
+  const uploadUrl = isObjectStorageConfigured()
+    ? await presignPutUrl(key)
+    : `/api/admin/uploads?key=${encodeURIComponent(key)}`;
 
   return NextResponse.json({
-    url,
-    fileName: file.name || filename,
+    uploadUrl,
+    url: keyToStoredUrl(key),
+    fileName,
     mimeType,
-    byteSize: buffer.byteLength,
+    byteSize,
     fileKind: allowed.fileKind,
   });
+}
+
+/** Local-disk PUT when S3 is not configured. Production should use MinIO. */
+export async function PUT(request: Request) {
+  const { session, error } = await requireAdmin();
+  if (error) return error;
+  if (isObjectStorageConfigured()) {
+    return jsonError("Use the presigned upload URL");
+  }
+
+  const key = new URL(request.url).searchParams.get("key") ?? "";
+  if (!educationKeyForUser(session!.user.id, key)) {
+    return jsonError("Invalid upload key");
+  }
+
+  const ext = path.extname(key).replace(/^\./, "").toLowerCase();
+  const allowed = EXTENSIONS[ext];
+  if (!allowed) return jsonError("Unsupported file type");
+
+  const buffer = Buffer.from(await request.arrayBuffer());
+  if (buffer.byteLength <= 0 || buffer.byteLength > allowed.maxBytes) {
+    return jsonError("Invalid file size");
+  }
+
+  await writeLocalUpload(key, buffer);
+  return NextResponse.json({ ok: true });
 }

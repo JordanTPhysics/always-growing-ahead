@@ -24,7 +24,9 @@ Foundations are in place:
 npm run db:migrate
 ```
 
-4. Start the app:
+4. For the IONOS VPS, run [`infra/install.sh`](infra/install.sh) (see [`infra/README.md`](infra/README.md)).
+
+5. Start the app:
 
 ```bash
 npm run dev

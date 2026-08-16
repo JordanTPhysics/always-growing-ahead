@@ -1,0 +1,30 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$APP_SITE_ADDRESS} {
+	@s3 path /aga-live* /aga-test*
+
+	handle @s3 {
+		request_body {
+			max_size 256MB
+		}
+		reverse_proxy minio:9000 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		reverse_proxy app:3000
+	}
+}
+
+{$FILES_SITE_ADDRESS} {
+	request_body {
+		max_size 256MB
+	}
+
+	reverse_proxy minio:9000 {
+		flush_interval -1
+	}
+}

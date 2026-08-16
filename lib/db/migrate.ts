@@ -22,9 +22,22 @@ async function main() {
     password,
     multipleStatements: true,
   });
-  await root.query(
-    `CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-  );
+  try {
+    await root.query(
+      `CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+    );
+  } catch (err) {
+    const code = (err as { code?: string }).code;
+    if (
+      code !== "ER_DBACCESS_DENIED_ERROR" &&
+      code !== "ER_SPECIFIC_ACCESS_DENIED_ERROR"
+    ) {
+      throw err;
+    }
+    console.log(
+      `skip  CREATE DATABASE (no privilege); expecting ${database} to exist`
+    );
+  }
   await root.end();
 
   const conn = await mysql.createConnection({
