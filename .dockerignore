@@ -11,6 +11,6 @@ coverage
 !infra/README.md
 .env
 .env.*
-!.env.example
 infra/.env
+infra/env.app.vps.example
 

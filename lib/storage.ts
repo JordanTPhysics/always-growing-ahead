@@ -66,7 +66,7 @@ function getClient(): Client {
       useSSL,
       accessKey: required("S3_ACCESS_KEY_ID"),
       secretKey: required("S3_SECRET_ACCESS_KEY"),
-      region: process.env.S3_REGION?.trim() || "us-east-1",
+      region: process.env.S3_REGION?.trim() || "eu-west-2",
       pathStyle: process.env.S3_FORCE_PATH_STYLE !== "0",
     });
   }
