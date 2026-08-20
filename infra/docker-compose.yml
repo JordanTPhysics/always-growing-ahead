@@ -27,18 +27,21 @@ services:
       - --max-connections=100
       - --innodb-buffer-pool-size=${MYSQL_INNODB_BUFFER_POOL:-128M}
       - --local-infile=0
-    ports:
-      # App talks to MySQL on the Docker network. Host bind is localhost-only.
-      - "127.0.0.1:3306:3306"
+    # App/migrate reach MySQL on the Docker network. Do not publish 3306 —
+    # IONOS images often already have MySQL/MariaDB on that port.
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      interval: 10s
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin --silent ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\"",
+        ]
+      interval: 5s
       timeout: 5s
-      retries: 12
-      start_period: 40s
+      retries: 30
+      start_period: 60s
 
   minio:
     image: minio/minio:latest

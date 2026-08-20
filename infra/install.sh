@@ -120,6 +120,9 @@ prepare_env_files() {
   fi
   copy_env_if_missing "$INFRA_DIR/env.app.vps.example" "$APP_ENV" || true
 
+  # Windows-edited .env files leave CR and make mysqld reject innodb-buffer-pool-size.
+  sed -i 's/\r$//' "$INFRA_ENV" "$APP_ENV" 2>/dev/null || true
+
   if grep -q 'change-me-' "$INFRA_ENV" || grep -Eq '^AUTH_SECRET=\s*$' "$APP_ENV" || grep -Eq '^SMTP_PASSWORD=\s*$' "$APP_ENV"; then
     cat <<EOF
 
