@@ -71,7 +71,6 @@ services:
       MINIO_TEST_BUCKET: ${MINIO_TEST_BUCKET}
     volumes:
       - ./minio/create-buckets.sh:/create-buckets.sh:ro
-      - ./minio/cors.json:/cors.json:ro
     entrypoint: ["/bin/sh", "/create-buckets.sh"]
     depends_on:
       minio:

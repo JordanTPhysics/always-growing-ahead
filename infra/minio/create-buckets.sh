@@ -16,9 +16,9 @@ mc mb --ignore-existing "local/${MINIO_TEST_BUCKET}"
 
 # Private by default (CVs, certificates, profile photos).
 # Education videos/PDFs should be fetched with short-lived presigned GET URLs.
+# Bucket CORS (mc cors set) is AIStor-only. Community MinIO returns an empty
+# body and mc fails with "decoding xml: EOF". Browser CORS is set in Caddy.
 mc anonymous set none "local/${MINIO_LIVE_BUCKET}"
 mc anonymous set none "local/${MINIO_TEST_BUCKET}"
-mc cors set "local/${MINIO_LIVE_BUCKET}" /cors.json
-mc cors set "local/${MINIO_TEST_BUCKET}" /cors.json
 
 echo "Buckets ready: ${MINIO_LIVE_BUCKET}, ${MINIO_TEST_BUCKET}"

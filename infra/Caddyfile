@@ -2,10 +2,25 @@
 	email {$ACME_EMAIL}
 }
 
+(s3_cors) {
+	@cors_preflight method OPTIONS
+	handle @cors_preflight {
+		header Access-Control-Allow-Origin "*"
+		header Access-Control-Allow-Methods "GET, PUT, HEAD, OPTIONS"
+		header Access-Control-Allow-Headers "*"
+		header Access-Control-Expose-Headers "ETag, Accept-Ranges, Content-Range, Content-Length, Content-Type"
+		header Access-Control-Max-Age "3600"
+		respond 204
+	}
+	header Access-Control-Allow-Origin "*"
+	header Access-Control-Expose-Headers "ETag, Accept-Ranges, Content-Range, Content-Length, Content-Type"
+}
+
 {$APP_SITE_ADDRESS} {
 	@s3 path /aga-live* /aga-test*
 
 	handle @s3 {
+		import s3_cors
 		request_body {
 			max_size 256MB
 		}
@@ -20,6 +35,7 @@
 }
 
 {$FILES_SITE_ADDRESS} {
+	import s3_cors
 	request_body {
 		max_size 256MB
 	}

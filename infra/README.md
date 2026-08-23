@@ -64,10 +64,10 @@ docker compose --profile tools run --rm migrate-test
 docker compose up -d --build app caddy
 ```
 
-If MinIO was already running before CORS was added:
+Browser CORS is set in Caddy (community MinIO has no bucket CORS API). Recreate Caddy after Caddyfile changes:
 
 ```bash
-docker compose up --force-recreate minio-init
+docker compose up -d --force-recreate caddy
 ```
 
 4. Point the Next.js app at MinIO (already set in `env.app.vps.example` when the app runs in Compose):
