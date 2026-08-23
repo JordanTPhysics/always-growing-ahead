@@ -92,7 +92,13 @@ function JobCard({
   );
 }
 
-export function JobSearchView() {
+export function JobSearchView({
+  mapsApiKey,
+  mapsMapId,
+}: {
+  mapsApiKey: string;
+  mapsMapId?: string;
+}) {
   const t = useTranslations("job-search");
   const tJobs = useTranslations("jobs");
   const tCommon = useTranslations("common");
@@ -454,6 +460,8 @@ export function JobSearchView() {
         <div className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center md:block">
           {view === "map" ? (
             <ClusteredMap
+              apiKey={mapsApiKey}
+              mapId={mapsMapId}
               searchMode="jobs"
               searchModeLabel={t("title")}
               legendLabels={{

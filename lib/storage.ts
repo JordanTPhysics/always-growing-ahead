@@ -136,6 +136,11 @@ export async function writeLocalUpload(
   key: string,
   body: Buffer
 ): Promise<void> {
+  if (process.env.S3_ENDPOINT?.trim()) {
+    throw new Error(
+      "S3_ENDPOINT is set but object storage is not fully configured (need S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET_NAME)"
+    );
+  }
   const absolute = resolveLocalUploadPath(key);
   if (!absolute) throw new Error("Invalid upload key");
   await mkdir(path.dirname(absolute), { recursive: true });

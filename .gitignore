@@ -50,3 +50,8 @@ infra/env.app.vps.example
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local Google Places crawler scripts
+/scripts/google_places_api.py
+/scripts/google_places_api.ps1
+/scripts/google_places_api.error.log

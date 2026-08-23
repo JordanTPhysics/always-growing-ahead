@@ -87,7 +87,13 @@ function WorkerCard({
   );
 }
 
-export function WorkerSearchView() {
+export function WorkerSearchView({
+  mapsApiKey,
+  mapsMapId,
+}: {
+  mapsApiKey: string;
+  mapsMapId?: string;
+}) {
   const t = useTranslations("worker-search");
   const tWorker = useTranslations("worker-profile");
   const tJobs = useTranslations("jobs");
@@ -420,6 +426,8 @@ export function WorkerSearchView() {
         <div className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center md:block">
           {view === "map" ? (
             <ClusteredMap
+              apiKey={mapsApiKey}
+              mapId={mapsMapId}
               searchMode="workers"
               searchModeLabel={t("title")}
               legendLabels={{

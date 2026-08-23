@@ -41,9 +41,14 @@ export default async function EmployerJobsPage({
         title={t("myJobsTitle")}
         actions={
           employer && canPost ? (
-            <Button asChild>
-              <Link href="/employer/jobs/new">{t("createTitle")}</Link>
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="secondary">
+                <Link href="/employer/jobs/bulk">{t("bulkUpload")}</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/employer/jobs/new">{t("createTitle")}</Link>
+              </Button>
+            </div>
           ) : employer && !canPost ? (
             <Button asChild>
               <Link href="/billing">{tBilling("upgradeToPostCta")}</Link>

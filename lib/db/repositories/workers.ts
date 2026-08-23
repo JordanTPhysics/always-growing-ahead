@@ -70,7 +70,7 @@ export async function getWorkerById(id: number): Promise<WorkerProfile | null> {
 }
 
 export async function createWorkerProfile(
-  userId: number,
+  userId: number | null,
   input: WorkerProfileInput = {}
 ): Promise<WorkerProfile> {
   const [lat, lng, pointLng, pointLat] = pointParams(

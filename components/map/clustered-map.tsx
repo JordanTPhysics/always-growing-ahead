@@ -37,6 +37,8 @@ type Props = {
   onSelect: (id: number) => void;
   center?: { latitude: number; longitude: number; zoom?: number };
   className?: string;
+  apiKey: string;
+  mapId?: string;
 };
 
 function getMarkerIcon(searchMode: MapSearchMode, active: boolean) {
@@ -149,6 +151,8 @@ export function ClusteredMap({
   onHoverChange,
   onSelect,
   center,
+  apiKey,
+  mapId = "DEMO_MAP_ID",
 }: Props) {
   const defaultCenter = useMemo(
     () =>
@@ -158,16 +162,12 @@ export function ClusteredMap({
     [center]
   );
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-  const mapId =
-    process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID?.trim() || "DEMO_MAP_ID";
-
   if (!apiKey) {
     return (
       <div
         className={`flex items-center justify-center bg-surface p-4 text-sm text-muted ${className ?? ""}`}
       >
-        Set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to enable the map.
+        Google Maps is not configured.
       </div>
     );
   }

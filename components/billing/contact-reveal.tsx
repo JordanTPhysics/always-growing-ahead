@@ -11,7 +11,7 @@ import { canViewContactInfo, type Tier } from "@/lib/entitlements";
 import { track } from "@/lib/analytics/track";
 
 type ContactPayload = {
-  email: string;
+  email: string | null;
   phone: string | null;
   linkedinUrl?: string | null;
   companyName?: string | null;
@@ -100,12 +100,16 @@ export function ContactReveal(props: Props) {
         {contact.companyName ? (
           <p className="text-sm text-muted">{contact.companyName}</p>
         ) : null}
-        <p className="text-sm">
-          <span className="text-muted">{t("email")}: </span>
-          <a className="text-muted underline" href={`mailto:${contact.email}`}>
-            {contact.email}
-          </a>
-        </p>
+        {contact.email ? (
+          <p className="text-sm">
+            <span className="text-muted">{t("email")}: </span>
+            <a className="text-muted underline" href={`mailto:${contact.email}`}>
+              {contact.email}
+            </a>
+          </p>
+        ) : (
+          <p className="text-sm text-muted">{t("noEmail")}</p>
+        )}
         {contact.phone ? (
           <p className="text-sm">
             <span className="text-muted">{t("phone")}: </span>

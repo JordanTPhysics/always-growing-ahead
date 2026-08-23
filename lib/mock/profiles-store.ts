@@ -130,11 +130,14 @@ export function getJsonWorkerById(id: number): StoredWorkerRecord | null {
 }
 
 export function createJsonWorkerProfile(
-  userId: number,
+  userId: number | null,
   input: WorkerProfileInput = {}
 ): WorkerProfile {
   const db = readWorkers();
-  if (db.workers.some((w) => w.profile.user_id === userId)) {
+  if (
+    userId != null &&
+    db.workers.some((w) => w.profile.user_id === userId)
+  ) {
     throw new Error("Worker profile already exists");
   }
 

@@ -42,5 +42,20 @@
     "active": "نشط",
     "closed": "مغلق",
     "expired": "منتهي"
-  }
+  },
+  "bulkUpload": "رفع CSV",
+  "bulkTitle": "رفع وظائف دفعة واحدة",
+  "bulkSubtitle": "استورد وظائف كثيرة من ملف CSV. تُنشأ كل الصفوف تحت حساب صاحب العمل الخاص بك.",
+  "bulkChooseFile": "ملف CSV",
+  "bulkUploadCta": "رفع الوظائف",
+  "bulkDownloadSample": "تنزيل نموذج CSV",
+  "bulkHeaders": "عناوين CSV",
+  "bulkHeadersHint": "استخدم أسماء الأعمدة هذه. يُعيَّن employer_id تلقائياً. skills اختياري ويفصل بعلامة | (مثل Forklift|Warehouse Picking).",
+  "bulkRequired": "العنوان (title) مطلوب فقط. اترك الأعمدة الأخرى فارغة إن لم تُستخدم. الحالة الافتراضية draft. قيم job_type: full-time, part-time, contract, temporary, apprenticeship. قيم salary_type: hourly, daily, annual. قيم status: draft, active, closed, expired.",
+  "bulkNoFile": "اختر ملف CSV أولاً.",
+  "bulkUploading": "جارٍ الرفع…",
+  "bulkResultCreated": "تم إنشاء {count} وظائف",
+  "bulkResultFailed": "فشل {count} صفوف",
+  "bulkResultWarnings": "تم إنشاء {count} صفوف مع تحذيرات",
+  "bulkRow": "الصف {n}"
 }

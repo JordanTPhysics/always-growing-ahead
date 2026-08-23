@@ -8,6 +8,7 @@ import { PillToggle } from "@/components/ui/pill-toggle";
 import { AdminEducationPanel } from "@/components/admin/admin-education-panel";
 import { AdminNewsPanel } from "@/components/admin/admin-news-panel";
 import { AdminTranslationsPanel } from "@/components/admin/admin-translations-panel";
+import { WorkersCsvUpload } from "@/components/admin/workers-csv-upload";
 
 type PendingSkill = {
   id: number;
@@ -21,7 +22,7 @@ type User = {
   role: "user" | "admin";
 };
 
-type Tab = "access" | "education" | "news" | "translations";
+type Tab = "access" | "workers" | "education" | "news" | "translations";
 
 export function AdminDashboard() {
   const t = useTranslations("admin");
@@ -71,6 +72,7 @@ export function AdminDashboard() {
         ariaLabel={t("tabsLabel")}
         options={[
           { value: "access", label: t("tabs.access") },
+          { value: "workers", label: t("tabs.workers") },
           { value: "education", label: t("tabs.education") },
           { value: "news", label: t("tabs.news") },
           { value: "translations", label: t("tabs.translations") },
@@ -146,6 +148,7 @@ export function AdminDashboard() {
         </div>
       ) : null}
 
+      {tab === "workers" ? <WorkersCsvUpload /> : null}
       {tab === "education" ? <AdminEducationPanel /> : null}
       {tab === "news" ? <AdminNewsPanel /> : null}
       {tab === "translations" ? <AdminTranslationsPanel /> : null}

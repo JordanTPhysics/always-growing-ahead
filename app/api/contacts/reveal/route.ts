@@ -155,18 +155,25 @@ async function revealWorkerContact(
     if (!mockWorker || mockWorker.visibility !== "public") {
       return jsonError("Worker not found", 404);
     }
-    if (mockWorker.user_id === viewerId) {
+    if (mockWorker.user_id != null && mockWorker.user_id === viewerId) {
       return jsonError("Cannot reveal your own contact info this way", 400);
     }
 
-    const account = getMockUserById(mockWorker.user_id);
+    const account =
+      mockWorker.user_id != null ? getMockUserById(mockWorker.user_id) : null;
+    const email =
+      mockWorker.contact_email ??
+      account?.email ??
+      null;
+    const phone = mockWorker.contact_phone ?? account?.phone ?? null;
+    const linkedinUrl = mockWorker.linkedin_url ?? null;
+    if (!email && !phone && !linkedinUrl) {
+      return jsonError("Contact not found", 404);
+    }
     return NextResponse.json({
-      email:
-        mockWorker.contact_email ??
-        account?.email ??
-        `worker-${mockWorker.id}@aga.test`,
-      phone: mockWorker.contact_phone ?? account?.phone ?? null,
-      linkedinUrl: mockWorker.linkedin_url ?? null,
+      email,
+      phone,
+      linkedinUrl,
     });
   }
 
@@ -175,12 +182,18 @@ async function revealWorkerContact(
     return jsonError("Worker not found", 404);
   }
 
-  if (worker.user_id === viewerId) {
+  if (worker.user_id != null && worker.user_id === viewerId) {
     return jsonError("Cannot reveal your own contact info this way", 400);
   }
 
-  const contactUser = await getUserById(worker.user_id);
-  if (!contactUser) return jsonError("Contact not found", 404);
+  const contactUser =
+    worker.user_id != null ? await getUserById(worker.user_id) : null;
+  const email = worker.contact_email ?? contactUser?.email ?? null;
+  const phone = worker.contact_phone ?? contactUser?.phone ?? null;
+  const linkedinUrl = worker.linkedin_url ?? null;
+  if (!email && !phone && !linkedinUrl) {
+    return jsonError("Contact not found", 404);
+  }
 
   if (jobId != null) {
     const job = await getJobById(jobId);
@@ -196,22 +209,24 @@ async function revealWorkerContact(
     worker_id: worker.id,
     initiated_by: "employer",
   });
-  await createNotification({
-    userId: worker.user_id,
-    type: "contact_reveal",
-    title: "Your contact details were revealed",
-    body: "An employer has revealed your contact details.",
-    linkUrl: `/workers/${worker.id}`,
-  });
-  void dispatchPushToUser(worker.user_id, {
-    title: "Your contact details were revealed",
-    body: "An employer has revealed your contact details.",
-    linkUrl: `/workers/${worker.id}`,
-  });
+  if (worker.user_id != null) {
+    await createNotification({
+      userId: worker.user_id,
+      type: "contact_reveal",
+      title: "Your contact details were revealed",
+      body: "An employer has revealed your contact details.",
+      linkUrl: `/workers/${worker.id}`,
+    });
+    void dispatchPushToUser(worker.user_id, {
+      title: "Your contact details were revealed",
+      body: "An employer has revealed your contact details.",
+      linkUrl: `/workers/${worker.id}`,
+    });
+  }
 
   return NextResponse.json({
-    email: worker.contact_email ?? contactUser.email,
-    phone: worker.contact_phone ?? contactUser.phone,
-    linkedinUrl: worker.linkedin_url ?? null,
+    email,
+    phone,
+    linkedinUrl,
   });
 }

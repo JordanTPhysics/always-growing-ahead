@@ -26,9 +26,11 @@ function getTransport() {
     host: process.env.SMTP_HOST,
     port,
     secure,
+    requireTLS: !secure,
+    authMethod: "LOGIN",
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
+      user: process.env.SMTP_USER?.trim(),
+      pass: process.env.SMTP_PASSWORD?.trim(),
     },
   });
 }

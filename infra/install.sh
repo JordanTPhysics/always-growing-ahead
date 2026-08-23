@@ -139,9 +139,14 @@ Minimum:
   - .env: AUTH_URL, NEXTAUTH_URL, S3_PUBLIC_URL, CAPACITOR_SERVER_URL
             (https://alwaysgrowingahead.com / https://files.alwaysgrowingahead.com)
   - .env: SMTP_PASSWORD (IONOS mailbox password for admin@alwaysgrowingahead.com)
+  - .env: GOOGLE_MAPS_API_KEY (browser Maps key; restrict by HTTP referrer)
 
 EOF
     exit 1
+  fi
+
+  if ! grep -Eq '^(GOOGLE_MAPS_API_KEY|NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)=.+' "$APP_ENV"; then
+    printf 'WARNING: no Google Maps API key in %s — job/worker maps will be blank.\n' "$APP_ENV"
   fi
 }
 

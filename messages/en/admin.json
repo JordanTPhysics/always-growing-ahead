@@ -1,9 +1,10 @@
 {
   "title": "Admin dashboard",
-  "subtitle": "Manage skills, users, education uploads, news updates, and locale translations.",
+  "subtitle": "Manage skills, users, worker imports, education uploads, news updates, and locale translations.",
   "tabsLabel": "Admin sections",
   "tabs": {
     "access": "Skills & users",
+    "workers": "Workers",
     "education": "Education",
     "news": "News",
     "translations": "Translations"
@@ -80,5 +81,19 @@
     "invalidJson": "Content must be valid JSON.",
     "loadError": "Could not load translation file.",
     "saveError": "Could not save translation file."
+  },
+  "workersImport": {
+    "heading": "Import workers",
+    "hint": "CSV rows create public worker profiles without a login unless user_email matches an existing account. Profiles appear on the map when they have coordinates (from postcode if lat/lng are blank).",
+    "required": "headline is required. contact_email, contact_phone, and linkedin_url are stored on the profile for contact reveal. user_email is optional. skills and desired_job_types are pipe-separated. Defaults: visibility=public, availability=immediate, actively_looking=true.",
+    "chooseFile": "CSV file",
+    "uploadCta": "Upload workers",
+    "downloadSample": "Download sample CSV",
+    "noFile": "Choose a CSV file first.",
+    "uploading": "Uploading…",
+    "resultCreated": "{count} workers created",
+    "resultFailed": "{count} rows failed",
+    "resultWarnings": "{count} rows created with warnings",
+    "row": "Row {n}"
   }
 }

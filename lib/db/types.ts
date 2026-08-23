@@ -138,7 +138,7 @@ export type SkillModeration = {
 
 export type WorkerProfile = {
   id: number;
-  user_id: number;
+  user_id: number | null;
   headline: string | null;
   bio: string | null;
   profile_photo_url: string | null;

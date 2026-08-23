@@ -1,9 +1,10 @@
 {
   "title": "داشبۆردی بەڕێوەبەر",
-  "subtitle": "بەڕێوەبردنی لێهاتوویی، بەکارهێنەر، پەروەردە، هەواڵ و وەرگێڕانەکان.",
+  "subtitle": "بەڕێوەبردنی لێهاتوویی، بەکارهێنەر، هاوردەکردنی کرێکار، پەروەردە، هەواڵ و وەرگێڕانەکان.",
   "tabsLabel": "بەشەکانی بەڕێوەبەر",
   "tabs": {
     "access": "لێهاتوویی و بەکارهێنەر",
+    "workers": "کرێکاران",
     "education": "پەروەردە",
     "news": "هەواڵ",
     "translations": "وەرگێڕانەکان"
@@ -80,5 +81,19 @@
     "invalidJson": "ناوەڕۆک دەبێت JSON ی دروست بێت.",
     "loadError": "نەتوانرا فایلی وەرگێڕان باربکرێت.",
     "saveError": "نەتوانرا فایلی وەرگێڕان پاشەکەوت بکرێت."
+  },
+  "workersImport": {
+    "heading": "هاوردەکردنی کرێکاران",
+    "hint": "ڕیزەکانی CSV پرۆفایلی گشتی دروست دەکەن بەبێ چوونەژوورەوە، مەگەر user_email لەگەڵ هەژمارێکی هەبوو بگونجێت. پرۆفایلەکان لەسەر نەخشە دەردەکەون کاتێک پۆتان هەبێت (لە پۆستکۆد ئەگەر lat/lng بەتاڵ بن).",
+    "required": "headline پێویستە. contact_email و contact_phone و linkedin_url بۆ ئاشکراکردنی پەیوەندی پاشەکەوت دەکرێن. user_email دڵخوازە. skills و desired_job_types بە | جیا دەکرێنەوە. بنەڕەت: visibility=public, availability=immediate, actively_looking=true.",
+    "chooseFile": "فایلی CSV",
+    "uploadCta": "بارکردنی کرێکاران",
+    "downloadSample": "داگرتنی نموونەی CSV",
+    "noFile": "سەرەتا فایلی CSV هەڵبژێرە.",
+    "uploading": "بار دەکرێت…",
+    "resultCreated": "{count} کرێکار دروست کران",
+    "resultFailed": "{count} ڕیز سەرنەکەوت",
+    "resultWarnings": "{count} ڕیز لەگەڵ ئاگاداری دروست کران",
+    "row": "ڕیزی {n}"
   }
 }

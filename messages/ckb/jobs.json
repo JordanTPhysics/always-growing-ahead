@@ -42,5 +42,20 @@
     "active": "Active",
     "closed": "Closed",
     "expired": "Expired"
-  }
+  },
+  "bulkUpload": "Upload CSV",
+  "bulkTitle": "Bulk upload jobs",
+  "bulkSubtitle": "Import many jobs from a CSV. All rows are created under your employer account.",
+  "bulkChooseFile": "CSV file",
+  "bulkUploadCta": "Upload jobs",
+  "bulkDownloadSample": "Download sample CSV",
+  "bulkHeaders": "CSV headers",
+  "bulkHeadersHint": "Use these column names. employer_id is assigned automatically. skills is optional and pipe-separated (e.g. Forklift|Warehouse Picking).",
+  "bulkRequired": "Only title is required. Leave other columns blank if unused. status defaults to draft. Allowed job_type: full-time, part-time, contract, temporary, apprenticeship. Allowed salary_type: hourly, daily, annual. Allowed status: draft, active, closed, expired.",
+  "bulkNoFile": "Choose a CSV file first.",
+  "bulkUploading": "Uploading…",
+  "bulkResultCreated": "{count} jobs created",
+  "bulkResultFailed": "{count} rows failed",
+  "bulkResultWarnings": "{count} rows created with warnings",
+  "bulkRow": "Row {n}"
 }

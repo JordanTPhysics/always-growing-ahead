@@ -1,9 +1,10 @@
 {
   "title": "لوحة الإدارة",
-  "subtitle": "إدارة المهارات والمستخدمين ومحتوى التعليم وتحديثات الأخبار وترجمات الواجهة.",
+  "subtitle": "إدارة المهارات والمستخدمين واستيراد العمال ومحتوى التعليم وتحديثات الأخبار وترجمات الواجهة.",
   "tabsLabel": "أقسام الإدارة",
   "tabs": {
     "access": "المهارات والمستخدمون",
+    "workers": "العمال",
     "education": "التعليم",
     "news": "الأخبار",
     "translations": "الترجمات"
@@ -80,5 +81,19 @@
     "invalidJson": "يجب أن يكون المحتوى JSON صالحاً.",
     "loadError": "تعذر تحميل ملف الترجمة.",
     "saveError": "تعذر حفظ ملف الترجمة."
+  },
+  "workersImport": {
+    "heading": "استيراد العمال",
+    "hint": "تنشئ صفوف CSV ملفات عمال عامة من دون تسجيل دخول إلا إذا طابق user_email حساباً موجوداً. تظهر الملفات على الخريطة عند توفر الإحداثيات (من الرمز البريدي إذا تُرك lat/lng فارغاً).",
+    "required": "headline مطلوب. تُحفظ contact_email و contact_phone و linkedin_url في الملف لكشف التواصل. user_email اختياري. skills و desired_job_types يُفصلان بـ |. القيم الافتراضية: visibility=public، availability=immediate، actively_looking=true.",
+    "chooseFile": "ملف CSV",
+    "uploadCta": "رفع العمال",
+    "downloadSample": "تنزيل نموذج CSV",
+    "noFile": "اختر ملف CSV أولاً.",
+    "uploading": "جارٍ الرفع…",
+    "resultCreated": "تم إنشاء {count} عمال",
+    "resultFailed": "فشل {count} صفوف",
+    "resultWarnings": "تم إنشاء {count} صفوف مع تحذيرات",
+    "row": "الصف {n}"
   }
 }

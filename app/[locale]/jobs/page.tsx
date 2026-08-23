@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { JobSearchView } from "@/components/map/job-search-view";
+import { getMapsBrowserConfig } from "@/lib/maps/browser-config";
 
 export default async function JobsBrowsePage({
   params,
@@ -8,5 +9,6 @@ export default async function JobsBrowsePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <JobSearchView />;
+  const maps = await getMapsBrowserConfig();
+  return <JobSearchView mapsApiKey={maps.apiKey} mapsMapId={maps.mapId} />;
 }

@@ -8,10 +8,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
-ARG NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=
-ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-ENV NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=$NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
+# .dockerignore excludes .env*. Do not ARG/ENV secrets here — Next would
+# inline any NEXT_PUBLIC_* into the browser bundle at build time.
 RUN npm run build
 
 FROM node:24-alpine AS runner
