@@ -48,6 +48,7 @@ After that it installs Docker if needed, starts MySQL/MinIO, migrates both datab
 | `minio-init` | Creates private buckets `aga-live` and `aga-test`, then exits |
 | `caddy` | Public HTTP(S) for the app and the S3 API |
 | `migrate` / `migrate-test` | One-shot schema apply (`--profile tools`) |
+| `ensure-test-db` | Creates `aga_test` / `AGA_test` if the MySQL volume already existed |
 
 ## First boot (manual, if you skip the install script)
 
@@ -60,6 +61,7 @@ nano ../.env
 docker compose up -d mysql minio
 docker compose run --rm --no-deps minio-init
 docker compose --profile tools run --rm migrate
+docker compose --profile tools run --rm ensure-test-db
 docker compose --profile tools run --rm migrate-test
 docker compose up -d --build app caddy
 ```

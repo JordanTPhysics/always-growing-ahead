@@ -166,6 +166,7 @@ start_stack() {
 
   log "Applying database schema"
   compose --profile tools run --rm migrate
+  compose --profile tools run --rm ensure-test-db
   compose --profile tools run --rm migrate-test
 
   log "Building and starting the app"
