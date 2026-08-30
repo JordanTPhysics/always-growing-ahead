@@ -38,6 +38,10 @@ Mail for `admin@alwaysgrowingahead.com` stays on IONOS mail (`smtp.ionos.com`). 
 
 After that it installs Docker if needed, starts MySQL/MinIO, migrates both databases, builds the Next.js app, and puts Caddy on ports 80/443.
 
+## Day-to-day Docker commands
+
+Cheat sheet (status, logs, deploy, env recreate, backups): [`DOCKER.md`](DOCKER.md).
+
 ## What runs
 
 | Service | Role |

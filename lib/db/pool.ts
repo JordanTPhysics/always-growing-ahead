@@ -1,6 +1,5 @@
 import mysql from "mysql2/promise";
 import { isRemoteDatabaseConfigured } from "@/lib/db/config";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 
 function required(name: string): string {
   const value = process.env[name];
@@ -15,7 +14,7 @@ const globalForDb = globalThis as unknown as {
 };
 
 function createPool(): mysql.Pool {
-  if (!isRemoteDatabaseConfigured() || isMockMapDataEnabled()) {
+  if (!isRemoteDatabaseConfigured()) {
     throw new Error(
       "MySQL is not available. Set a remote DB_HOST, or leave mock data enabled."
     );

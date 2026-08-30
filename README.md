@@ -24,7 +24,7 @@ Foundations are in place:
 npm run db:migrate
 ```
 
-4. For the IONOS VPS, run [`infra/install.sh`](infra/install.sh) (see [`infra/README.md`](infra/README.md)).
+4. For the IONOS VPS, run [`infra/install.sh`](infra/install.sh) (see [`infra/README.md`](infra/README.md)). Common Docker commands: [`infra/DOCKER.md`](infra/DOCKER.md).
 
 5. Start the app:
 

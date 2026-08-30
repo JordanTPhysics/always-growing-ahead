@@ -3,7 +3,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { getJobById, listJobSkills } from "@/lib/db/repositories/jobs";
 import { getJsonJobById } from "@/lib/mock/jobs-store";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
+import {
+  getMockJobById,
+  isMockMapDataEnabled,
+} from "@/lib/mock/nottingham";
 import { PageHeader } from "@/components/ui/forms";
 import { Card, PageSection } from "@/components/ui/card";
 import { ContactReveal } from "@/components/billing/contact-reveal";
@@ -21,15 +24,24 @@ export default async function JobDetailPage({
   const t = await getTranslations("jobs");
   const jobId = Number(id);
 
-  const mockRow = isMockMapDataEnabled() ? getJsonJobById(jobId) : null;
-  const job = mockRow?.job ?? (await getJobById(jobId));
-  if (!job) notFound();
+  let job;
+  let skills;
 
-  const skills =
-    mockRow?.skills.map((skill) => ({
-      ...skill,
-      skill_name: `Skill #${skill.skill_id}`,
-    })) ?? (await listJobSkills(job.id));
+  if (isMockMapDataEnabled()) {
+    const mockRow = getJsonJobById(jobId);
+    const mockJob = mockRow?.job ?? getMockJobById(jobId);
+    if (!mockJob) notFound();
+    job = mockJob;
+    skills =
+      mockRow?.skills.map((skill) => ({
+        ...skill,
+        skill_name: `Skill #${skill.skill_id}`,
+      })) ?? [];
+  } else {
+    job = await getJobById(jobId);
+    if (!job) notFound();
+    skills = await listJobSkills(job.id);
+  }
 
   return (
     <PageSection>

@@ -1,6 +1,6 @@
+import { isRemoteDatabaseConfigured } from "@/lib/db/config";
 import { pool } from "@/lib/db/pool";
 import type { EducationMediaType, EducationResource } from "@/lib/db/types";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 type EducationRow = Omit<EducationResource, "is_published"> &
@@ -34,7 +34,7 @@ export type EducationResourceInput = {
 export async function listPublishedEducationResources(): Promise<
   EducationResource[]
 > {
-  if (isMockMapDataEnabled()) return [];
+  if (!isRemoteDatabaseConfigured()) return [];
   const [rows] = await pool.execute<EducationRow[]>(
     `SELECT * FROM education_resources
      WHERE is_published = 1
@@ -46,7 +46,7 @@ export async function listPublishedEducationResources(): Promise<
 export async function listPublishedEducationResourcesByMediaType(
   mediaType: EducationMediaType
 ): Promise<EducationResource[]> {
-  if (isMockMapDataEnabled()) return [];
+  if (!isRemoteDatabaseConfigured()) return [];
   const [rows] = await pool.execute<EducationRow[]>(
     `SELECT * FROM education_resources
      WHERE is_published = 1 AND media_type = ?
@@ -57,7 +57,7 @@ export async function listPublishedEducationResourcesByMediaType(
 }
 
 export async function listAllEducationResources(): Promise<EducationResource[]> {
-  if (isMockMapDataEnabled()) return [];
+  if (!isRemoteDatabaseConfigured()) return [];
   const [rows] = await pool.execute<EducationRow[]>(
     `SELECT * FROM education_resources
      ORDER BY topic ASC, sort_order ASC, id ASC`
@@ -68,7 +68,7 @@ export async function listAllEducationResources(): Promise<EducationResource[]> 
 export async function getEducationResourceById(
   id: number
 ): Promise<EducationResource | null> {
-  if (isMockMapDataEnabled()) return null;
+  if (!isRemoteDatabaseConfigured()) return null;
   const [rows] = await pool.execute<EducationRow[]>(
     "SELECT * FROM education_resources WHERE id = ? LIMIT 1",
     [id]
