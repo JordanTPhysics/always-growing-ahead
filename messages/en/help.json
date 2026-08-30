@@ -51,7 +51,7 @@
     "billing": {
       "title": "Manage your plan",
       "step1": "Open Pricing or Billing from the navigation menu to compare Free, Worker, and Employer plans.",
-      "step2": "Worker (£10/year) unlocks worker profiles, contact reveals, and education guides; Employer (£100/year) adds job posting.",
+      "step2": "Worker (£10/year or £1/month) unlocks worker profiles, contact reveals, and education guides; Employer (£100/year or £10/month) adds job posting.",
       "step3": "Use Manage billing to update payment details or change your subscription."
     }
   },
@@ -66,7 +66,7 @@
     },
     "plans": {
       "question": "What is the difference between the plans?",
-      "answer": "Free lets you search the map without viewing contact details. Worker (£10/year) adds a worker profile, job search with contact reveals, and education guides. Employer (£100/year) includes everything in Worker plus posting jobs and full app access."
+      "answer": "Free lets you search the map without viewing contact details. Worker (£10/year or £1/month) adds a worker profile, job search with contact reveals, and education guides. Employer (£100/year or £10/month) includes everything in Worker plus posting jobs and full app access."
     },
     "revealContact": {
       "question": "How does revealing contact details work?",

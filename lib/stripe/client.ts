@@ -23,6 +23,8 @@ export function isStripeConfigured(): boolean {
   return Boolean(
     process.env.STRIPE_SECRET_KEY &&
       process.env.STRIPE_PRICE_ID_BASIC &&
-      process.env.STRIPE_PRICE_ID_ADVANCED
+      process.env.STRIPE_PRICE_ID_ADVANCED &&
+      process.env.STRIPE_PRICE_ID_BASIC_MONTHLY &&
+      process.env.STRIPE_PRICE_ID_ADVANCED_MONTHLY
   );
 }

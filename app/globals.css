@@ -378,30 +378,42 @@ button {
 }
 
 .pricing-card-highlighted {
-  --pricing-ring: var(--pricing-fg);
+  --pricing-ring: var(--foreground);
 }
 
+/* Free: white/mint — openness, low commitment, easy to try */
 .pricing-card-free {
+  --pricing-fg: var(--background);
+  --pricing-fg-muted: var(--muted);
+  --pricing-accent: var(--border);
+  --pricing-badge-bg: var(--background-soft);
+  --pricing-badge-fg: var(--background);
   background: radial-gradient(
     ellipse 90% 40% at 100% 95%,
-    var(--background) 0%,
-    #ffffff 65%
+    var(--muted) 0%,
+    var(--surface) 70%
   );
 }
 
 .pricing-card-free::before {
   background: radial-gradient(
     ellipse 90% 40% at 100% 95%,
-    #ffffff 0%,
-    var(--background) 65%
+    var(--background-soft) 0%,
+    var(--surface) 70%
   );
 }
 
+/* Worker: forest green — growth, action, the path forward */
 .pricing-card-worker {
+  --pricing-fg: #ffffff;
+  --pricing-fg-muted: color-mix(in srgb, #ffffff 72%, transparent);
+  --pricing-accent: color-mix(in srgb, #ffffff 88%, var(--foreground));
+  --pricing-badge-bg: color-mix(in srgb, var(--foreground) 22%, transparent);
+  --pricing-badge-fg: var(--foreground);
   background: radial-gradient(
     ellipse 90% 40% at 100% 95%,
-    #ffffff 0%,
-    var(--background) 65%
+    var(--foreground) 0%,
+    var(--border) 58%
   );
 }
 
@@ -409,46 +421,30 @@ button {
   background: radial-gradient(
     ellipse 90% 40% at 100% 95%,
     var(--background) 0%,
-    #ffffff 65%
+    var(--border) 58%
   );
 }
 
+/* Employer: gold — prestige, exclusivity, premium value */
 .pricing-card-employer {
+  --pricing-fg: var(--text);
+  --pricing-fg-muted: color-mix(in srgb, var(--text) 58%, var(--foreground));
+  --pricing-accent: var(--background);
+  --pricing-badge-bg: color-mix(in srgb, var(--background) 14%, transparent);
+  --pricing-badge-fg: var(--background);
   background: radial-gradient(
     ellipse 90% 40% at 100% 95%,
-    var(--foreground) 0%,
-    var(--background) 65%
+    var(--background) 0%,
+    var(--foreground) 58%
   );
 }
 
 .pricing-card-employer::before {
   background: radial-gradient(
     ellipse 90% 40% at 100% 95%,
-    var(--background) 0%,
-    var(--foreground) 65%
+    color-mix(in srgb, var(--foreground) 70%, var(--background)) 0%,
+    var(--foreground) 58%
   );
-}
-
-/* Green-dominant cards: white text */
-[data-billing-period="monthly"] .pricing-card-free,
-[data-billing-period="yearly"] .pricing-card-worker,
-[data-billing-period="yearly"] .pricing-card-employer {
-  --pricing-fg: #ffffff;
-  --pricing-fg-muted: color-mix(in srgb, #ffffff 72%, transparent);
-  --pricing-accent: color-mix(in srgb, #ffffff 88%, var(--foreground));
-  --pricing-badge-bg: color-mix(in srgb, var(--foreground) 18%, transparent);
-  --pricing-badge-fg: var(--foreground);
-}
-
-/* White/gold-dominant cards: green text */
-[data-billing-period="yearly"] .pricing-card-free,
-[data-billing-period="monthly"] .pricing-card-worker,
-[data-billing-period="monthly"] .pricing-card-employer {
-  --pricing-fg: var(--background);
-  --pricing-fg-muted: var(----background-soft);
-  --pricing-accent: var(--background);
-  --pricing-badge-bg: var(--background-soft);
-  --pricing-badge-fg: var(--muted);
 }
 
 .pricing-price-animate {

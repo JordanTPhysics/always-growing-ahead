@@ -9,6 +9,7 @@
     "lint": "eslint",
     "db:migrate": "tsx lib/db/migrate.ts",
     "seed:mock": "tsx scripts/seed-mock-data.ts",
+    "stripe:upload-products": "tsx scripts/upload-stripe-products.ts",
     "cap:sync": "npx cap sync",
     "cap:open:android": "npx cap open android",
     "cap:add:android": "npx cap add android"

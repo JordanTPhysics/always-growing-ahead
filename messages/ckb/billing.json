@@ -1,6 +1,6 @@
 {
   "title": "Billing & plans",
-  "subtitle": "Upgrade to Worker or Employer. All paid plans are billed yearly.",
+  "subtitle": "Upgrade to Worker or Employer. Pay monthly or yearly.",
   "upgradeTitle": "Upgrade to continue",
   "viewPlans": "View plans",
   "requiresBasic": "Requires Worker or Employer.",
@@ -30,14 +30,15 @@
   "noLinkedin": "No LinkedIn profile on file.",
   "currentPlan": "Current plan",
   "manageBilling": "Manage billing",
+  "billingToggleLabel": "Billing period",
+  "billingMonthly": "Monthly",
+  "billingYearly": "Yearly",
+  "perMonth": "per month",
+  "perYear": "per year",
   "tiers": {
     "none": "Free",
     "basic": "Worker",
     "advanced": "Employer"
-  },
-  "prices": {
-    "basic": "£10 per year",
-    "advanced": "£100 per year"
   },
   "features": {
     "search": "Map search for jobs and workers",

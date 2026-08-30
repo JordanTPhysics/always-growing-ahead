@@ -65,8 +65,7 @@ export default async function HomePage({
             {t("tagline")}
           </h1>
           <p className="text-lg text-white">
-            Search the map, reveal contact details on a plan, and manage hiring from
-            one account — on web or in the native app shell.
+            {t("description")}
           </p>
         </div>
         <SponsoredCarousel items={[...sponsoredItems].reverse()} />

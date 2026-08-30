@@ -8,9 +8,11 @@ import {
 import { getLatestSubscriptionForUser } from "@/lib/db/repositories/subscriptions";
 import { appBaseUrl, getStripe, isStripeConfigured } from "@/lib/stripe/client";
 import { priceIdForTier, type PaidTier } from "@/lib/stripe/prices";
+import { parseBillingPeriod } from "@/lib/stripe/billing-period";
 
 const schema = z.object({
   tier: z.enum(["basic", "advanced"]),
+  period: z.enum(["monthly", "yearly"]).optional(),
   locale: z.string().min(2).max(10).optional(),
 });
 
@@ -24,9 +26,10 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => null);
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return jsonError("Invalid tier");
+  if (!parsed.success) return jsonError("Invalid checkout request");
 
   const tier = parsed.data.tier as PaidTier;
+  const period = parseBillingPeriod(parsed.data.period);
   const locale = parsed.data.locale ?? "en";
   const userId = Number(session.user.id);
   const user = await getUserById(userId);
@@ -59,17 +62,19 @@ export async function POST(request: Request) {
   const checkout = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
-    line_items: [{ price: priceIdForTier(tier), quantity: 1 }],
+    line_items: [{ price: priceIdForTier(tier, period), quantity: 1 }],
     success_url: `${base}/${locale}/billing?success=1`,
     cancel_url: `${base}/${locale}/billing?canceled=1`,
     metadata: {
       userId: String(user.id),
       tier,
+      period,
     },
     subscription_data: {
       metadata: {
         userId: String(user.id),
         tier,
+        period,
       },
     },
   });

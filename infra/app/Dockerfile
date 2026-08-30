@@ -24,6 +24,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/messages ./messages
 COPY --from=builder /app/i18n ./i18n
 COPY --from=builder /app/next.config.ts ./
+COPY infra/app/docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
 USER nextjs
 EXPOSE 3000
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["npx", "next", "start", "-H", "0.0.0.0", "-p", "3000"]

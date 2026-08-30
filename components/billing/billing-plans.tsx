@@ -4,13 +4,21 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import type { Tier } from "@/lib/entitlements";
+import {
+  formatGbp,
+  gbpForPeriod,
+  YEARLY_GBP_BY_PAID_TIER,
+  type BillingPeriod,
+} from "@/lib/stripe/billing-period";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PillToggle } from "@/components/ui/pill-toggle";
 
 type Props = {
   currentTier: Tier;
   hasStripeCustomer: boolean;
   stripeConfigured: boolean;
+  initialPeriod?: BillingPeriod;
   success?: boolean;
   canceled?: boolean;
 };
@@ -19,6 +27,7 @@ export function BillingPlans({
   currentTier,
   hasStripeCustomer,
   stripeConfigured,
+  initialPeriod = "yearly",
   success,
   canceled,
 }: Props) {
@@ -27,6 +36,8 @@ export function BillingPlans({
   const { data: session, update } = useSession();
   const liveTier = (session?.user?.tier as Tier | undefined) ?? currentTier;
   const [error, setError] = useState<string | null>(null);
+  const [billingPeriod, setBillingPeriod] =
+    useState<BillingPeriod>(initialPeriod);
   const [loading, setLoading] = useState<"basic" | "advanced" | "portal" | null>(
     null
   );
@@ -44,7 +55,7 @@ export function BillingPlans({
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier, locale }),
+        body: JSON.stringify({ tier, period: billingPeriod, locale }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -85,7 +96,7 @@ export function BillingPlans({
     {
       id: "basic" as const,
       name: t("tiers.basic"),
-      price: t("prices.basic"),
+      yearlyPrice: YEARLY_GBP_BY_PAID_TIER.basic,
       features: [
         t("features.search"),
         t("features.workerProfile"),
@@ -96,7 +107,7 @@ export function BillingPlans({
     {
       id: "advanced" as const,
       name: t("tiers.advanced"),
-      price: t("prices.advanced"),
+      yearlyPrice: YEARLY_GBP_BY_PAID_TIER.advanced,
       features: [
         t("features.search"),
         t("features.workerProfile"),
@@ -134,6 +145,18 @@ export function BillingPlans({
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
+      <div className="flex justify-center">
+        <PillToggle
+          value={billingPeriod}
+          onChange={setBillingPeriod}
+          ariaLabel={t("billingToggleLabel")}
+          options={[
+            { value: "monthly", label: t("billingMonthly") },
+            { value: "yearly", label: t("billingYearly") },
+          ]}
+        />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         {plans.map((plan) => {
           const isCurrent = liveTier === plan.id;
@@ -150,7 +173,10 @@ export function BillingPlans({
             >
               <div>
                 <h2 className="text-xl font-semibold">{plan.name}</h2>
-                <p className="mt-1 text-muted">{plan.price}</p>
+                <p className="mt-1 text-muted">
+                  {formatGbp(gbpForPeriod(plan.yearlyPrice, billingPeriod))}{" "}
+                  {t(billingPeriod === "yearly" ? "perYear" : "perMonth")}
+                </p>
               </div>
               <ul className="space-y-2 text-sm text-muted">
                 {plan.features.map((feature) => (

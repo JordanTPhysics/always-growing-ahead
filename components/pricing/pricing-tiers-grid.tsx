@@ -3,11 +3,14 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
+import {
+  formatGbp,
+  gbpForPeriod,
+  type BillingPeriod,
+} from "@/lib/stripe/billing-period";
 import { Button } from "@/components/ui/button";
 import { PillToggle } from "@/components/ui/pill-toggle";
 import { cn } from "@/lib/utils";
-
-type BillingPeriod = "monthly" | "yearly";
 
 export type PricingTierData = {
   key: "free" | "worker" | "employer";
@@ -24,19 +27,6 @@ export type PricingTierData = {
 type Props = {
   tiers: PricingTierData[];
 };
-
-function formatPrice(amount: number): string {
-  const formatted = Number.isInteger(amount)
-    ? amount.toString()
-    : amount.toFixed(2).replace(/\.?0+$/, "");
-  return `£${formatted}`;
-}
-
-function displayPrice(yearlyPrice: number, period: BillingPeriod): string {
-  if (yearlyPrice === 0) return formatPrice(0);
-  if (period === "yearly") return formatPrice(yearlyPrice);
-  return formatPrice(yearlyPrice / 10);
-}
 
 const pricingButtonClassName =
   "mt-auto border-border bg-white shadow-button hover:bg-white/90 hover:shadow-button-hover";
@@ -86,7 +76,7 @@ export function PricingTiersGrid({ tiers }: Props) {
                   key={billingPeriod}
                   className="pricing-card-price pricing-price-animate mt-2 text-3xl font-semibold tracking-tight"
                 >
-                  {displayPrice(tier.yearlyPrice, billingPeriod)}
+                  {formatGbp(gbpForPeriod(tier.yearlyPrice, billingPeriod))}
                   {tier.isPaid ? (
                     <span className="pricing-card-muted text-base font-normal">
                       {" "}
@@ -119,11 +109,11 @@ export function PricingTiersGrid({ tiers }: Props) {
               ) : tier.isSignedIn ? (
                 tier.isCurrent ? (
                   <Button asChild variant="secondary" className={pricingButtonClassName}>
-                    <Link href="/billing">{t("managePlan")}</Link>
+                    <Link href={`/billing?period=${billingPeriod}`}>{t("managePlan")}</Link>
                   </Button>
                 ) : (
                   <Button asChild variant="secondary" className={pricingButtonClassName}>
-                    <Link href="/billing">{t("subscribe")}</Link>
+                    <Link href={`/billing?period=${billingPeriod}`}>{t("subscribe")}</Link>
                   </Button>
                 )
               ) : (

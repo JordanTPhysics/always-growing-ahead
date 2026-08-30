@@ -1,20 +1,18 @@
 import { connection } from "next/server";
 
-function firstEnv(...names: string[]): string {
-  for (const name of names) {
-    const value = process.env[name]?.trim();
-    if (value) return value;
-  }
-  return "";
+function readEnv(name: string): string {
+  return String(process.env[name] ?? "").trim();
 }
 
 /** Maps key/id for the browser. Read at request time — never baked into the JS bundle. */
 export async function getMapsBrowserConfig() {
   await connection();
   return {
-    apiKey: firstEnv("GOOGLE_MAPS_API_KEY", "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"),
+    apiKey:
+      readEnv("GOOGLE_MAPS_API_KEY") || readEnv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"),
     mapId:
-      firstEnv("GOOGLE_MAPS_MAP_ID", "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID") ||
+      readEnv("GOOGLE_MAPS_MAP_ID") ||
+      readEnv("NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID") ||
       "DEMO_MAP_ID",
   };
 }

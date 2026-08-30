@@ -1,6 +1,6 @@
 {
   "title": "الفوترة والخطط",
-  "subtitle": "رقِّ إلى خطة العامل أو صاحب العمل. جميع الخطط المدفوعة تُفوتر سنويًا.",
+  "subtitle": "رقِّ إلى خطة العامل أو صاحب العمل. ادفع شهريًا أو سنويًا.",
   "upgradeTitle": "قم بالترقية للمتابعة",
   "viewPlans": "عرض الخطط",
   "requiresBasic": "يتطلب خطة العامل أو صاحب العمل.",
@@ -30,14 +30,15 @@
   "noLinkedin": "لا يوجد ملف LinkedIn مسجّل.",
   "currentPlan": "الخطة الحالية",
   "manageBilling": "إدارة الفوترة",
+  "billingToggleLabel": "فترة الفوترة",
+  "billingMonthly": "شهري",
+  "billingYearly": "سنوي",
+  "perMonth": "شهريًا",
+  "perYear": "سنويًا",
   "tiers": {
     "none": "مجاني",
     "basic": "عامل",
     "advanced": "صاحب عمل"
-  },
-  "prices": {
-    "basic": "£10 سنويًا",
-    "advanced": "£100 سنويًا"
   },
   "features": {
     "search": "بحث بالخريطة عن الوظائف والعاملين",

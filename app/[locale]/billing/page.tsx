@@ -6,13 +6,18 @@ import { PageHeader } from "@/components/ui/forms";
 import { PageSection } from "@/components/ui/card";
 import { getUserById } from "@/lib/db/repositories/users";
 import { isStripeConfigured } from "@/lib/stripe/client";
+import { parseBillingPeriod } from "@/lib/stripe/billing-period";
 
 export default async function BillingPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ success?: string; canceled?: string }>;
+  searchParams: Promise<{
+    success?: string;
+    canceled?: string;
+    period?: string;
+  }>;
 }) {
   const { locale } = await params;
   const query = await searchParams;
@@ -30,6 +35,7 @@ export default async function BillingPage({
         currentTier={session.user.tier}
         hasStripeCustomer={Boolean(user?.stripe_customer_id)}
         stripeConfigured={isStripeConfigured()}
+        initialPeriod={parseBillingPeriod(query.period)}
         success={query.success === "1"}
         canceled={query.canceled === "1"}
       />

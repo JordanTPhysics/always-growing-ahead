@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import type { Tier } from "@/lib/entitlements";
+import { YEARLY_GBP_BY_PAID_TIER } from "@/lib/stripe/billing-period";
 import {
   PricingTiersGrid,
   type PricingTierData,
@@ -12,12 +13,6 @@ const tierToInternal: Record<(typeof tierKeys)[number], Tier> = {
   free: "none",
   worker: "basic",
   employer: "advanced",
-};
-
-const tierYearlyPrice: Record<(typeof tierKeys)[number], number> = {
-  free: 0,
-  worker: 10,
-  employer: 100,
 };
 
 function tierFeatures(
@@ -46,7 +41,8 @@ export async function PricingTiers() {
       name: t(`tiers.${key}.name`),
       summary: t(`tiers.${key}.summary`),
       features: tierFeatures(key, t),
-      yearlyPrice: tierYearlyPrice[key],
+      yearlyPrice:
+        internalTier === "none" ? 0 : YEARLY_GBP_BY_PAID_TIER[internalTier],
       isCurrent: currentTier === internalTier,
       isPaid: key !== "free",
       isHighlighted: key === "worker",
