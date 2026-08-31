@@ -2,6 +2,7 @@ import { Client } from "minio";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import type { Readable } from "node:stream";
 
 const PUT_EXPIRES_SECONDS = 60 * 60;
 const GET_EXPIRES_SECONDS = 60 * 60;
@@ -92,6 +93,17 @@ export async function putObject(
   contentType: string
 ): Promise<void> {
   await getClient().putObject(bucket(), key, body, body.byteLength, {
+    "Content-Type": contentType,
+  });
+}
+
+export async function putObjectStream(
+  key: string,
+  body: Readable,
+  size: number,
+  contentType: string
+): Promise<void> {
+  await getClient().putObject(bucket(), key, body, size, {
     "Content-Type": contentType,
   });
 }

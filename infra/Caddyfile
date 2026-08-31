@@ -16,6 +16,37 @@
 	header Access-Control-Expose-Headers "ETag, Accept-Ranges, Content-Range, Content-Length, Content-Type"
 }
 
+# Strip MinIO's CORS so Caddy is the only source (duplicate ACAO breaks browsers).
+(s3_proxy) {
+	reverse_proxy minio:9000 {
+		header_down -Access-Control-Allow-Origin
+		header_down -Access-Control-Allow-Credentials
+		header_down -Access-Control-Allow-Methods
+		header_down -Access-Control-Allow-Headers
+		header_down -Access-Control-Expose-Headers
+		flush_interval -1
+		transport http {
+			read_timeout 1h
+			write_timeout 1h
+			response_header_timeout 1h
+		}
+	}
+}
+
+(app_proxy) {
+	request_body {
+		max_size 2GB
+	}
+	reverse_proxy app:3000 {
+		flush_interval -1
+		transport http {
+			read_timeout 1h
+			write_timeout 1h
+			response_header_timeout 1h
+		}
+	}
+}
+
 {$APP_SITE_ADDRESS} {
 	@s3 path /aga-live* /aga-test*
 
@@ -24,13 +55,11 @@
 		request_body {
 			max_size 2GB
 		}
-		reverse_proxy minio:9000 {
-			flush_interval -1
-		}
+		import s3_proxy
 	}
 
 	handle {
-		reverse_proxy app:3000
+		import app_proxy
 	}
 }
 
@@ -39,8 +68,5 @@
 	request_body {
 		max_size 2GB
 	}
-
-	reverse_proxy minio:9000 {
-		flush_interval -1
-	}
+	import s3_proxy
 }

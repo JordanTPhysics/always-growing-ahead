@@ -99,6 +99,10 @@ function putWithProgress(
       onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
     };
     xhr.onload = () => {
+      if (xhr.status === 0) {
+        reject(new TypeError("Network error"));
+        return;
+      }
       resolve({
         ok: xhr.status >= 200 && xhr.status < 300,
         status: xhr.status,
@@ -218,6 +222,7 @@ export function AdminEducationPanel() {
       );
       const data = await readBody(init);
       if (!init.ok) {
+        console.error("education upload init failed", init.status, data);
         setStatus(null);
         setError(
           typeof data.error === "string" ? data.error : t("uploadFailed")
@@ -225,31 +230,34 @@ export function AdminEducationPanel() {
         return;
       }
       const uploadUrl = data.uploadUrl;
-      if (typeof uploadUrl === "string" && uploadUrl) {
-        const put = await putWithProgress(
-          uploadUrl,
-          file,
-          typeof data.mimeType === "string"
-            ? data.mimeType
-            : file.type || "application/octet-stream",
-          setUploadPercent,
-          FILE_TIMEOUT_MS
-        );
-        if (!put.ok) {
-          let putError: string | undefined;
-          try {
-            putError = (JSON.parse(put.text) as { error?: string }).error;
-          } catch {
-            putError = undefined;
-          }
-          setStatus(null);
-          setError(
-            putError ?? `${t("uploadFailed")} (${put.status})`
-          );
-          return;
-        }
-        setUploadPercent(100);
+      if (typeof uploadUrl !== "string" || !uploadUrl) {
+        console.error("education upload: missing uploadUrl", data);
+        setStatus(null);
+        setError(t("uploadFailed"));
+        return;
       }
+      const put = await putWithProgress(
+        uploadUrl,
+        file,
+        typeof data.mimeType === "string"
+          ? data.mimeType
+          : file.type || "application/octet-stream",
+        setUploadPercent,
+        FILE_TIMEOUT_MS
+      );
+      if (!put.ok) {
+        let putError: string | undefined;
+        try {
+          putError = (JSON.parse(put.text) as { error?: string }).error;
+        } catch {
+          putError = undefined;
+        }
+        console.error("education upload PUT failed", put.status, put.text);
+        setStatus(null);
+        setError(putError ?? `${t("uploadFailed")} (${put.status})`);
+        return;
+      }
+      setUploadPercent(100);
       setForm((current) => ({
         ...current,
         file_url: String(data.url ?? ""),
@@ -265,6 +273,7 @@ export function AdminEducationPanel() {
       }));
       setStatus(t("uploadedReady"));
     } catch (err) {
+      console.error("education upload", err);
       setStatus(null);
       setError(messageFromError(err, t("timedOut"), t("networkError")));
     } finally {
