@@ -42,6 +42,78 @@ const emptyForm = (): FormState => ({
   media_type: "",
 });
 
+const API_TIMEOUT_MS = 30_000;
+const FILE_TIMEOUT_MS = 60 * 60 * 1000;
+
+async function fetchTimed(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function readBody(
+  response: Response
+): Promise<{ error?: string; [key: string]: unknown }> {
+  const text = await response.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text) as { error?: string };
+  } catch {
+    return {};
+  }
+}
+
+function messageFromError(
+  err: unknown,
+  timedOut: string,
+  network: string
+): string {
+  if (err instanceof DOMException && err.name === "AbortError") return timedOut;
+  if (err instanceof TypeError) return network;
+  if (err instanceof Error && err.message) return err.message;
+  return network;
+}
+
+function putWithProgress(
+  url: string,
+  file: File,
+  contentType: string,
+  onProgress: (percent: number) => void,
+  timeoutMs: number
+): Promise<{ ok: boolean; status: number; text: string }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", url);
+    xhr.timeout = timeoutMs;
+    xhr.setRequestHeader("Content-Type", contentType);
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable || event.total <= 0) return;
+      onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
+    };
+    xhr.onload = () => {
+      resolve({
+        ok: xhr.status >= 200 && xhr.status < 300,
+        status: xhr.status,
+        text: xhr.responseText,
+      });
+    };
+    xhr.onerror = () => reject(new TypeError("Network error"));
+    xhr.ontimeout = () =>
+      reject(new DOMException("The operation was aborted.", "AbortError"));
+    xhr.onabort = () =>
+      reject(new DOMException("The operation was aborted.", "AbortError"));
+    xhr.send(file);
+  });
+}
+
 function fromResource(resource: EducationResource): FormState {
   return {
     topic: resource.topic,
@@ -69,17 +141,27 @@ export function AdminEducationPanel() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
   async function load() {
-    const response = await fetch("/api/admin/education");
-    const data = await response.json();
-    setResources(data.resources ?? []);
+    const response = await fetchTimed("/api/admin/education", {}, API_TIMEOUT_MS);
+    const data = await readBody(response);
+    if (!response.ok) {
+      throw new Error(
+        typeof data.error === "string" ? data.error : t("loadFailed")
+      );
+    }
+    setResources((data.resources as EducationResource[] | undefined) ?? []);
   }
 
   useEffect(() => {
-    void load();
+    void load().catch((err: unknown) => {
+      setError(messageFromError(err, t("timedOut"), t("loadFailed")));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, []);
 
   function startCreate() {
@@ -87,6 +169,8 @@ export function AdminEducationPanel() {
     setForm(emptyForm());
     setShowForm(true);
     setError(null);
+    setStatus(null);
+    setUploadPercent(0);
   }
 
   function startEdit(resource: EducationResource) {
@@ -94,52 +178,84 @@ export function AdminEducationPanel() {
     setForm(fromResource(resource));
     setShowForm(true);
     setError(null);
+    setStatus(null);
+    setUploadPercent(0);
   }
 
-  function cancelForm() {
+  function resetForm() {
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm());
+  }
+
+  function cancelForm() {
+    resetForm();
     setError(null);
+    setStatus(null);
+    setUploadPercent(0);
   }
 
   async function onFileChange(fileList: FileList | null) {
     const file = fileList?.[0];
     if (!file) return;
     setUploading(true);
+    setUploadPercent(0);
     setError(null);
+    setStatus(t("uploading"));
     try {
-      const init = await fetch("/api/admin/uploads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          contentType: file.type,
-          byteSize: file.size,
-        }),
-      });
-      const data = await init.json();
+      const init = await fetchTimed(
+        "/api/admin/uploads",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            contentType: file.type,
+            byteSize: file.size,
+          }),
+        },
+        API_TIMEOUT_MS
+      );
+      const data = await readBody(init);
       if (!init.ok) {
-        setError(data.error ?? "Upload failed");
+        setStatus(null);
+        setError(
+          typeof data.error === "string" ? data.error : t("uploadFailed")
+        );
         return;
       }
-      if (data.uploadUrl) {
-        const put = await fetch(data.uploadUrl as string, {
-          method: "PUT",
-          headers: { "Content-Type": data.mimeType as string },
-          body: file,
-        });
+      const uploadUrl = data.uploadUrl;
+      if (typeof uploadUrl === "string" && uploadUrl) {
+        const put = await putWithProgress(
+          uploadUrl,
+          file,
+          typeof data.mimeType === "string"
+            ? data.mimeType
+            : file.type || "application/octet-stream",
+          setUploadPercent,
+          FILE_TIMEOUT_MS
+        );
         if (!put.ok) {
-          setError("Upload failed");
+          let putError: string | undefined;
+          try {
+            putError = (JSON.parse(put.text) as { error?: string }).error;
+          } catch {
+            putError = undefined;
+          }
+          setStatus(null);
+          setError(
+            putError ?? `${t("uploadFailed")} (${put.status})`
+          );
           return;
         }
+        setUploadPercent(100);
       }
       setForm((current) => ({
         ...current,
-        file_url: data.url,
-        file_name: data.fileName,
-        mime_type: data.mimeType,
-        byte_size: Number(data.byteSize) || 0,
+        file_url: String(data.url ?? ""),
+        file_name: String(data.fileName ?? file.name),
+        mime_type: String(data.mimeType ?? file.type),
+        byte_size: Number(data.byteSize) || file.size,
         media_type:
           data.fileKind === "pdf"
             ? "pdf"
@@ -147,6 +263,10 @@ export function AdminEducationPanel() {
               ? ""
               : current.media_type,
       }));
+      setStatus(t("uploadedReady"));
+    } catch (err) {
+      setStatus(null);
+      setError(messageFromError(err, t("timedOut"), t("networkError")));
     } finally {
       setUploading(false);
     }
@@ -154,17 +274,20 @@ export function AdminEducationPanel() {
 
   async function save() {
     if (!form.file_url || !form.media_type) {
+      setStatus(null);
       setError(
         !form.file_url ? t("uploadRequired") : t("mediaTypeRequired")
       );
       return;
     }
     if (!form.byte_size || form.byte_size <= 0) {
+      setStatus(null);
       setError(t("uploadRequired"));
       return;
     }
     setSaving(true);
     setError(null);
+    setStatus(t("saving"));
     try {
       const payload = {
         topic: form.topic,
@@ -183,7 +306,7 @@ export function AdminEducationPanel() {
         is_published: form.is_published,
       };
 
-      const response = await fetch(
+      const response = await fetchTimed(
         editingId
           ? `/api/admin/education/${editingId}`
           : "/api/admin/education",
@@ -191,27 +314,66 @@ export function AdminEducationPanel() {
           method: editingId ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
+        API_TIMEOUT_MS
       );
-      const data = await response.json();
+      const data = await readBody(response);
       if (!response.ok) {
-        setError(data.error ?? "Save failed");
+        setStatus(null);
+        setError(
+          typeof data.error === "string" ? data.error : t("saveFailed")
+        );
         return;
       }
-      cancelForm();
-      await load();
+      const resource = data.resource as EducationResource | undefined;
+      if (resource) {
+        setResources((current) => {
+          if (editingId) {
+            return current.map((item) =>
+              item.id === editingId ? resource : item
+            );
+          }
+          return [resource, ...current.filter((item) => item.id !== resource.id)];
+        });
+      }
+      resetForm();
+      setStatus(t("saved"));
+      try {
+        await load();
+      } catch (err) {
+        setError(messageFromError(err, t("timedOut"), t("loadFailed")));
+      }
+    } catch (err) {
+      setStatus(null);
+      setError(messageFromError(err, t("timedOut"), t("saveFailed")));
     } finally {
       setSaving(false);
     }
   }
 
   async function remove(id: number) {
-    const response = await fetch(`/api/admin/education/${id}`, {
-      method: "DELETE",
-    });
-    if (response.ok) {
+    setError(null);
+    setStatus(t("saving"));
+    try {
+      const response = await fetchTimed(
+        `/api/admin/education/${id}`,
+        { method: "DELETE" },
+        API_TIMEOUT_MS
+      );
+      if (!response.ok) {
+        const data = await readBody(response);
+        setStatus(null);
+        setError(
+          typeof data.error === "string" ? data.error : t("deleteFailed")
+        );
+        return;
+      }
       setResources((current) => current.filter((item) => item.id !== id));
-      if (editingId === id) cancelForm();
+      if (editingId === id) resetForm();
+      setStatus(t("saved"));
+    } catch (err) {
+      setStatus(null);
+      setError(messageFromError(err, t("timedOut"), t("deleteFailed")));
     }
   }
 
@@ -228,6 +390,11 @@ export function AdminEducationPanel() {
           </Button>
         ) : null}
       </div>
+
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {!error && status ? (
+        <p className="text-sm text-muted">{status}</p>
+      ) : null}
 
       {showForm ? (
         <Card elevation="nested" className="space-y-4 p-5">
@@ -403,9 +570,29 @@ export function AdminEducationPanel() {
                   </span>
                 ) : null}
               </div>
+              <p className="text-xs text-muted">{t("fileLimits")}</p>
+              {uploading ? (
+                <div className="space-y-1.5">
+                  <div
+                    className="h-2 w-full overflow-hidden rounded-full bg-background-soft"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={uploadPercent}
+                    aria-label={t("uploading")}
+                  >
+                    <div
+                      className="h-full bg-background transition-[width] duration-200"
+                      style={{ width: `${uploadPercent}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted">
+                    {t("uploadProgress", { percent: uploadPercent })}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"

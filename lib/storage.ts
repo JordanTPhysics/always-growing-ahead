@@ -3,7 +3,7 @@ import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-const PUT_EXPIRES_SECONDS = 15 * 60;
+const PUT_EXPIRES_SECONDS = 60 * 60;
 const GET_EXPIRES_SECONDS = 60 * 60;
 
 export function isObjectStorageConfigured(): boolean {

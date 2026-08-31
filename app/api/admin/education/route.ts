@@ -30,8 +30,13 @@ export async function GET() {
   const { error } = await requireAdmin();
   if (error) return error;
 
-  const resources = await listAllEducationResources();
-  return NextResponse.json({ resources });
+  try {
+    const resources = await listAllEducationResources();
+    return NextResponse.json({ resources });
+  } catch (err) {
+    console.error("listAllEducationResources", err);
+    return jsonError("Could not load education guides.", 500);
+  }
 }
 
 export async function POST(request: Request) {
@@ -50,9 +55,26 @@ export async function POST(request: Request) {
     session!.user.email
   );
 
-  const resource = await createEducationResource({
-    ...parsed.data,
-    created_by: createdBy,
-  });
-  return NextResponse.json({ resource }, { status: 201 });
+  try {
+    const resource = await createEducationResource({
+      ...parsed.data,
+      created_by: createdBy,
+    });
+    return NextResponse.json({ resource }, { status: 201 });
+  } catch (err) {
+    console.error("createEducationResource", err);
+    return jsonError(saveErrorMessage(err), 500);
+  }
+}
+
+function saveErrorMessage(err: unknown): string {
+  const code = (err as { code?: string }).code;
+  if (code === "ER_NO_REFERENCED_ROW" || code === "ER_NO_REFERENCED_ROW_2") {
+    return "Could not save: this admin account is not in the database.";
+  }
+  if (code === "ER_TRUNCATED_WRONG_VALUE_FOR_FIELD" || code === "ER_WARN_DATA_OUT_OF_RANGE") {
+    return "Could not save: a field was the wrong type or too long.";
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return "Could not save the education guide.";
 }

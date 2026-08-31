@@ -22,7 +22,7 @@
 	handle @s3 {
 		import s3_cors
 		request_body {
-			max_size 256MB
+			max_size 2GB
 		}
 		reverse_proxy minio:9000 {
 			flush_interval -1
@@ -37,7 +37,7 @@
 {$FILES_SITE_ADDRESS} {
 	import s3_cors
 	request_body {
-		max_size 256MB
+		max_size 2GB
 	}
 
 	reverse_proxy minio:9000 {

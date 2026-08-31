@@ -1,3 +1,4 @@
+import { isRemoteDatabaseConfigured } from "@/lib/db/config";
 import { pool } from "@/lib/db/pool";
 import type { Tier } from "@/lib/entitlements";
 import type { User, UserRole } from "@/lib/db/types";
@@ -38,21 +39,37 @@ export async function getUserById(id: number): Promise<User | null> {
   return rows[0] ?? null;
 }
 
-/** Map a session user to a real DB id (mock JWT ids may not match MySQL rows). */
+/** Map a session user to a real MySQL id (mock JWT ids may not match rows). */
 export async function resolveDbUserId(
   userId: number,
   email?: string | null
 ): Promise<number | null> {
+  if (isRemoteDatabaseConfigured()) {
+    if (Number.isInteger(userId) && userId > 0) {
+      const [rows] = await pool.execute<UserRow[]>(
+        "SELECT * FROM users WHERE id = ? LIMIT 1",
+        [userId]
+      );
+      if (rows[0]) return rows[0].id;
+    }
+    if (email) {
+      const [rows] = await pool.execute<UserRow[]>(
+        "SELECT * FROM users WHERE email = ? LIMIT 1",
+        [email.toLowerCase()]
+      );
+      if (rows[0]) return rows[0].id;
+    }
+    return null;
+  }
+
   if (Number.isInteger(userId) && userId > 0) {
     const user = await getUserById(userId);
     if (user) return user.id;
   }
-
   if (email) {
     const user = await getUserByEmail(email);
     if (user) return user.id;
   }
-
   return null;
 }
 

@@ -47,8 +47,18 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "uploading": "Uploading…",
+    "uploadProgress": "Uploading… {percent}%",
+    "fileLimits": "PDF up to 100 MB. Video up to 2 GB.",
     "saving": "Saving…",
-    "uploadRequired": "Choose a PDF or video file before saving."
+    "uploadRequired": "Choose a PDF or video file before saving.",
+    "uploadedReady": "File uploaded. Click Save guide to publish it.",
+    "saved": "Guide saved.",
+    "loadFailed": "Could not load education guides.",
+    "uploadFailed": "File upload failed.",
+    "saveFailed": "Could not save the guide.",
+    "deleteFailed": "Could not delete the guide.",
+    "timedOut": "This step timed out. Check your connection and try again.",
+    "networkError": "Network error. The file was not uploaded."
   },
   "news": {
     "heading": "News updates",

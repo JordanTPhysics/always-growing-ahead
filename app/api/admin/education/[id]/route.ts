@@ -61,15 +61,22 @@ export async function PATCH(request: Request, { params }: Params) {
   const existing = await getEducationResourceById(id);
   if (!existing) return jsonError("Not found", 404);
 
-  const resource = await updateEducationResource(id, parsed.data);
-  if (
-    parsed.data.file_url &&
-    parsed.data.file_url !== existing.file_url
-  ) {
-    await tryUnlinkEducationFile(existing.file_url);
+  try {
+    const resource = await updateEducationResource(id, parsed.data);
+    if (
+      parsed.data.file_url &&
+      parsed.data.file_url !== existing.file_url
+    ) {
+      await tryUnlinkEducationFile(existing.file_url);
+    }
+    return NextResponse.json({ resource });
+  } catch (err) {
+    console.error("updateEducationResource", err);
+    return jsonError(
+      err instanceof Error ? err.message : "Could not update the education guide.",
+      500
+    );
   }
-
-  return NextResponse.json({ resource });
 }
 
 export async function DELETE(_request: Request, { params }: Params) {
@@ -82,9 +89,16 @@ export async function DELETE(_request: Request, { params }: Params) {
   const existing = await getEducationResourceById(id);
   if (!existing) return jsonError("Not found", 404);
 
-  const deleted = await deleteEducationResource(id);
-  if (!deleted) return jsonError("Not found", 404);
-
-  await tryUnlinkEducationFile(existing.file_url);
-  return NextResponse.json({ ok: true });
+  try {
+    const deleted = await deleteEducationResource(id);
+    if (!deleted) return jsonError("Not found", 404);
+    await tryUnlinkEducationFile(existing.file_url);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("deleteEducationResource", err);
+    return jsonError(
+      err instanceof Error ? err.message : "Could not delete the education guide.",
+      500
+    );
+  }
 }

@@ -11,9 +11,10 @@ import {
 } from "@/lib/storage";
 
 export const runtime = "nodejs";
+export const maxDuration = 3600;
 
-const PDF_MAX_BYTES = 25 * 1024 * 1024;
-const VIDEO_MAX_BYTES = 200 * 1024 * 1024;
+const PDF_MAX_BYTES = 100 * 1024 * 1024;
+const VIDEO_MAX_BYTES = 2 * 1024 * 1024 * 1024;
 
 type FileKind = "pdf" | "video";
 
@@ -123,18 +124,26 @@ export async function POST(request: Request) {
 
   const key = newUploadKey("education", session!.user.id, allowed.ext);
   const mimeType = allowed.mimeType;
-  const uploadUrl = isObjectStorageConfigured()
-    ? await presignPutUrl(key)
-    : `/api/admin/uploads?key=${encodeURIComponent(key)}`;
+  try {
+    const uploadUrl = isObjectStorageConfigured()
+      ? await presignPutUrl(key)
+      : `/api/admin/uploads?key=${encodeURIComponent(key)}`;
 
-  return NextResponse.json({
-    uploadUrl,
-    url: keyToStoredUrl(key),
-    fileName,
-    mimeType,
-    byteSize,
-    fileKind: allowed.fileKind,
-  });
+    return NextResponse.json({
+      uploadUrl,
+      url: keyToStoredUrl(key),
+      fileName,
+      mimeType,
+      byteSize,
+      fileKind: allowed.fileKind,
+    });
+  } catch (err) {
+    console.error("presignPutUrl", err);
+    return jsonError(
+      "Could not start the file upload. Storage may be unavailable.",
+      500
+    );
+  }
 }
 
 /** Local-disk PUT when S3 is not configured. Production should use MinIO. */
@@ -159,6 +168,14 @@ export async function PUT(request: Request) {
     return jsonError("Invalid file size");
   }
 
-  await writeLocalUpload(key, buffer);
-  return NextResponse.json({ ok: true });
+  try {
+    await writeLocalUpload(key, buffer);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("writeLocalUpload", err);
+    return jsonError(
+      err instanceof Error ? err.message : "Could not write the uploaded file.",
+      500
+    );
+  }
 }
