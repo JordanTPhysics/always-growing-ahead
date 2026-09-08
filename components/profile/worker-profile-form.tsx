@@ -14,6 +14,15 @@ import {
 import { PostcodeInput } from "@/components/map/postcode-input";
 import { captureOrPickImage } from "@/lib/native/camera";
 import { FavouritesPanel } from "@/components/favourites/favourites-panel";
+import {
+  clearFieldError,
+  focusFirstInvalidField,
+  hasFieldErrors,
+  isValidEmail,
+  isValidHttpUrl,
+  isValidIntegerString,
+  isValidPhone,
+} from "@/lib/validation/fields";
 
 type Skill = { id: number; name: string; category: string | null };
 
@@ -51,6 +60,9 @@ export function WorkerProfileForm() {
   const [exists, setExists] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<string, string | undefined>
+  >({});
   const [catalog, setCatalog] = useState<Skill[]>([]);
 
   const [headline, setHeadline] = useState("");
@@ -182,11 +194,133 @@ export function WorkerProfileForm() {
     }
   }
 
+  function clearField(key: string) {
+    setFieldErrors((prev) => clearFieldError(prev, key));
+  }
+
+  function validate(): Record<string, string | undefined> {
+    const next: Record<string, string | undefined> = {};
+
+    if (!headline.trim()) next.headline = t("headlineRequired");
+    else if (headline.trim().length > 255) {
+      next.headline = tCommon("validation.tooLong", { max: 255 });
+    }
+
+    if (postcode.trim().length > 10) {
+      next.postcode = tCommon("validation.tooLong", { max: 10 });
+    }
+
+    if (address.trim().length > 255) {
+      next.address = tCommon("validation.tooLong", { max: 255 });
+    }
+
+    const minFilled = salaryMin.trim();
+    const maxFilled = salaryMax.trim();
+    if (minFilled && (!isValidIntegerString(minFilled) || Number(minFilled) < 0)) {
+      next.salaryMin = tCommon("validation.integer");
+    }
+    if (maxFilled && (!isValidIntegerString(maxFilled) || Number(maxFilled) < 0)) {
+      next.salaryMax = tCommon("validation.integer");
+    }
+    if (
+      minFilled &&
+      maxFilled &&
+      !next.salaryMin &&
+      !next.salaryMax &&
+      Number(minFilled) > Number(maxFilled)
+    ) {
+      next.salaryMin = t("salaryRange");
+      next.salaryMax = t("salaryRange");
+    }
+
+    if (contactEmail.trim() && !isValidEmail(contactEmail)) {
+      next.contactEmail = tCommon("validation.email");
+    } else if (contactEmail.trim().length > 255) {
+      next.contactEmail = tCommon("validation.tooLong", { max: 255 });
+    }
+
+    if (contactPhone.trim() && !isValidPhone(contactPhone)) {
+      next.contactPhone = tCommon("validation.phone");
+    }
+
+    if (linkedinUrl.trim() && !isValidHttpUrl(linkedinUrl)) {
+      next.linkedinUrl = tCommon("validation.url");
+    } else if (linkedinUrl.trim().length > 500) {
+      next.linkedinUrl = tCommon("validation.tooLong", { max: 500 });
+    }
+
+    experience.forEach((entry, index) => {
+      const hasContent = Boolean(
+        entry.job_title.trim() ||
+          entry.employer_name.trim() ||
+          entry.start_date ||
+          entry.end_date ||
+          entry.description.trim()
+      );
+      if (!hasContent) return;
+      if (entry.job_title.trim().length > 255) {
+        next[`experience.${index}.job_title`] = tCommon("validation.tooLong", {
+          max: 255,
+        });
+      }
+      if (entry.employer_name.trim().length > 255) {
+        next[`experience.${index}.employer_name`] = tCommon(
+          "validation.tooLong",
+          { max: 255 }
+        );
+      }
+      if (entry.start_date && entry.end_date && entry.end_date < entry.start_date) {
+        next[`experience.${index}.end_date`] = t("endDateBeforeStart");
+      }
+    });
+
+    qualifications.forEach((entry, index) => {
+      const hasContent = Boolean(
+        entry.qualification_name.trim() ||
+          entry.institution.trim() ||
+          entry.year_awarded.trim()
+      );
+      if (!hasContent) return;
+      if (entry.qualification_name.trim().length > 255) {
+        next[`qualifications.${index}.qualification_name`] = tCommon(
+          "validation.tooLong",
+          { max: 255 }
+        );
+      }
+      if (entry.institution.trim().length > 255) {
+        next[`qualifications.${index}.institution`] = tCommon(
+          "validation.tooLong",
+          { max: 255 }
+        );
+      }
+      if (entry.year_awarded.trim()) {
+        const year = Number(entry.year_awarded);
+        if (
+          !isValidIntegerString(entry.year_awarded) ||
+          year < 1950 ||
+          year > 2100
+        ) {
+          next[`qualifications.${index}.year_awarded`] = t("yearAwardedInvalid");
+        }
+      }
+    });
+
+    return next;
+  }
+
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
     setError(null);
     setMessage(null);
+    const next = validate();
+    setFieldErrors(next);
+    if (hasFieldErrors(next)) {
+      setError(tCommon("validation.fixHighlighted"));
+      focusFirstInvalidField();
+      return;
+    }
+
+    setSaving(true);
 
     const payload = {
       headline: headline || null,
@@ -383,13 +517,16 @@ export function WorkerProfileForm() {
   );
 
   const editor = (
-    <form onSubmit={onSave} className="space-y-8">
+    <form onSubmit={onSave} noValidate className="space-y-8">
       <Card elevation="nested" className="space-y-4 p-5">
-        <Field label={t("headline")}>
+        <Field label={t("headline")} error={fieldErrors.headline}>
           <input
             className={inputClassName}
             value={headline}
-            onChange={(e) => setHeadline(e.target.value)}
+            onChange={(e) => {
+              setHeadline(e.target.value);
+              clearField("headline");
+            }}
           />
         </Field>
         <Field label={t("photo")}>
@@ -451,19 +588,27 @@ export function WorkerProfileForm() {
           label={t("postcode")}
           placeholder={t("locationHint")}
           value={postcode}
-          onChange={setPostcode}
+          error={fieldErrors.postcode}
+          onChange={(value) => {
+            setPostcode(value);
+            clearField("postcode");
+          }}
           onResolved={(result) => {
             setPostcode(result.postcode || result.address_text);
             setAddress(result.address_text || address);
             setLat(result.lat);
             setLng(result.lng);
+            clearField("postcode");
           }}
         />
-        <Field label={t("address")}>
+        <Field label={t("address")} error={fieldErrors.address}>
           <input
             className={inputClassName}
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              clearField("address");
+            }}
           />
         </Field>
       </Card>
@@ -495,20 +640,28 @@ export function WorkerProfileForm() {
           </div>
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("salaryMin")}>
+          <Field label={t("salaryMin")} error={fieldErrors.salaryMin}>
             <input
               className={inputClassName}
               type="number"
               value={salaryMin}
-              onChange={(e) => setSalaryMin(e.target.value)}
+              onChange={(e) => {
+                setSalaryMin(e.target.value);
+                clearField("salaryMin");
+                clearField("salaryMax");
+              }}
             />
           </Field>
-          <Field label={t("salaryMax")}>
+          <Field label={t("salaryMax")} error={fieldErrors.salaryMax}>
             <input
               className={inputClassName}
               type="number"
               value={salaryMax}
-              onChange={(e) => setSalaryMax(e.target.value)}
+              onChange={(e) => {
+                setSalaryMax(e.target.value);
+                clearField("salaryMin");
+                clearField("salaryMax");
+              }}
             />
           </Field>
           <Field label={t("availability")}>
@@ -554,28 +707,37 @@ export function WorkerProfileForm() {
               <h3 className="font-medium">{t("contactSection")}</h3>
               <p className="mt-1 text-sm text-muted">{t("contactHint")}</p>
             </div>
-            <Field label={t("contactEmail")}>
+            <Field label={t("contactEmail")} error={fieldErrors.contactEmail}>
               <input
                 type="email"
                 className={inputClassName}
                 value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
+                onChange={(e) => {
+                  setContactEmail(e.target.value);
+                  clearField("contactEmail");
+                }}
               />
             </Field>
-            <Field label={t("contactPhone")}>
+            <Field label={t("contactPhone")} error={fieldErrors.contactPhone}>
               <input
                 type="tel"
                 className={inputClassName}
                 value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
+                onChange={(e) => {
+                  setContactPhone(e.target.value);
+                  clearField("contactPhone");
+                }}
               />
             </Field>
-            <Field label={t("linkedinUrl")}>
+            <Field label={t("linkedinUrl")} error={fieldErrors.linkedinUrl}>
               <input
                 type="url"
                 className={inputClassName}
                 value={linkedinUrl}
-                onChange={(e) => setLinkedinUrl(e.target.value)}
+                onChange={(e) => {
+                  setLinkedinUrl(e.target.value);
+                  clearField("linkedinUrl");
+                }}
                 placeholder="https://www.linkedin.com/in/…"
               />
             </Field>
@@ -657,32 +819,40 @@ export function WorkerProfileForm() {
             key={index}
             className="grid gap-3 border-t border-border pt-4 sm:grid-cols-2"
           >
-            <Field label={t("jobTitle")}>
+            <Field
+              label={t("jobTitle")}
+              error={fieldErrors[`experience.${index}.job_title`]}
+            >
               <input
                 className={inputClassName}
                 value={entry.job_title}
-                onChange={(e) =>
+                onChange={(e) => {
                   setExperience((prev) =>
                     prev.map((row, i) =>
                       i === index ? { ...row, job_title: e.target.value } : row
                     )
-                  )
-                }
+                  );
+                  clearField(`experience.${index}.job_title`);
+                }}
               />
             </Field>
-            <Field label={t("employerName")}>
+            <Field
+              label={t("employerName")}
+              error={fieldErrors[`experience.${index}.employer_name`]}
+            >
               <input
                 className={inputClassName}
                 value={entry.employer_name}
-                onChange={(e) =>
+                onChange={(e) => {
                   setExperience((prev) =>
                     prev.map((row, i) =>
                       i === index
                         ? { ...row, employer_name: e.target.value }
                         : row
                     )
-                  )
-                }
+                  );
+                  clearField(`experience.${index}.employer_name`);
+                }}
               />
             </Field>
             <Field label={t("startDate")}>
@@ -690,27 +860,32 @@ export function WorkerProfileForm() {
                 className={inputClassName}
                 type="date"
                 value={entry.start_date}
-                onChange={(e) =>
+                onChange={(e) => {
                   setExperience((prev) =>
                     prev.map((row, i) =>
                       i === index ? { ...row, start_date: e.target.value } : row
                     )
-                  )
-                }
+                  );
+                  clearField(`experience.${index}.end_date`);
+                }}
               />
             </Field>
-            <Field label={t("endDate")}>
+            <Field
+              label={t("endDate")}
+              error={fieldErrors[`experience.${index}.end_date`]}
+            >
               <input
                 className={inputClassName}
                 type="date"
                 value={entry.end_date}
-                onChange={(e) =>
+                onChange={(e) => {
                   setExperience((prev) =>
                     prev.map((row, i) =>
                       i === index ? { ...row, end_date: e.target.value } : row
                     )
-                  )
-                }
+                  );
+                  clearField(`experience.${index}.end_date`);
+                }}
               />
             </Field>
             <div className="sm:col-span-2">
@@ -761,50 +936,62 @@ export function WorkerProfileForm() {
             key={index}
             className="grid gap-3 border-t border-border pt-4 sm:grid-cols-2"
           >
-            <Field label={t("qualificationName")}>
+            <Field
+              label={t("qualificationName")}
+              error={fieldErrors[`qualifications.${index}.qualification_name`]}
+            >
               <input
                 className={inputClassName}
                 value={entry.qualification_name}
-                onChange={(e) =>
+                onChange={(e) => {
                   setQualifications((prev) =>
                     prev.map((row, i) =>
                       i === index
                         ? { ...row, qualification_name: e.target.value }
                         : row
                     )
-                  )
-                }
+                  );
+                  clearField(`qualifications.${index}.qualification_name`);
+                }}
               />
             </Field>
-            <Field label={t("institution")}>
+            <Field
+              label={t("institution")}
+              error={fieldErrors[`qualifications.${index}.institution`]}
+            >
               <input
                 className={inputClassName}
                 value={entry.institution}
-                onChange={(e) =>
+                onChange={(e) => {
                   setQualifications((prev) =>
                     prev.map((row, i) =>
                       i === index
                         ? { ...row, institution: e.target.value }
                         : row
                     )
-                  )
-                }
+                  );
+                  clearField(`qualifications.${index}.institution`);
+                }}
               />
             </Field>
-            <Field label={t("yearAwarded")}>
+            <Field
+              label={t("yearAwarded")}
+              error={fieldErrors[`qualifications.${index}.year_awarded`]}
+            >
               <input
                 className={inputClassName}
                 type="number"
                 value={entry.year_awarded}
-                onChange={(e) =>
+                onChange={(e) => {
                   setQualifications((prev) =>
                     prev.map((row, i) =>
                       i === index
                         ? { ...row, year_awarded: e.target.value }
                         : row
                     )
-                  )
-                }
+                  );
+                  clearField(`qualifications.${index}.year_awarded`);
+                }}
               />
             </Field>
           </div>

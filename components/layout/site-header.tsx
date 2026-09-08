@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
+import { HashLink } from "@/components/layout/hash-link";
 import { activeLocales, locales, type ActiveLocale } from "@/lib/i18n/locales";
 import { signOut, useSession } from "next-auth/react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -63,13 +64,13 @@ const navGroups: NavGroup[] = [
     key: "browse",
     items: [
       { href: "/marketplace", labelKey: "marketplace" },
-      { href: "/privacy", labelKey: "privacy" },
+      { href: "/#privacy", labelKey: "privacy" },
     ],
   },
   {
     key: "extra",
     items: [
-      { href: "/help", labelKey: "help" },
+      { href: "/#help", labelKey: "help" },
       { href: "/pricing", labelKey: "pricing" },
       { href: "/admin", labelKey: "admin", signedInOnly: true },
     ],
@@ -99,8 +100,29 @@ function navGroupsForUser(user: Props["user"]) {
     .filter((group) => group.items.length > 0);
 }
 
-function pathMatches(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`);
+function pathMatches(pathname: string, href: string, hash = "") {
+  const [pathPart, hrefHash] = href.split("#");
+  const path = pathPart || "/";
+  if (hrefHash) {
+    return pathname === path && hash === hrefHash;
+  }
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
+function useLocationHash() {
+  const [hash, setHash] = useState("");
+
+  useEffect(() => {
+    function sync() {
+      setHash(window.location.hash.replace(/^#/, ""));
+    }
+
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  return hash;
 }
 
 function LanguageSelect() {
@@ -142,10 +164,11 @@ function NavDropdown({
 }) {
   const t = useTranslations("common");
   const pathname = usePathname();
+  const hash = useLocationHash();
   const panelId = useId();
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const groupActive = group.items.some((item) =>
-    pathMatches(pathname, item.href),
+    pathMatches(pathname, item.href, hash),
   );
 
   function clearCloseTimer() {
@@ -220,9 +243,9 @@ function NavDropdown({
             }`}
           />
           {group.items.map((item, index) => {
-            const active = pathMatches(pathname, item.href);
+            const active = pathMatches(pathname, item.href, hash);
             return (
-              <Link
+              <HashLink
                 key={item.href}
                 href={item.href}
                 role="menuitem"
@@ -237,7 +260,7 @@ function NavDropdown({
                 onClick={() => onOpenChange(false)}
               >
                 {t(`nav.${item.labelKey}`)}
-              </Link>
+              </HashLink>
             );
           })}
         </div>
@@ -301,6 +324,7 @@ function MobileMenuPanel({
 }) {
   const t = useTranslations("common");
   const pathname = usePathname();
+  const hash = useLocationHash();
   const router = useRouter();
   const locale = useLocale() as ActiveLocale;
   const [expandedGroup, setExpandedGroup] = useState<NavGroupKey | null>(null);
@@ -367,9 +391,9 @@ function MobileMenuPanel({
                 >
                   <div className="min-h-0 overflow-hidden bg-background-soft/50">
                     {group.items.map((item, index) => {
-                      const active = pathMatches(pathname, item.href);
+                      const active = pathMatches(pathname, item.href, hash);
                       return (
-                        <Link
+                        <HashLink
                           key={item.href}
                           href={item.href}
                           role="menuitem"
@@ -389,7 +413,7 @@ function MobileMenuPanel({
                           onClick={onClose}
                         >
                           {t(`nav.${item.labelKey}`)}
-                        </Link>
+                        </HashLink>
                       );
                     })}
                   </div>

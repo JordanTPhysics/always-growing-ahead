@@ -10,6 +10,20 @@ const nextConfig: NextConfig = {
     // Default is 10MB; education videos are up to 2GB.
     proxyClientMaxBodySize: "2gb",
   },
+  async redirects() {
+    return [
+      {
+        source: "/:locale(en|ar|ckb)/help",
+        destination: "/:locale#help",
+        permanent: true,
+      },
+      {
+        source: "/:locale(en|ar|ckb)/privacy",
+        destination: "/:locale#privacy",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

@@ -82,6 +82,19 @@ export type FavouriteListItem = Favourite & {
   link_base: string | null;
 };
 
+export type MarketplaceListing = {
+  id: number;
+  user_id: number;
+  title: string;
+  description: string;
+  price: string;
+  location: string;
+  category: string;
+  media_type: "image" | "video";
+  media_url: string;
+  created_at: Date;
+};
+
 export type MarketplaceComment = {
   id: number;
   listing_id: string;
@@ -320,4 +333,49 @@ export type NewsExcerpt = {
   created_by: number | null;
   created_at: Date;
   updated_at: Date;
+};
+
+export type ChatSenderRole = "user" | "admin";
+
+export type ChatConversation = {
+  id: number;
+  user_id: number;
+  created_at: Date;
+  expires_at: Date;
+  last_message_at: Date;
+  user_last_read_at: Date | null;
+  admin_last_read_at: Date | null;
+};
+
+export type ChatMessage = {
+  id: number;
+  conversation_id: number;
+  sender_id: number;
+  sender_role: ChatSenderRole;
+  body: string;
+  created_at: Date;
+};
+
+export type ChatConversationListItem = ChatConversation & {
+  user_email: string;
+  user_username: string | null;
+  last_message_body: string | null;
+  unread_count: number;
+  worker_profile_id: number | null;
+  employer_profile_id: number | null;
+};
+
+export type UserAccountSummary = {
+  id: number;
+  email: string;
+  username: string | null;
+  phone: string | null;
+  city: string | null;
+  district: string | null;
+  subscription_tier: Tier;
+  role: UserRole;
+  email_verified_at: Date | null;
+  created_at: Date;
+  worker_profile_id: number | null;
+  employer_profile_id: number | null;
 };

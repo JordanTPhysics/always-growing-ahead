@@ -1,0 +1,30 @@
+{
+  "title": "Chat with admin",
+  "subtitle": "Send a message and an admin will reply here. Chats are deleted after 48 hours.",
+  "openChat": "Open live chat",
+  "closeChat": "Close chat",
+  "placeholder": "Write a message…",
+  "send": "Send",
+  "empty": "No messages yet. Send a message to start a chat with an admin.",
+  "signInPrompt": "Sign in to chat with an admin.",
+  "signIn": "Sign in",
+  "expiresIn": "This chat is deleted in {hours} hours.",
+  "expiresSoon": "This chat will be deleted soon.",
+  "unread": "{count} unread messages",
+  "you": "You",
+  "adminName": "Admin",
+  "sendFailed": "Could not send your message.",
+  "loadFailed": "Could not load the chat.",
+  "admin": {
+    "heading": "Live chat",
+    "hint": "Reply to users here. Conversations are deleted 48 hours after they start.",
+    "empty": "No open chats.",
+    "select": "Select a conversation to reply.",
+    "viewAccount": "View account",
+    "viewWorker": "Worker profile",
+    "viewEmployer": "Employer profile",
+    "noProfiles": "This user has no public profiles yet.",
+    "placeholder": "Write a reply…",
+    "send": "Reply"
+  }
+}

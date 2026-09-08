@@ -3,7 +3,11 @@ import { pool } from "@/lib/db/pool";
 import type { Tier } from "@/lib/entitlements";
 import type { User, UserRole } from "@/lib/db/types";
 import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
-import { getMockUserByEmail, getMockUserById } from "@/lib/mock/test-accounts";
+import {
+  getMockUserByEmail,
+  getMockUserById,
+  MOCK_TEST_ACCOUNTS,
+} from "@/lib/mock/test-accounts";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 type UserRow = User & RowDataPacket;
@@ -128,6 +132,18 @@ export async function isAdmin(userId: number): Promise<boolean> {
   return rows[0]?.role === "admin";
 }
 
+export async function listAdminUserIds(): Promise<number[]> {
+  if (isMockMapDataEnabled()) {
+    return MOCK_TEST_ACCOUNTS.filter((account) => account.role === "admin").map(
+      (account) => account.id
+    );
+  }
+  const [rows] = await pool.execute<(RowDataPacket & { id: number })[]>(
+    "SELECT id FROM users WHERE role = 'admin'"
+  );
+  return rows.map((row) => Number(row.id));
+}
+
 export async function listRecentUsers(): Promise<
   Pick<User, "id" | "email" | "subscription_tier" | "role">[]
 > {
@@ -174,6 +190,16 @@ export async function setEmailVerified(userId: number): Promise<void> {
     "UPDATE users SET email_verified_at = CURRENT_TIMESTAMP WHERE id = ?",
     [userId]
   );
+}
+
+export async function updateUserPassword(
+  userId: number,
+  passwordHash: string
+): Promise<void> {
+  await pool.execute("UPDATE users SET password_hash = ? WHERE id = ?", [
+    passwordHash,
+    userId,
+  ]);
 }
 
 export async function updatePreferredLocale(

@@ -14,6 +14,22 @@ import {
 } from "@/components/ui/forms";
 import { EmployerJobsPanel } from "@/components/profile/employer-jobs-panel";
 import { FavouritesPanel } from "@/components/favourites/favourites-panel";
+import {
+  clearFieldError,
+  focusFirstInvalidField,
+  hasFieldErrors,
+  isValidEmail,
+  isValidHttpUrl,
+  isValidPhone,
+} from "@/lib/validation/fields";
+
+type FieldKey =
+  | "companyName"
+  | "website"
+  | "logoUrl"
+  | "contactEmail"
+  | "contactPhone"
+  | "linkedinUrl";
 
 export function EmployerProfileForm() {
   const t = useTranslations("employer-profile");
@@ -24,6 +40,9 @@ export function EmployerProfileForm() {
   const [exists, setExists] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<FieldKey, string>>
+  >({});
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
   const [website, setWebsite] = useState("");
@@ -52,11 +71,61 @@ export function EmployerProfileForm() {
       .finally(() => setLoading(false));
   }, []);
 
+  function clearField(key: FieldKey) {
+    setFieldErrors((prev) => clearFieldError(prev, key));
+  }
+
+  function validate(): Partial<Record<FieldKey, string>> {
+    const next: Partial<Record<FieldKey, string>> = {};
+    if (!companyName.trim()) next.companyName = t("companyNameRequired");
+    else if (companyName.trim().length > 255) {
+      next.companyName = tCommon("validation.tooLong", { max: 255 });
+    }
+
+    if (website.trim() && !isValidHttpUrl(website)) {
+      next.website = tCommon("validation.url");
+    } else if (website.trim().length > 500) {
+      next.website = tCommon("validation.tooLong", { max: 500 });
+    }
+
+    if (logoUrl.trim() && !isValidHttpUrl(logoUrl)) {
+      next.logoUrl = tCommon("validation.url");
+    } else if (logoUrl.trim().length > 500) {
+      next.logoUrl = tCommon("validation.tooLong", { max: 500 });
+    }
+
+    if (contactEmail.trim() && !isValidEmail(contactEmail)) {
+      next.contactEmail = tCommon("validation.email");
+    } else if (contactEmail.trim().length > 255) {
+      next.contactEmail = tCommon("validation.tooLong", { max: 255 });
+    }
+
+    if (contactPhone.trim() && !isValidPhone(contactPhone)) {
+      next.contactPhone = tCommon("validation.phone");
+    }
+
+    if (linkedinUrl.trim() && !isValidHttpUrl(linkedinUrl)) {
+      next.linkedinUrl = tCommon("validation.url");
+    } else if (linkedinUrl.trim().length > 500) {
+      next.linkedinUrl = tCommon("validation.tooLong", { max: 500 });
+    }
+
+    return next;
+  }
+
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
     setError(null);
     setMessage(null);
+    const next = validate();
+    setFieldErrors(next);
+    if (hasFieldErrors(next)) {
+      setError(tCommon("validation.fixHighlighted"));
+      focusFirstInvalidField();
+      return;
+    }
+
+    setSaving(true);
     const res = await fetch("/api/employers", {
       method: exists ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
@@ -150,13 +219,16 @@ export function EmployerProfileForm() {
   );
 
   const editor = (
-    <form onSubmit={onSave} className="space-y-6">
+    <form onSubmit={onSave} noValidate className="space-y-6">
       <Card elevation="nested" className="space-y-4 p-5">
-        <Field label={t("companyName")}>
+        <Field label={t("companyName")} error={fieldErrors.companyName}>
           <input
             className={inputClassName}
             value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
+            onChange={(e) => {
+              setCompanyName(e.target.value);
+              clearField("companyName");
+            }}
             required
           />
         </Field>
@@ -168,18 +240,24 @@ export function EmployerProfileForm() {
             onChange={(e) => setDescription(e.target.value)}
           />
         </Field>
-        <Field label={t("website")}>
+        <Field label={t("website")} error={fieldErrors.website}>
           <input
             className={inputClassName}
             value={website}
-            onChange={(e) => setWebsite(e.target.value)}
+            onChange={(e) => {
+              setWebsite(e.target.value);
+              clearField("website");
+            }}
           />
         </Field>
-        <Field label={t("logoUrl")}>
+        <Field label={t("logoUrl")} error={fieldErrors.logoUrl}>
           <input
             className={inputClassName}
             value={logoUrl}
-            onChange={(e) => setLogoUrl(e.target.value)}
+            onChange={(e) => {
+              setLogoUrl(e.target.value);
+              clearField("logoUrl");
+            }}
           />
         </Field>
         <Field label={t("activelyHiring")}>
@@ -198,28 +276,37 @@ export function EmployerProfileForm() {
             <h3 className="font-medium">{t("contactSection")}</h3>
             <p className="mt-1 text-sm text-muted">{t("contactHint")}</p>
           </div>
-          <Field label={t("contactEmail")}>
+          <Field label={t("contactEmail")} error={fieldErrors.contactEmail}>
             <input
               type="email"
               className={inputClassName}
               value={contactEmail}
-              onChange={(e) => setContactEmail(e.target.value)}
+              onChange={(e) => {
+                setContactEmail(e.target.value);
+                clearField("contactEmail");
+              }}
             />
           </Field>
-          <Field label={t("contactPhone")}>
+          <Field label={t("contactPhone")} error={fieldErrors.contactPhone}>
             <input
               type="tel"
               className={inputClassName}
               value={contactPhone}
-              onChange={(e) => setContactPhone(e.target.value)}
+              onChange={(e) => {
+                setContactPhone(e.target.value);
+                clearField("contactPhone");
+              }}
             />
           </Field>
-          <Field label={t("linkedinUrl")}>
+          <Field label={t("linkedinUrl")} error={fieldErrors.linkedinUrl}>
             <input
               type="url"
               className={inputClassName}
               value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
+              onChange={(e) => {
+                setLinkedinUrl(e.target.value);
+                clearField("linkedinUrl");
+              }}
               placeholder="https://www.linkedin.com/in/…"
             />
           </Field>

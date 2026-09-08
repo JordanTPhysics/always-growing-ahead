@@ -16,6 +16,7 @@ export const messageNamespaces = [
   "favourites",
   "sponsored",
   "marketplace",
+  "chat",
 ] as const;
 
 export type MessageNamespace = (typeof messageNamespaces)[number];

@@ -7,7 +7,10 @@ import {
   listCommentsForListing,
 } from "@/lib/db/repositories/marketplace-comments";
 import { createNotification } from "@/lib/db/repositories/notifications";
-import { marketplacePosts } from "@/lib/marketplace/content";
+import {
+  getMarketplaceListingOwnerUserId,
+  marketplaceListingExists,
+} from "@/lib/marketplace/resolve-listing";
 import { dispatchPushToUser } from "@/lib/notifications/push-dispatch";
 
 const createSchema = z.object({
@@ -15,11 +18,6 @@ const createSchema = z.object({
 });
 
 type Params = { params: Promise<{ listingId: string }> };
-
-function findListingOwnerUserId(listingId: string): number | null {
-  const post = marketplacePosts.find((item) => item.id === listingId);
-  return post?.ownerUserId ?? null;
-}
 
 export async function GET(_request: Request, { params }: Params) {
   const { listingId } = await params;
@@ -37,8 +35,9 @@ export async function POST(request: Request, { params }: Params) {
   const { listingId } = await params;
   if (!listingId?.trim()) return jsonError("Invalid listing");
 
-  const exists = marketplacePosts.some((item) => item.id === listingId);
-  if (!exists) return jsonError("Listing not found", 404);
+  if (!(await marketplaceListingExists(listingId))) {
+    return jsonError("Listing not found", 404);
+  }
 
   const parsed = createSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return jsonError("Invalid comment");
@@ -50,7 +49,7 @@ export async function POST(request: Request, { params }: Params) {
     body: parsed.data.body,
   });
 
-  const ownerUserId = findListingOwnerUserId(listingId);
+  const ownerUserId = await getMarketplaceListingOwnerUserId(listingId);
   if (ownerUserId != null && ownerUserId !== userId) {
     const linkUrl = `/marketplace#${listingId}`;
     const title = "New comment on your listing";

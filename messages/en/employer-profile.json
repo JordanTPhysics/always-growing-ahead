@@ -2,6 +2,7 @@
   "title": "Employer profile",
   "subtitle": "Company details shown on your job postings",
   "companyName": "Company name",
+  "companyNameRequired": "Enter your company name",
   "companyDescription": "About the company",
   "website": "Website",
   "logoUrl": "Logo URL",

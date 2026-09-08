@@ -14,5 +14,22 @@
   "noComments": "No comments yet. Be the first to ask a question.",
   "addComment": "Add a comment",
   "commentPlaceholder": "Ask about condition, collection, or availability…",
-  "postComment": "Post comment"
+  "postComment": "Post comment",
+  "upload": "Post",
+  "uploadTitle": "Add to the feed",
+  "signInToPost": "Sign in with a Worker or Employer plan to post photos and videos.",
+  "signIn": "Sign in",
+  "upgradeToPost": "Upgrade to Worker or Employer to post photos and videos on the marketplace feed.",
+  "dailyLimitHint": "{remaining} of {limit} posts left today",
+  "dailyLimitReached": "Daily limit reached ({limit} posts on your plan). Try again tomorrow.",
+  "mediaLabel": "Photo or video",
+  "mediaHint": "Images up to 5MB. Videos up to 50MB (MP4, WebM, or MOV).",
+  "titleLabel": "Title",
+  "descriptionLabel": "Description",
+  "priceLabel": "Price",
+  "priceOnRequest": "POA",
+  "locationLabel": "Location",
+  "categoryLabel": "Category",
+  "publish": "Publish to feed",
+  "uploading": "Uploading…"
 }

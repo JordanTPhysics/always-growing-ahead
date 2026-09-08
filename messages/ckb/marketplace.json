@@ -14,5 +14,22 @@
   "noComments": "هێشتا لێدوان نییە. یەکەم کەس بە بۆ پرسیارکردن.",
   "addComment": "لێدوان زیاد بکە",
   "commentPlaceholder": "لە بارەی دۆخ، وەرگرتن، یان بەردەستبوون بپرسە…",
-  "postComment": "لێدوان بنێرە"
+  "postComment": "لێدوان بنێرە",
+  "upload": "بڵاوکردنەوە",
+  "uploadTitle": "زیادکردن بۆ فید",
+  "signInToPost": "بچۆرە ژوورەوە بە پلانی کرێکار یان خاوەنکار بۆ بڵاوکردنەوەی وێنە و ڤیدیۆ.",
+  "signIn": "چوونەژوورەوە",
+  "upgradeToPost": "پلانت بەرز بکەوە بۆ کرێکار یان خاوەنکار بۆ بڵاوکردنەوەی وێنە و ڤیدیۆ لە فیدی بازاڕ.",
+  "dailyLimitHint": "{remaining} لە {limit} بڵاوکراوەی ئەمڕۆ ماوە",
+  "dailyLimitReached": "سنووری ڕۆژانە تەواو بوو ({limit} بڵاوکراوە لە پلانەکەت). سبەی هەوڵ بدە.",
+  "mediaLabel": "وێنە یان ڤیدیۆ",
+  "mediaHint": "وێنە تا 5MB. ڤیدیۆ تا 50MB (MP4، WebM، یان MOV).",
+  "titleLabel": "ناونیشان",
+  "descriptionLabel": "وەسف",
+  "priceLabel": "نرخ",
+  "priceOnRequest": "بەپێی داواکاری",
+  "locationLabel": "شوێن",
+  "categoryLabel": "پۆل",
+  "publish": "بڵاوکردنەوە بۆ فید",
+  "uploading": "بارکردن…"
 }

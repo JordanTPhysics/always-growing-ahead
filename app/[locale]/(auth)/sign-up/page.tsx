@@ -10,7 +10,26 @@ import { Combobox } from "@/components/ui/combobox";
 import {
   UK_CITIES,
   getDistrictsForCity,
+  isValidCity,
+  isValidDistrict,
 } from "@/lib/locations/uk-locations";
+import {
+  clearFieldError,
+  focusFirstInvalidField,
+  hasFieldErrors,
+  isValidEmail,
+  isValidPhone,
+  isValidUsername,
+} from "@/lib/validation/fields";
+
+type FieldKey =
+  | "email"
+  | "username"
+  | "phone"
+  | "city"
+  | "district"
+  | "password"
+  | "confirmPassword";
 
 export default function SignUpPage() {
   const t = useTranslations("auth");
@@ -23,6 +42,9 @@ export default function SignUpPage() {
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>(
+    {}
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
@@ -31,27 +53,49 @@ export default function SignUpPage() {
 
   const districtOptions = useMemo(() => getDistrictsForCity(city), [city]);
 
+  function clearField(key: FieldKey) {
+    setFieldErrors((prev) => clearFieldError(prev, key));
+  }
+
+  function validate(): Partial<Record<FieldKey, string>> {
+    const next: Partial<Record<FieldKey, string>> = {};
+    if (!email.trim()) next.email = t("emailRequired");
+    else if (!isValidEmail(email)) next.email = tCommon("validation.email");
+
+    if (username.trim() && !isValidUsername(username)) {
+      next.username = t("usernameInvalid");
+    }
+
+    if (!phone.trim()) next.phone = t("phoneRequired");
+    else if (!isValidPhone(phone)) next.phone = t("phoneInvalid");
+
+    if (!city) next.city = t("cityRequired");
+    else if (!isValidCity(city)) next.city = t("cityInvalid");
+
+    if (!district) next.district = t("districtRequired");
+    else if (city && !isValidDistrict(city, district)) {
+      next.district = t("districtInvalid");
+    }
+
+    if (!password) next.password = t("passwordRequired");
+    else if (password.length < 8) next.password = t("passwordTooShort");
+
+    if (!confirmPassword) next.confirmPassword = t("passwordRequired");
+    else if (password !== confirmPassword) {
+      next.confirmPassword = t("passwordMismatch");
+    }
+
+    return next;
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (password.length < 8) {
-      setError(t("passwordTooShort"));
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError(t("passwordMismatch"));
-      return;
-    }
-    if (!phone.trim()) {
-      setError(t("phoneRequired"));
-      return;
-    }
-    if (!city) {
-      setError(t("cityRequired"));
-      return;
-    }
-    if (!district) {
-      setError(t("districtRequired"));
+    const next = validate();
+    setFieldErrors(next);
+    if (hasFieldErrors(next)) {
+      setError(tCommon("validation.fixHighlighted"));
+      focusFirstInvalidField();
       return;
     }
 
@@ -73,12 +117,30 @@ export default function SignUpPage() {
     if (!res.ok) {
       setPending(false);
       if (res.status === 409 && data.error === "Username already taken") {
+        setFieldErrors({ username: t("usernameTaken") });
         setError(t("usernameTaken"));
+        focusFirstInvalidField();
         return;
       }
-      setError(
-        res.status === 409 ? t("emailTaken") : data.error ?? tCommon("status.error")
-      );
+      if (res.status === 409) {
+        setFieldErrors({ email: t("emailTaken") });
+        setError(t("emailTaken"));
+        focusFirstInvalidField();
+        return;
+      }
+      if (data.error === "Please select a valid city") {
+        setFieldErrors({ city: t("cityInvalid") });
+        setError(tCommon("validation.fixHighlighted"));
+        focusFirstInvalidField();
+        return;
+      }
+      if (typeof data.error === "string" && data.error.includes("district")) {
+        setFieldErrors({ district: t("districtInvalid") });
+        setError(tCommon("validation.fixHighlighted"));
+        focusFirstInvalidField();
+        return;
+      }
+      setError(data.error ?? tCommon("status.error"));
       return;
     }
 
@@ -132,34 +194,47 @@ export default function SignUpPage() {
     <div className="mx-auto max-w-md">
       <PageSection>
         <PageHeader title={t("signUpTitle")} subtitle={t("signUpSubtitle")} />
-        <form onSubmit={onSubmit} className="space-y-4">
-          <Field label={t("email")}>
+        <form onSubmit={onSubmit} noValidate className="space-y-4">
+          <Field label={t("email")} error={fieldErrors.email}>
             <input
               className={inputClassName}
               type="email"
               required
               autoComplete="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearField("email");
+              }}
             />
           </Field>
-          <Field label={t("username")} hint={t("usernameHint")}>
+          <Field
+            label={t("username")}
+            hint={t("usernameHint")}
+            error={fieldErrors.username}
+          >
             <input
               className={inputClassName}
               type="text"
               autoComplete="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                clearField("username");
+              }}
             />
           </Field>
-          <Field label={t("phone")}>
+          <Field label={t("phone")} error={fieldErrors.phone}>
             <input
               className={inputClassName}
               type="tel"
               required
               autoComplete="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                clearField("phone");
+              }}
             />
           </Field>
           <Combobox
@@ -169,37 +244,50 @@ export default function SignUpPage() {
             onChange={(nextCity) => {
               setCity(nextCity);
               setDistrict("");
+              clearField("city");
+              clearField("district");
             }}
             options={UK_CITIES}
             required
+            error={fieldErrors.city}
           />
           <Combobox
             label={t("district")}
             placeholder={city ? t("selectDistrict") : t("selectCityFirst")}
             value={district}
-            onChange={setDistrict}
+            onChange={(nextDistrict) => {
+              setDistrict(nextDistrict);
+              clearField("district");
+            }}
             options={districtOptions}
             disabled={!city}
             required
+            error={fieldErrors.district}
           />
-          <Field label={t("password")}>
+          <Field label={t("password")} error={fieldErrors.password}>
             <input
               className={inputClassName}
               type="password"
               required
               autoComplete="new-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearField("password");
+              }}
             />
           </Field>
-          <Field label={t("confirmPassword")}>
+          <Field label={t("confirmPassword")} error={fieldErrors.confirmPassword}>
             <input
               className={inputClassName}
               type="password"
               required
               autoComplete="new-password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                clearField("confirmPassword");
+              }}
             />
           </Field>
           {error ? <p className="text-sm text-danger">{error}</p> : null}

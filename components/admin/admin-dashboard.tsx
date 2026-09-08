@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Card, PageSection } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { PillToggle } from "@/components/ui/pill-toggle";
+import { AdminChatPanel } from "@/components/admin/admin-chat-panel";
 import { AdminEducationPanel } from "@/components/admin/admin-education-panel";
 import { AdminNewsPanel } from "@/components/admin/admin-news-panel";
 import { AdminTranslationsPanel } from "@/components/admin/admin-translations-panel";
@@ -22,11 +23,11 @@ type User = {
   role: "user" | "admin";
 };
 
-type Tab = "access" | "workers" | "education" | "news" | "translations";
+type Tab = "access" | "chat" | "workers" | "education" | "news" | "translations";
 
-export function AdminDashboard() {
+export function AdminDashboard({ initialTab = "access" }: { initialTab?: Tab }) {
   const t = useTranslations("admin");
-  const [tab, setTab] = useState<Tab>("access");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [skills, setSkills] = useState<PendingSkill[]>([]);
   const [users, setUsers] = useState<User[]>([]);
 
@@ -72,6 +73,7 @@ export function AdminDashboard() {
         ariaLabel={t("tabsLabel")}
         options={[
           { value: "access", label: t("tabs.access") },
+          { value: "chat", label: t("tabs.chat") },
           { value: "workers", label: t("tabs.workers") },
           { value: "education", label: t("tabs.education") },
           { value: "news", label: t("tabs.news") },
@@ -148,6 +150,7 @@ export function AdminDashboard() {
         </div>
       ) : null}
 
+      {tab === "chat" ? <AdminChatPanel /> : null}
       {tab === "workers" ? <WorkersCsvUpload /> : null}
       {tab === "education" ? <AdminEducationPanel /> : null}
       {tab === "news" ? <AdminNewsPanel /> : null}

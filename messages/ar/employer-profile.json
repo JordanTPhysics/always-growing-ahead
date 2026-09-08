@@ -2,6 +2,7 @@
   "title": "ملف صاحب العمل",
   "subtitle": "تفاصيل الشركة الظاهرة على إعلانات الوظائف",
   "companyName": "اسم الشركة",
+  "companyNameRequired": "أدخل اسم شركتك",
   "companyDescription": "عن الشركة",
   "website": "الموقع الإلكتروني",
   "logoUrl": "رابط الشعار",

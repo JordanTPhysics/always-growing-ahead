@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";
+import { cn } from "@/lib/utils";
 
 type Suggestion = { id: string; label: string };
 
@@ -20,6 +21,7 @@ type Props = {
   onChange: (value: string) => void;
   onResolved: (result: Result) => void;
   disabled?: boolean;
+  error?: string;
 };
 
 export function PostcodeInput({
@@ -29,6 +31,7 @@ export function PostcodeInput({
   onChange,
   onResolved,
   disabled,
+  error,
 }: Props) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
@@ -113,13 +116,21 @@ export function PostcodeInput({
 
   return (
     <div ref={wrapRef} className="relative space-y-1.5">
-      <label className="block text-sm font-medium">{label}</label>
+      <label
+        className={cn(
+          "block text-sm font-medium",
+          error ? "text-danger" : undefined
+        )}
+      >
+        {label}
+      </label>
       <div className="flex gap-2">
         <input
-          className={inputClassName}
+          className={cn(inputClassName, error && "border-danger focus:ring-danger")}
           value={value}
           disabled={disabled || loading}
           placeholder={placeholder}
+          aria-invalid={error ? true : undefined}
           autoComplete="postal-code"
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => suggestions.length > 0 && setOpen(true)}
@@ -142,6 +153,11 @@ export function PostcodeInput({
           {loading ? "…" : "↵"}
         </Button>
       </div>
+      {error ? (
+        <p className="text-xs text-danger" role="alert">
+          {error}
+        </p>
+      ) : null}
       {open && suggestions.length > 0 ? (
         <ul className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-surface shadow-panel">
           {suggestions.map((s) => (

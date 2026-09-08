@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api/auth";
 import { requireAdmin } from "@/lib/api/admin";
 import { listSkills } from "@/lib/db/repositories/skills";
-import { getUserByEmail } from "@/lib/db/repositories/users";
-import {
-  createWorkerProfile,
-  getWorkerByUserId,
-  setWorkerSkills,
-} from "@/lib/db/repositories/workers";
+import { createWorkerProfile, setWorkerSkills } from "@/lib/db/repositories/workers";
 import {
   buildWorkerCsvTemplate,
   WORKER_CSV_MAX_BYTES,
@@ -18,7 +13,6 @@ import { ensureLocationCoords } from "@/lib/mock/ensure-location";
 import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import {
   createJsonWorkerProfile,
-  getJsonWorkerByUserId,
   setJsonWorkerSkills,
 } from "@/lib/mock/profiles-store";
 import type { Skill } from "@/lib/db/types";
@@ -102,33 +96,10 @@ export async function POST(request: Request) {
 
   for (const row of parsed.rows) {
     try {
-      let userId: number | null = null;
-      if (row.userEmail) {
-        const user = await getUserByEmail(row.userEmail);
-        if (!user) {
-          failed.push({
-            line: row.line,
-            error: `No user account found for ${row.userEmail}`,
-          });
-          continue;
-        }
-        const existing = mock
-          ? getJsonWorkerByUserId(user.id)
-          : await getWorkerByUserId(user.id);
-        if (existing) {
-          failed.push({
-            line: row.line,
-            error: `${row.userEmail} already has a worker profile`,
-          });
-          continue;
-        }
-        userId = user.id;
-      }
-
       const located = await locateRow(row.input, geoCache);
       const profile = mock
-        ? createJsonWorkerProfile(userId, located)
-        : await createWorkerProfile(userId, located);
+        ? createJsonWorkerProfile(null, located)
+        : await createWorkerProfile(null, located);
 
       const unknown: string[] = [];
       const skills = row.skillNames.flatMap((name) => {

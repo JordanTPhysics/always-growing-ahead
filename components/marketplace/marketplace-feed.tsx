@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { marketplacePosts } from "@/lib/marketplace/content";
+import type { MarketplacePost, MarketplaceQuota } from "@/lib/marketplace/types";
+import { MarketplaceComposer } from "@/components/marketplace/marketplace-composer";
 import { MarketplacePostCard } from "@/components/marketplace/marketplace-post-card";
 import { MarketplaceCommentsPanel } from "@/components/marketplace/marketplace-comments-panel";
 import { useMarketplaceCommentCounts } from "@/components/marketplace/use-marketplace-comment-counts";
@@ -12,7 +14,10 @@ export function MarketplaceFeed() {
   const t = useTranslations("marketplace");
   const locale = useLocale();
   const { isLiked, toggleLike } = useMarketplaceLikes();
-  const { getCount, setCount } = useMarketplaceCommentCounts();
+  const [posts, setPosts] = useState<MarketplacePost[]>(marketplacePosts);
+  const [quota, setQuota] = useState<MarketplaceQuota | null>(null);
+  const listingIds = posts.map((post) => post.id);
+  const { getCount, setCount } = useMarketplaceCommentCounts(listingIds);
   const [activeIndex, setActiveIndex] = useState(0);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
@@ -20,8 +25,35 @@ export function MarketplaceFeed() {
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
 
   const commentsPost = commentsPostId
-    ? marketplacePosts.find((post) => post.id === commentsPostId) ?? null
+    ? posts.find((post) => post.id === commentsPostId) ?? null
     : null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const response = await fetch("/api/marketplace/listings");
+        if (!response.ok) return;
+        const data = (await response.json()) as {
+          posts?: MarketplacePost[];
+          quota?: MarketplaceQuota | null;
+        };
+        if (cancelled) return;
+        if (Array.isArray(data.posts) && data.posts.length > 0) {
+          setPosts(data.posts);
+        }
+        if (data.quota) setQuota(data.quota);
+      } catch {
+        // Keep demo posts if the feed API is unavailable
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -38,12 +70,13 @@ export function MarketplaceFeed() {
       { root: container, threshold: 0.6 }
     );
 
+    itemRefs.current.length = posts.length;
     for (const el of itemRefs.current) {
       if (el) observer.observe(el);
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [posts]);
 
   useEffect(() => {
     if (!shareMessage) return;
@@ -83,6 +116,13 @@ export function MarketplaceFeed() {
     [locale, t]
   );
 
+  function onCreated(post: MarketplacePost, nextQuota: MarketplaceQuota) {
+    setPosts((current) => [post, ...current.filter((item) => item.id !== post.id)]);
+    setQuota(nextQuota);
+    setActiveIndex(0);
+    containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <div className="relative h-full w-full">
       <div
@@ -90,7 +130,7 @@ export function MarketplaceFeed() {
         className="marketplace-feed h-full w-full overflow-y-auto overscroll-y-contain scroll-smooth"
         aria-label={t("feedLabel")}
       >
-        {marketplacePosts.map((post, index) => (
+        {posts.map((post, index) => (
           <div
             key={post.id}
             id={post.id}
@@ -111,6 +151,8 @@ export function MarketplaceFeed() {
           </div>
         ))}
       </div>
+
+      <MarketplaceComposer quota={quota} onCreated={onCreated} />
 
       {shareMessage ? (
         <div

@@ -36,7 +36,7 @@ export type WorkerCsvInput = {
 export const WORKER_CSV_MAX_ROWS = 200;
 export const WORKER_CSV_MAX_BYTES = 2 * 1024 * 1024;
 
-/** Headers that map onto `worker_profiles`. `skills` and `user_email` are conveniences. */
+/** Headers that map onto `worker_profiles`. `skills` is a convenience for `worker_skills`. */
 export const WORKER_CSV_HEADERS = [
   "headline",
   "bio",
@@ -54,7 +54,6 @@ export const WORKER_CSV_HEADERS = [
   "contact_phone",
   "linkedin_url",
   "skills",
-  "user_email",
 ] as const;
 
 export type WorkerCsvHeader = (typeof WORKER_CSV_HEADERS)[number];
@@ -96,14 +95,12 @@ const HEADER_ALIASES: Record<string, WorkerCsvHeader> = {
   contact_phone: "contact_phone",
   linkedin_url: "linkedin_url",
   skills: "skills",
-  user_email: "user_email",
 };
 
 export type ParsedWorkerCsvRow = {
   line: number;
   input: WorkerCsvInput;
   skillNames: string[];
-  userEmail: string | null;
 };
 
 export type WorkerCsvRowError = {
@@ -210,12 +207,6 @@ export function parseWorkerCsv(text: string): {
       return;
     }
 
-    const userEmail = blankToNull(get("user_email"));
-    if (userEmail && !userEmail.includes("@")) {
-      errors.push({ line, error: "user_email must be a valid email" });
-      return;
-    }
-
     const jobTypes = parseJobTypes(blankToNull(get("desired_job_types")));
     if (!jobTypes.ok) {
       errors.push({ line, error: jobTypes.error });
@@ -294,7 +285,6 @@ export function parseWorkerCsv(text: string): {
     rows.push({
       line,
       skillNames: parseSkillNames(blankToNull(get("skills"))),
-      userEmail,
       input: {
         headline,
         bio: blankToNull(get("bio")),
@@ -337,7 +327,6 @@ export function buildWorkerCsvTemplate(): string {
       "07700900001",
       "",
       "Forklift|Warehouse Picking",
-      "",
     ],
     [
       "Care assistant",
@@ -356,7 +345,6 @@ export function buildWorkerCsvTemplate(): string {
       "07700900002",
       "",
       "Care Certificate|First Aid",
-      "",
     ],
   ];
 

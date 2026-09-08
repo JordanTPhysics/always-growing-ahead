@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { marketplacePosts } from "@/lib/marketplace/content";
 
-export function useMarketplaceCommentCounts() {
+export function useMarketplaceCommentCounts(listingIds: string[]) {
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const listingKey = listingIds.join(",");
 
   useEffect(() => {
+    if (!listingKey) return;
     let cancelled = false;
 
     async function load() {
       try {
-        const response = await fetch("/api/marketplace/comments/counts");
+        const response = await fetch(
+          `/api/marketplace/comments/counts?ids=${encodeURIComponent(listingKey)}`
+        );
         if (!response.ok) return;
         const data = (await response.json()) as { counts?: Record<string, number> };
         if (!cancelled && data.counts) setCounts(data.counts);
@@ -24,7 +27,7 @@ export function useMarketplaceCommentCounts() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [listingKey]);
 
   const setCount = (listingId: string, count: number) => {
     setCounts((prev) => ({ ...prev, [listingId]: count }));
@@ -32,7 +35,5 @@ export function useMarketplaceCommentCounts() {
 
   const getCount = (listingId: string) => counts[listingId] ?? 0;
 
-  const listingIds = marketplacePosts.map((post) => post.id);
-
-  return { counts, getCount, setCount, listingIds };
+  return { counts, getCount, setCount };
 }

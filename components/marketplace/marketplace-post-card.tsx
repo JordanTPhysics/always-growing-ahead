@@ -43,6 +43,7 @@ export function MarketplacePostCard({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const likeCount = post.likes + (liked ? 1 : 0);
+  const sellerHref = marketplaceSellerHref(post.seller);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -101,22 +102,28 @@ export function MarketplacePostCard({
       <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-4 p-4 pb-6 sm:p-6">
         <div className="min-w-0 flex-1 pe-2 text-white">
           <p className="mb-1 text-xs font-medium uppercase tracking-wide text-white/70">
-            {post.category} · {post.location}
+            {post.location ? `${post.category} · ${post.location}` : post.category}
           </p>
           <h2 className="text-lg font-semibold leading-tight sm:text-xl">{post.title}</h2>
           <p className="mt-1 line-clamp-2 text-sm text-white/85">{post.description}</p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <span className="rounded-full bg-foreground px-3 py-1 text-sm font-semibold text-white">
-              {post.price}
+              {post.price.trim() ? post.price : t("priceOnRequest")}
             </span>
             <span className="text-sm text-white/80">
               {t("by")}{" "}
-              <Link
-                href={marketplaceSellerHref(post.seller)}
-                className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-2.5 py-0.5 font-medium text-white transition hover:bg-white/20"
-              >
-                {post.seller.displayName}
-              </Link>
+              {sellerHref ? (
+                <Link
+                  href={sellerHref}
+                  className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-2.5 py-0.5 font-medium text-white transition hover:bg-white/20"
+                >
+                  {post.seller.displayName}
+                </Link>
+              ) : (
+                <span className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-2.5 py-0.5 font-medium text-white">
+                  {post.seller.displayName}
+                </span>
+              )}
             </span>
           </div>
         </div>

@@ -10,6 +10,10 @@ import { listPublishedNewsExcerpts } from "@/lib/db/repositories/news-excerpts";
 import { isAdmin } from "@/lib/db/repositories/users";
 import { isActiveLocale } from "@/lib/i18n/locales";
 import { localizedNewsBody } from "@/lib/news/localize";
+import { HelpContent } from "@/components/help/help-content";
+import { PrivacyContent } from "@/components/privacy/privacy-content";
+import { PageHeader } from "@/components/ui/forms";
+import { PageSection } from "@/components/ui/card";
 
 export default async function HomePage({
   params,
@@ -19,6 +23,7 @@ export default async function HomePage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("common");
+  const tHelp = await getTranslations("help");
   const session = await auth();
   const isAdminUser =
     !!session?.user?.id && (await isAdmin(Number(session.user.id)));
@@ -70,6 +75,15 @@ export default async function HomePage({
         </div>
         <SponsoredCarousel items={[...sponsoredItems].reverse()} />
       </section>
+
+      <PageSection id="help" className="scroll-mt-6">
+        <PageHeader title={tHelp("title")} subtitle={tHelp("subtitle")} />
+        <HelpContent />
+      </PageSection>
+
+      <PageSection id="privacy" className="scroll-mt-6">
+        <PrivacyContent />
+      </PageSection>
     </div>
   );
 }

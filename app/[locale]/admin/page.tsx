@@ -8,8 +8,10 @@ import { isAdmin } from "@/lib/db/repositories/users";
 
 export default async function AdminPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { locale } = await params;
   const session = await auth();
@@ -17,11 +19,12 @@ export default async function AdminPage({
     redirect(`/${locale}`);
   }
 
+  const { tab } = await searchParams;
   const t = await getTranslations("admin");
   return (
     <PageSection>
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
-      <AdminDashboard />
+      <AdminDashboard initialTab={tab === "chat" ? "chat" : "access"} />
     </PageSection>
   );
 }

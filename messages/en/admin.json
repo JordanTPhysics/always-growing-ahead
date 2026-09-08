@@ -1,9 +1,10 @@
 {
   "title": "Admin dashboard",
-  "subtitle": "Manage skills, users, worker imports, education uploads, news updates, and locale translations.",
+  "subtitle": "Manage skills, users, live chat, worker imports, education uploads, news updates, and locale translations.",
   "tabsLabel": "Admin sections",
   "tabs": {
     "access": "Skills & users",
+    "chat": "Chat",
     "workers": "Workers",
     "education": "Education",
     "news": "News",
@@ -17,6 +18,25 @@
   "role": "Role",
   "tier": "Tier",
   "email": "Email",
+  "account": {
+    "title": "User account",
+    "subtitle": "Account details for {email}",
+    "backToChat": "Back to live chat",
+    "email": "Email",
+    "username": "Username",
+    "phone": "Phone",
+    "city": "City",
+    "district": "District",
+    "tier": "Tier",
+    "role": "Role",
+    "verified": "Email verified",
+    "verifiedYes": "Yes",
+    "verifiedNo": "No",
+    "created": "Joined",
+    "viewWorker": "Worker profile",
+    "viewEmployer": "Employer profile",
+    "noProfiles": "This user has no public worker or employer profile yet."
+  },
   "education": {
     "heading": "Education guides",
     "hint": "Upload PDF or video files, choose short video / lecture / PDF, and publish localized titles for the Education page.",
@@ -94,8 +114,8 @@
   },
   "workersImport": {
     "heading": "Import workers",
-    "hint": "CSV rows create public worker profiles without a login unless user_email matches an existing account. Profiles appear on the map when they have coordinates (from postcode if lat/lng are blank).",
-    "required": "headline is required. contact_email, contact_phone, and linkedin_url are stored on the profile for contact reveal. user_email is optional. skills and desired_job_types are pipe-separated. Defaults: visibility=public, availability=immediate, actively_looking=true.",
+    "hint": "CSV rows create public worker profiles with no app account. user_id stays empty — it is only set when someone signs up. Profiles appear on the map when they have coordinates (from postcode if lat/lng are blank).",
+    "required": "headline is required. Do not include id or user_id. contact_email, contact_phone, and linkedin_url are stored on the profile for contact reveal. skills and desired_job_types are pipe-separated. Defaults: visibility=public, availability=immediate, actively_looking=true.",
     "chooseFile": "CSV file",
     "uploadCta": "Upload workers",
     "downloadSample": "Download sample CSV",

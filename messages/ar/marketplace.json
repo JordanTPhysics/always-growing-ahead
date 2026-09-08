@@ -14,5 +14,22 @@
   "noComments": "لا توجد تعليقات بعد. كن أول من يطرح سؤالاً.",
   "addComment": "أضف تعليقاً",
   "commentPlaceholder": "اسأل عن الحالة أو الاستلام أو التوفر…",
-  "postComment": "نشر التعليق"
+  "postComment": "نشر التعليق",
+  "upload": "نشر",
+  "uploadTitle": "أضف إلى الخلاصة",
+  "signInToPost": "سجّل الدخول بخطة العامل أو صاحب العمل لنشر الصور والفيديوهات.",
+  "signIn": "تسجيل الدخول",
+  "upgradeToPost": "رقِّ خطتك إلى العامل أو صاحب العمل لنشر الصور والفيديوهات في خلاصة السوق.",
+  "dailyLimitHint": "تبقى {remaining} من {limit} منشورات اليوم",
+  "dailyLimitReached": "تم بلوغ الحد اليومي ({limit} منشورات في خطتك). حاول غداً.",
+  "mediaLabel": "صورة أو فيديو",
+  "mediaHint": "الصور حتى 5MB. الفيديو حتى 50MB (MP4 أو WebM أو MOV).",
+  "titleLabel": "العنوان",
+  "descriptionLabel": "الوصف",
+  "priceLabel": "السعر",
+  "priceOnRequest": "عند الطلب",
+  "locationLabel": "الموقع",
+  "categoryLabel": "الفئة",
+  "publish": "نشر في الخلاصة",
+  "uploading": "جاري الرفع…"
 }

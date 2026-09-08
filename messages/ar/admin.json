@@ -1,9 +1,10 @@
 {
   "title": "لوحة الإدارة",
-  "subtitle": "إدارة المهارات والمستخدمين واستيراد العمال ومحتوى التعليم وتحديثات الأخبار وترجمات الواجهة.",
+  "subtitle": "إدارة المهارات والمستخدمين والدردشة المباشرة واستيراد العمال ومحتوى التعليم وتحديثات الأخبار وترجمات الواجهة.",
   "tabsLabel": "أقسام الإدارة",
   "tabs": {
     "access": "المهارات والمستخدمون",
+    "chat": "الدردشة",
     "workers": "العمال",
     "education": "التعليم",
     "news": "الأخبار",
@@ -17,6 +18,25 @@
   "role": "الدور",
   "tier": "الاشتراك",
   "email": "البريد الإلكتروني",
+  "account": {
+    "title": "حساب المستخدم",
+    "subtitle": "تفاصيل الحساب لـ {email}",
+    "backToChat": "العودة إلى الدردشة المباشرة",
+    "email": "البريد الإلكتروني",
+    "username": "اسم المستخدم",
+    "phone": "الهاتف",
+    "city": "المدينة",
+    "district": "المنطقة",
+    "tier": "الاشتراك",
+    "role": "الدور",
+    "verified": "البريد موثّق",
+    "verifiedYes": "نعم",
+    "verifiedNo": "لا",
+    "created": "تاريخ الانضمام",
+    "viewWorker": "ملف العامل",
+    "viewEmployer": "ملف صاحب العمل",
+    "noProfiles": "لا يوجد لهذا المستخدم ملف عامل أو صاحب عمل عام بعد."
+  },
   "education": {
     "heading": "أدلة التعليم",
     "hint": "ارفع ملفات PDF أو فيديو، واختر فيديو قصير / محاضرة / PDF، وانشر عناوين مترجمة لصفحة التعليم.",
@@ -94,8 +114,8 @@
   },
   "workersImport": {
     "heading": "استيراد العمال",
-    "hint": "تنشئ صفوف CSV ملفات عمال عامة من دون تسجيل دخول إلا إذا طابق user_email حساباً موجوداً. تظهر الملفات على الخريطة عند توفر الإحداثيات (من الرمز البريدي إذا تُرك lat/lng فارغاً).",
-    "required": "headline مطلوب. تُحفظ contact_email و contact_phone و linkedin_url في الملف لكشف التواصل. user_email اختياري. skills و desired_job_types يُفصلان بـ |. القيم الافتراضية: visibility=public، availability=immediate، actively_looking=true.",
+    "hint": "تنشئ صفوف CSV ملفات عمال عامة من دون حساب في التطبيق. يبقى user_id فارغاً — يُعيَّن فقط عند التسجيل. تظهر الملفات على الخريطة عند توفر الإحداثيات (من الرمز البريدي إذا تُرك lat/lng فارغاً).",
+    "required": "headline مطلوب. لا تُدرج id أو user_id. تُحفظ contact_email و contact_phone و linkedin_url في الملف لكشف التواصل. skills و desired_job_types يُفصلان بـ |. القيم الافتراضية: visibility=public، availability=immediate، actively_looking=true.",
     "chooseFile": "ملف CSV",
     "uploadCta": "رفع العمال",
     "downloadSample": "تنزيل نموذج CSV",

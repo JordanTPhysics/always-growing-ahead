@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { inputClassName } from "@/components/ui/forms";
+import { cn } from "@/lib/utils";
 
 type Props = {
   label: string;
@@ -11,6 +12,7 @@ type Props = {
   options: readonly string[];
   disabled?: boolean;
   required?: boolean;
+  error?: string;
 };
 
 export function Combobox({
@@ -21,6 +23,7 @@ export function Combobox({
   options,
   disabled,
   required,
+  error,
 }: Props) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
@@ -88,16 +91,22 @@ export function Combobox({
 
   return (
     <div ref={wrapRef} className="relative space-y-1.5">
-      <label className="block text-sm font-medium text-text">
+      <label
+        className={cn(
+          "block text-sm font-medium",
+          error ? "text-danger" : "text-text"
+        )}
+      >
         {label}
         {required ? <span className="text-danger"> *</span> : null}
       </label>
       <input
-        className={inputClassName}
+        className={cn(inputClassName, error && "border-danger focus:ring-danger")}
         value={query}
         disabled={disabled}
         placeholder={placeholder}
         required={required}
+        aria-invalid={error ? true : undefined}
         autoComplete="off"
         onChange={(e) => {
           setQuery(e.target.value);
@@ -114,6 +123,11 @@ export function Combobox({
           if (e.key === "Escape") setOpen(false);
         }}
       />
+      {error ? (
+        <p className="text-xs text-danger" role="alert">
+          {error}
+        </p>
+      ) : null}
       {open && !disabled && filtered.length > 0 ? (
         <ul className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-surface shadow-panel">
           {filtered.map((option) => (

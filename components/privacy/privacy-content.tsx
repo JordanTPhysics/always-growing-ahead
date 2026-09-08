@@ -1,9 +1,8 @@
 import { PageHeader } from "@/components/ui/forms";
-import { PageSection } from "@/components/ui/card";
 
-export default function PrivacyPage() {
+export function PrivacyContent() {
   return (
-    <PageSection className="space-y-6 text-sm leading-6 text-muted">
+    <div className="space-y-6 text-sm leading-6 text-muted">
       <PageHeader
         title="Privacy policy"
         subtitle="How AGA uses and protects your information."
@@ -43,6 +42,6 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold text-text">Contact</h2>
         <p>For privacy requests, contact the AGA support team.</p>
       </section>
-    </PageSection>
+    </div>
   );
 }

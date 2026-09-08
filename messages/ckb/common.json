@@ -51,6 +51,15 @@
     "saved": "Saved",
     "error": "Something went wrong"
   },
+  "validation": {
+    "required": "ئەم خانەیە پێویستە",
+    "email": "ئیمەیڵێکی دروست بنووسە، وەک name@example.com",
+    "phone": "ژمارەی تەلەفۆنێکی دروست بنووسە کە لانیکەم 7 ژمارەی هەبێت",
+    "url": "ناونیشانی تەواوی وێب بنووسە کە بە http:// یان https:// دەستپێدەکات",
+    "integer": "ژمارەیەکی تەواو بنووسە",
+    "tooLong": "نابێت لە {max} پیت زیاتر بێت",
+    "fixHighlighted": "تکایە خانە دیاریکراوەکان ڕاست بکەرەوە."
+  },
   "language": "Language",
   "news": {
     "label": "نوێکارییەکانی هەواڵ",

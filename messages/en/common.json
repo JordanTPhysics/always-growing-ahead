@@ -51,6 +51,15 @@
     "saved": "Saved",
     "error": "Something went wrong"
   },
+  "validation": {
+    "required": "This field is required",
+    "email": "Enter a valid email address, like name@example.com",
+    "phone": "Enter a valid phone number with at least 7 digits",
+    "url": "Enter a full web address starting with http:// or https://",
+    "integer": "Enter a whole number",
+    "tooLong": "Must be {max} characters or fewer",
+    "fixHighlighted": "Please correct the highlighted fields."
+  },
   "language": "Language",
   "news": {
     "label": "News updates",

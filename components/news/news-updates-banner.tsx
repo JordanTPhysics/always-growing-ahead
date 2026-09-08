@@ -7,7 +7,7 @@ export function NewsUpdatesBanner({ excerpts, label }: NewsUpdatesBannerProps) {
   if (excerpts.length === 0) return null;
 
   // Trailing separator so the loop between duplicated halves stays consistent.
-  const track = `${excerpts.join(" / ")} / `;
+  const track = `${excerpts.join(" | ")} | `;
 
   return (
     <div

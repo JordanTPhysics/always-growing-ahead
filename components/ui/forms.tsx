@@ -1,4 +1,11 @@
-import type { ReactNode } from "react";
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+} from "react";
+import { cn } from "@/lib/utils";
 import { PillToggle } from "@/components/ui/pill-toggle";
 
 export function PageHeader({
@@ -25,20 +32,51 @@ export function PageHeader({
   );
 }
 
+const invalidControlClassName =
+  "[&_input]:border-danger [&_textarea]:border-danger [&_select]:border-danger [&_input]:focus:ring-danger [&_textarea]:focus:ring-danger [&_select]:focus:ring-danger";
+
 export function Field({
   label,
   children,
   hint,
+  error,
+  invalid: invalidProp,
 }: {
   label: string;
   children: ReactNode;
   hint?: string;
+  error?: string;
+  invalid?: boolean;
 }) {
+  const invalid = Boolean(error) || Boolean(invalidProp);
+  const marked = Children.map(children, (child) => {
+    if (!invalid || !isValidElement(child)) return child;
+    if (typeof child.type !== "string") return child;
+    if (!["input", "textarea", "select"].includes(child.type)) return child;
+    return cloneElement(
+      child as ReactElement<{ "aria-invalid"?: boolean }>,
+      { "aria-invalid": true }
+    );
+  });
+
   return (
-    <label className="block space-y-1.5">
-      <span className="text-sm font-medium text-text">{label}</span>
-      {children}
-      {hint ? <span className="block text-xs text-muted">{hint}</span> : null}
+    <label className={cn("block space-y-1.5", invalid && invalidControlClassName)}>
+      <span
+        className={cn(
+          "text-sm font-medium",
+          invalid ? "text-danger" : "text-text"
+        )}
+      >
+        {label}
+      </span>
+      {marked}
+      {error ? (
+        <span className="block text-xs text-danger" role="alert">
+          {error}
+        </span>
+      ) : hint ? (
+        <span className="block text-xs text-muted">{hint}</span>
+      ) : null}
     </label>
   );
 }

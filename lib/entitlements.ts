@@ -17,3 +17,14 @@ export function canCreateWorkerProfile(tier: Tier) {
 export function canViewEducation(tier: Tier) {
   return tier === "basic" || tier === "advanced";
 }
+
+export function canPostMarketplace(tier: Tier) {
+  return tier === "basic" || tier === "advanced";
+}
+
+/** Worker (basic) = 1/day, Employer (advanced) = 5/day. */
+export function marketplaceDailyPostLimit(tier: Tier): number {
+  if (tier === "advanced") return 5;
+  if (tier === "basic") return 1;
+  return 0;
+}

@@ -50,6 +50,13 @@
 
 html {
   min-height: 100%;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
@@ -531,6 +538,28 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-scroll {
+    animation: none;
+  }
+}
+
+@keyframes chat-fab-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(169 124 28 / 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgb(169 124 28 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(169 124 28 / 0);
+  }
+}
+
+.chat-fab-pulse {
+  animation: chat-fab-pulse 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-fab-pulse {
     animation: none;
   }
 }
