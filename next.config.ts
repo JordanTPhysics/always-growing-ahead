@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
     // Default is 10MB; education videos are up to 2GB.
     proxyClientMaxBodySize: "2gb",
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/uploads/:path*",
+          destination: "/api/files/:path*",
+        },
+      ],
+    };
+  },
   async redirects() {
     return [
       {

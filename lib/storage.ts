@@ -1,5 +1,6 @@
 import { Client } from "minio";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { mkdir, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Readable } from "node:stream";
@@ -136,12 +137,82 @@ export async function presignGetUrl(key: string): Promise<string> {
   return toPublicUrl(url);
 }
 
+export type StoredObjectStat = {
+  size: number;
+  contentType: string | null;
+};
+
+function contentTypeFromMeta(
+  meta: Record<string, unknown> | undefined
+): string | null {
+  const value = meta?.["content-type"] ?? meta?.["Content-Type"];
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+export async function statStoredObject(
+  key: string
+): Promise<StoredObjectStat | null> {
+  if (isObjectStorageConfigured()) {
+    try {
+      const info = await getClient().statObject(bucket(), key);
+      return {
+        size: info.size,
+        contentType: contentTypeFromMeta(info.metaData),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  const absolute = resolveLocalUploadPath(key);
+  if (!absolute) return null;
+  try {
+    const info = await stat(absolute);
+    if (!info.isFile()) return null;
+    return { size: info.size, contentType: null };
+  } catch {
+    return null;
+  }
+}
+
+export async function openStoredObject(
+  key: string,
+  range?: { start: number; end: number }
+): Promise<Readable | null> {
+  if (isObjectStorageConfigured()) {
+    try {
+      if (range) {
+        return await getClient().getPartialObject(
+          bucket(),
+          key,
+          range.start,
+          range.end - range.start + 1
+        );
+      }
+      return await getClient().getObject(bucket(), key);
+    } catch {
+      return null;
+    }
+  }
+
+  const absolute = resolveLocalUploadPath(key);
+  if (!absolute) return null;
+  try {
+    return createReadStream(
+      absolute,
+      range ? { start: range.start, end: range.end } : undefined
+    );
+  } catch {
+    return null;
+  }
+}
+
+/** Stored `/uploads/...` URLs are served same-origin by the files route. */
 export async function resolveStoredFileUrl(
   url: string | null | undefined
 ): Promise<string | null> {
   if (!url) return null;
-  if (!isObjectStorageConfigured() || !isStoredUploadUrl(url)) return url;
-  return presignGetUrl(storedUrlToKey(url));
+  return url;
 }
 
 export async function writeLocalUpload(
