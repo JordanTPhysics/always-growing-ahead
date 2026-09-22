@@ -68,5 +68,33 @@
   },
   "footer": {
     "rights": "UK job marketplace"
+  },
+  "features": {
+    "kicker": "With AGA you can",
+    "findWork": {
+      "title": "Find Work",
+      "body": "Search live jobs on a map across the UK. Filter by role, location and radius, then reveal employer contacts when you are ready.",
+      "imageAlt": "Construction workers on a building site"
+    },
+    "hire": {
+      "title": "Hire Locally",
+      "body": "Find nearby workers by skill and availability. View profiles and connect directly — no agencies, no delay.",
+      "imageAlt": "Handshake between an employer and a worker"
+    },
+    "learn": {
+      "title": "Learn and Train",
+      "body": "Watch short videos and lectures, and download PDF guides from the education library to grow your trade skills.",
+      "imageAlt": "Welder at work developing a trade skill"
+    },
+    "marketplace": {
+      "title": "Buy and Sell",
+      "body": "List tools, PPE, materials and services, or browse what tradespeople near you have for sale.",
+      "imageAlt": "Set of trade tools ready to buy or sell"
+    },
+    "content": {
+      "title": "Create and Engage",
+      "body": "Post photos and videos to the feed, then like, comment and share with other workers and employers.",
+      "imageAlt": "Tradesperson creating content on a laptop in a workshop"
+    }
   }
 }

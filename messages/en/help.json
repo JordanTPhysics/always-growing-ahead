@@ -14,7 +14,7 @@
   "queryPhoneHint": "Optional — include a number if you prefer a call back.",
   "queryMessage": "Your question",
   "queryMessagePlaceholder": "Describe what you need help with…",
-  "querySubmit": "Send question",
+  "querySubmit": "Submit",
   "querySuccess": "Thanks — your question has been sent. We will reply by email as soon as we can.",
   "tutorialItems": {
     "account": {

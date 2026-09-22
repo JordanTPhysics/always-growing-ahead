@@ -55,7 +55,7 @@ export function EmployerJobsPanel({ enabled }: Props) {
           <h2 className="text-xl font-semibold">{t("createTitle")}</h2>
           <Button
             type="button"
-            variant="secondary"
+            variant="destructive"
             onClick={() => setCreating(false)}
           >
             {tCommon("actions.cancel")}
@@ -79,7 +79,7 @@ export function EmployerJobsPanel({ enabled }: Props) {
           <h2 className="text-xl font-semibold">{t("editTitle")}</h2>
           <Button
             type="button"
-            variant="secondary"
+            variant="destructive"
             onClick={() => setEditingId(null)}
           >
             {tCommon("actions.cancel")}

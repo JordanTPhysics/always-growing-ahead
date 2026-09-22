@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Field, inputClassName } from "@/components/ui/forms";
 
 export type HelpQueryPrefill = {
@@ -54,40 +53,40 @@ export function HelpQueryForm({ prefill }: { prefill: HelpQueryPrefill | null })
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 bg-white/30 p-4 rounded-lg">
       <div>
-        <h2 className="text-2xl font-semibold text-text">{t("queryTitle")}</h2>
-        <p className="mt-2 max-w-2xl text-sm text-muted">{t("querySubtitle")}</p>
+        <h3 className="text-2xl font-semibold ">{t("queryTitle")}</h3>
+        <p className="mt-2 max-w-2xl text-sm">{t("querySubtitle")}</p>
       </div>
 
-      <Card elevation="nested" className="p-5">
-        {success ? (
-          <p className="text-sm text-text">{t("querySuccess")}</p>
-        ) : (
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t("queryName")}>
-                <input
-                  className={inputClassName}
-                  type="text"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </Field>
-              <Field label={t("queryEmail")}>
-                <input
-                  className={inputClassName}
-                  type="email"
-                  required
-                  autoComplete="email"
-                  readOnly={isLoggedIn}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </Field>
-            </div>
-            <Field label={t("queryPhone")} hint={t("queryPhoneHint")}>
+      {success ? (
+        <p className="text-sm text-white">{t("querySuccess")}</p>
+      ) : (
+        <form onSubmit={onSubmit} className="max-w-xl space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field inverted label={t("queryName")}>
+              <input
+                className={inputClassName}
+                type="text"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Field>
+            <Field inverted label={t("queryEmail")}>
+              <input
+                className={inputClassName}
+                type="email"
+                required
+                autoComplete="email"
+                readOnly={isLoggedIn}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Field>
+          </div>
+          <div className="max-w-sm">
+            <Field inverted label={t("queryPhone")} hint={t("queryPhoneHint")}>
               <input
                 className={inputClassName}
                 type="tel"
@@ -96,24 +95,24 @@ export function HelpQueryForm({ prefill }: { prefill: HelpQueryPrefill | null })
                 onChange={(e) => setPhone(e.target.value)}
               />
             </Field>
-            <Field label={t("queryMessage")}>
-              <textarea
-                className={inputClassName}
-                rows={5}
-                required
-                minLength={10}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={t("queryMessagePlaceholder")}
-              />
-            </Field>
-            {error ? <p className="text-sm text-danger">{error}</p> : null}
-            <Button type="submit" disabled={pending}>
-              {pending ? tCommon("status.loading") : t("querySubmit")}
-            </Button>
-          </form>
-        )}
-      </Card>
+          </div>
+          <Field inverted label={t("queryMessage")}>
+            <textarea
+              className={inputClassName}
+              rows={5}
+              required
+              minLength={10}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={t("queryMessagePlaceholder")}
+            />
+          </Field>
+          {error ? <p className="text-sm text-danger">{error}</p> : null}
+          <Button type="submit" disabled={pending}>
+            {pending ? tCommon("status.loading") : t("querySubmit")}
+          </Button>
+        </form>
+      )}
     </section>
   );
 }

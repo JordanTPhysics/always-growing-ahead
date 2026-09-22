@@ -9,8 +9,7 @@ import { Card } from "@/components/ui/card";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { canViewContactInfo, type Tier } from "@/lib/entitlements";
 import { track } from "@/lib/analytics/track";
-import { toWhatsAppHref } from "@/lib/validation/fields";
-import { FaPhone, FaWhatsapp } from "react-icons/fa";
+import { ContactChannels } from "@/components/profile/contact-channels";
 
 type ContactPayload = {
   email: string | null;
@@ -96,66 +95,18 @@ export function ContactReveal(props: Props) {
   }
 
   if (contact) {
-    const whatsappHref = contact.phone ? toWhatsAppHref(contact.phone) : null;
     return (
-      <Card elevation="nested" className="space-y-2 p-5">
+      <Card elevation="nested" className="space-y-3 p-5">
         <h2 className="font-medium">{t("contactDetails")}</h2>
         {contact.companyName ? (
           <p className="text-sm text-muted">{contact.companyName}</p>
         ) : null}
-        {contact.email ? (
-          <p className="text-sm">
-            <span className="text-muted">{t("email")}: </span>
-            <a className="text-muted underline" href={`mailto:${contact.email}`}>
-              {contact.email}
-            </a>
-          </p>
-        ) : (
-          <p className="text-sm text-muted">{t("noEmail")}</p>
-        )}
-        {contact.phone ? (
-          <p className="text-sm">
-            <span className="text-muted">{t("phone")}: </span>
-            <a
-              className="inline-flex items-center gap-1 text-muted underline"
-              href={`tel:${contact.phone}`}
-            >
-              <FaPhone size={12} aria-hidden />
-              {contact.phone}
-            </a>
-            {whatsappHref ? (
-              <>
-                {" · "}
-                <a
-                  className="inline-flex items-center gap-1 text-muted underline"
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <FaWhatsapp size={14} aria-hidden />
-                  {t("whatsapp")}
-                </a>
-              </>
-            ) : null}
-          </p>
-        ) : (
-          <p className="text-sm text-muted">{t("noPhone")}</p>
-        )}
-        {contact.linkedinUrl ? (
-          <p className="text-sm">
-            <span className="text-muted">{t("linkedin")}: </span>
-            <a
-              className="text-muted underline"
-              href={contact.linkedinUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t("linkedinProfile")}
-            </a>
-          </p>
-        ) : (
-          <p className="text-sm text-muted">{t("noLinkedin")}</p>
-        )}
+        <ContactChannels
+          email={contact.email}
+          phone={contact.phone}
+          linkedinUrl={contact.linkedinUrl}
+          showEmpty
+        />
       </Card>
     );
   }

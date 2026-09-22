@@ -99,7 +99,7 @@ function MapLegend({
               color={color}
               aria-hidden
             />
-            <span className="text-xs text-foreground">{label}</span>
+            <span className="text-xs text-black">{label}</span>
           </div>
         );
       })}

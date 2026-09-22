@@ -16,6 +16,8 @@ type Props = {
   title?: string;
   children: ReactNode;
   desktopSidePanel?: boolean;
+  /** `brand` uses the app green/gold gradient, matching page sections. */
+  appearance?: "surface" | "brand";
 };
 
 export function BottomSheet({
@@ -24,6 +26,7 @@ export function BottomSheet({
   title,
   children,
   desktopSidePanel = true,
+  appearance = "surface",
 }: Props) {
   const titleId = useId();
   const [dragY, setDragY] = useState(0);
@@ -73,7 +76,9 @@ export function BottomSheet({
         className={
           desktopSidePanel
             ? "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel lg:inset-y-0 lg:start-0 lg:end-auto lg:max-h-none lg:w-1/2 lg:rounded-none lg:border-y-0 lg:border-e lg:border-s-0 lg:shadow-none"
-            : "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel lg:inset-x-1/4"
+            : appearance === "brand"
+              ? "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-white/20 bg-[radial-gradient(ellipse_120%_90%_at_100%_0%,var(--foreground)_0%,var(--background)_55%)] text-white shadow-panel lg:inset-x-1/4"
+              : "fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col rounded-t-2xl border border-border bg-surface shadow-panel lg:inset-x-1/4"
         }
         style={
           dragY
@@ -88,10 +93,16 @@ export function BottomSheet({
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
-          <div className="h-1.5 w-10 rounded-full bg-border" />
+          <div
+            className={`h-1.5 w-10 rounded-full ${appearance === "brand" ? "bg-white/40" : "bg-border"}`}
+          />
         </div>
 
-        <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
+        <div
+          className={`flex items-start justify-between gap-3 border-b px-4 py-3 ${
+            appearance === "brand" ? "border-white/15" : "border-border"
+          }`}
+        >
           {title ? (
             <h2 id={titleId} className="text-base font-semibold">
               {title}
@@ -103,6 +114,7 @@ export function BottomSheet({
             type="button"
             variant="ghost"
             size="icon"
+            className={appearance === "brand" ? "text-white hover:bg-white/15 hover:text-white" : undefined}
             onClick={onClose}
           >
             ×

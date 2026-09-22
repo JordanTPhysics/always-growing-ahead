@@ -214,7 +214,7 @@ export function AdminNewsPanel() {
             >
               {saving ? t("saving") : t("save")}
             </Button>
-            <Button type="button" variant="secondary" onClick={cancelForm}>
+            <Button type="button" variant="destructive" onClick={cancelForm}>
               {t("cancel")}
             </Button>
           </div>
@@ -250,7 +250,7 @@ export function AdminNewsPanel() {
                 </Button>
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="destructive"
                   size="sm"
                   onClick={() => void remove(excerpt.id)}
                 >

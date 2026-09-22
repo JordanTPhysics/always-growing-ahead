@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { Link } from "@/lib/i18n/navigation";
-import { Card } from "@/components/ui/card";
 import { HelpQueryForm } from "@/components/help/help-query-form";
 import { getUserById } from "@/lib/db/repositories/users";
+import { Button } from "../ui/button";
 
 const tutorialKeys = [
   "account",
@@ -54,46 +54,46 @@ export async function HelpContent() {
   return (
     <div className="space-y-10">
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-text">{t("tutorialsTitle")}</h2>
-        <div className="grid gap-4">
+        <h3 className="text-2xl font-semibold text-foreground">
+          {t("tutorialsTitle")}
+        </h3>
+        <div className="grid gap-8">
           {tutorialKeys.map((key) => {
             const steps = tutorialSteps(key, t);
             return (
-              <Card key={key} elevation="nested" className="p-5">
-                <h3 className="text-lg font-semibold text-text">
+              <div key={key}>
+                <h4 className="text-lg font-semibold text-white">
                   {t(`tutorialItems.${key}.title`)}
-                </h3>
-                <ol className="mt-3 list-decimal space-y-2 ps-5 text-sm leading-6 text-muted">
+                </h4>
+                <div className="h-[1px] w-full mx-auto bg-white"></div>
+                <ol className="mt-3 list-decimal space-y-2 ps-5 text-sm leading-6 text-white/90">
                   {steps.map((step) => (
                     <li key={step}>{step}</li>
                   ))}
                 </ol>
-              </Card>
+              </div>
             );
           })}
         </div>
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-text">{t("faqTitle")}</h2>
-        <div className="space-y-3">
+        <h3 className="text-2xl font-semibold text-foreground">{t("faqTitle")}</h3>
+        <div>
           {faqKeys.map((key) => (
-            <details
-              key={key}
-              className="group rounded-md border border-border bg-surface open:shadow-panel"
-            >
-              <summary className="cursor-pointer list-none px-4 py-3 text-base font-medium text-text marker:content-none [&::-webkit-details-marker]:hidden">
+            <details key={key} className="group border-b border-white/15">
+              <summary className="cursor-pointer list-none py-3 text-base font-medium text-white marker:content-none [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center justify-between gap-3">
                   {t(`faqItems.${key}.question`)}
                   <span
                     aria-hidden="true"
-                    className="text-muted transition-transform group-open:rotate-180"
+                    className="text-foreground transition-transform group-open:rotate-180"
                   >
                     ▾
                   </span>
                 </span>
               </summary>
-              <div className="border-t border-border px-4 py-3 text-sm leading-6 text-muted">
+              <div className="pb-3 text-sm leading-6 text-white/90">
                 {t(`faqItems.${key}.answer`)}
               </div>
             </details>
@@ -101,13 +101,17 @@ export async function HelpContent() {
         </div>
       </section>
 
-      <Card elevation="nested" className="flex flex-wrap items-center justify-between gap-4 p-5">
-        <p className="max-w-2xl text-sm text-muted">{t("educationCta")}</p>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/pricing">{t("pricingLink")}</Link>
-          <Link href="/education">{t("educationLink")}</Link>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <p className="max-w-2xl text-sm text-white/90">{t("educationCta")}</p>
+        <div className="flex flex-wrap gap-4">
+          <Button variant="accent">
+            <Link href="/pricing">{t("pricingLink")}</Link>
+          </Button>
+          <Button variant="secondary">
+            <Link href="/education">{t("educationLink")}</Link>
+          </Button>
         </div>
-      </Card>
+      </div>
 
       <HelpQueryForm prefill={prefill} />
     </div>

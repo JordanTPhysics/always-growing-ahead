@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/forms";
 import { EmployerJobsPanel } from "@/components/profile/employer-jobs-panel";
 import { FavouritesPanel } from "@/components/favourites/favourites-panel";
+import { ContactChannels } from "@/components/profile/contact-channels";
 import {
   clearFieldError,
   focusFirstInvalidField,
@@ -188,31 +189,11 @@ export function EmployerProfileForm() {
         <div className="border-t border-border pt-4 text-sm">
           <h3 className="mb-1 font-medium">{t("contactSection")}</h3>
           <p className="mb-3 text-muted">{t("contactHint")}</p>
-          {contactEmail ? (
-            <p>
-              <span className="text-muted">{t("contactEmail")}: </span>
-              {contactEmail}
-            </p>
-          ) : null}
-          {contactPhone ? (
-            <p>
-              <span className="text-muted">{t("contactPhone")}: </span>
-              {contactPhone}
-            </p>
-          ) : null}
-          {linkedinUrl ? (
-            <p>
-              <span className="text-muted">{t("linkedinUrl")}: </span>
-              <a
-                href={linkedinUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                {linkedinUrl}
-              </a>
-            </p>
-          ) : null}
+          <ContactChannels
+            email={contactEmail}
+            phone={contactPhone}
+            linkedinUrl={linkedinUrl}
+          />
         </div>
       )}
     </Card>

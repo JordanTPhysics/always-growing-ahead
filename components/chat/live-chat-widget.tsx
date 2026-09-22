@@ -12,6 +12,7 @@ import {
   remainingChatHours,
 } from "@/components/chat/chat-messages";
 import { panelClassName } from "@/lib/ui-styles";
+import { cn } from "@/lib/utils";
 import type { ChatConversation, ChatMessage } from "@/lib/db/types";
 
 type ChatPayload = {
@@ -156,14 +157,17 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
     <div className="pointer-events-none fixed end-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 flex flex-col items-end gap-3">
       {open ? (
         <section
-          className={`${panelClassName} pointer-events-auto flex h-[min(28rem,calc(100dvh-7rem))] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden`}
+          className={cn(
+            panelClassName,
+            "pointer-events-auto flex h-[min(28rem,calc(100dvh-7rem))] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden border-background border-2"
+          )}
           aria-label={t("title")}
         >
-          <header className="border-b border-border bg-background-soft px-4 py-3">
-            <h2 className="text-base font-semibold text-text">{t("title")}</h2>
-            <p className="mt-1 text-xs text-muted">{t("subtitle")}</p>
+          <header className="bg-foreground px-4 py-3">
+            <h2 className="text-base font-semibold text-white">{t("title")}</h2>
+            <p className="mt-1 text-xs text-white/80">{t("subtitle")}</p>
             {hoursLeft != null ? (
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-xs text-white/70">
                 {hoursLeft <= 1
                   ? t("expiresSoon")
                   : t("expiresIn", { hours: hoursLeft })}
@@ -194,7 +198,7 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
           {isAuthenticated ? (
             <form
               onSubmit={(event) => void onSubmit(event)}
-              className="space-y-2 border-t border-border p-3"
+              className="space-y-2 border-t-2 border-background bg-background p-3"
             >
               <textarea
                 value={body}
@@ -224,7 +228,7 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
               ? t("unread", { count: unread })
               : t("openChat")
         }
-        className="chat-fab-pulse pointer-events-auto relative flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-white shadow-button hover:opacity-95"
+        className="chat-fab-pulse button-gradient pointer-events-auto relative flex h-14 w-14 items-center justify-center rounded-full [--button-fg:var(--button-secondary-fg)] [--button-from:var(--button-secondary-from)] [--button-to:var(--button-secondary-to)]"
       >
         {open ? (
           <MdClose className="h-7 w-7" aria-hidden="true" />

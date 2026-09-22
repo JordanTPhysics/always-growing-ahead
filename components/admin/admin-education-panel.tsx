@@ -610,7 +610,7 @@ export function AdminEducationPanel() {
             >
               {saving ? t("saving") : t("save")}
             </Button>
-            <Button type="button" variant="secondary" onClick={cancelForm}>
+            <Button type="button" variant="destructive" onClick={cancelForm}>
               {t("cancel")}
             </Button>
           </div>
@@ -645,7 +645,7 @@ export function AdminEducationPanel() {
                 </Button>
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="destructive"
                   onClick={() => void remove(resource.id)}
                 >
                   {t("delete")}

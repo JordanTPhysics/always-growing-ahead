@@ -41,12 +41,14 @@ export function Field({
   hint,
   error,
   invalid: invalidProp,
+  inverted = false,
 }: {
   label: string;
   children: ReactNode;
   hint?: string;
   error?: string;
   invalid?: boolean;
+  inverted?: boolean;
 }) {
   const invalid = Boolean(error) || Boolean(invalidProp);
   const marked = Children.map(children, (child) => {
@@ -64,7 +66,7 @@ export function Field({
       <span
         className={cn(
           "text-sm font-medium",
-          invalid ? "text-danger" : "text-text"
+          invalid ? "text-danger" : inverted ? "text-white" : "text-text"
         )}
       >
         {label}
@@ -75,7 +77,7 @@ export function Field({
           {error}
         </span>
       ) : hint ? (
-        <span className="block text-xs text-muted">{hint}</span>
+        <span className={cn("block text-xs", inverted ? "text-white/70" : "text-muted")}>{hint}</span>
       ) : null}
     </label>
   );

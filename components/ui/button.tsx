@@ -6,21 +6,23 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md border text-sm font-medium text-text disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 rounded-md border text-sm font-semibold disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-text",
   {
     variants: {
       variant: {
         default:
-          "button-3d button-fill-dark border-[var(--border-strong)] bg-background text-white [--button-silhouette-bg:var(--border-strong)] hover:opacity-95",
+          "button-gradient [--button-from:var(--button-happy-from)] [--button-to:var(--button-happy-to)] [--button-fg:var(--button-happy-fg)]",
         secondary:
-          "button-3d button-fill-light border-border bg-surface [--button-silhouette-bg:var(--border)] hover:bg-background-soft",
+          "button-gradient [--button-from:var(--button-secondary-from)] [--button-to:var(--button-secondary-to)] [--button-fg:var(--button-secondary-fg)]",
         accent:
-          "button-3d button-fill-dark border-[#7a5519] bg-foreground [--button-silhouette-bg:#7a5519] hover:opacity-95",
-        ghost:
-          "button-fill-light border-transparent bg-transparent shadow-none transition-[background-color,opacity] hover:bg-background-soft",
+          "button-gradient [--button-from:var(--button-accent-from)] [--button-to:var(--button-accent-to)] [--button-fg:var(--button-accent-fg)]",
+        destructive:
+          "button-gradient [--button-from:var(--button-danger-from)] [--button-to:var(--button-danger-to)] [--button-fg:var(--button-danger-fg)]",
         outline:
-          "button-3d button-fill-light border-border bg-surface text-background [--button-silhouette-bg:var(--border)] hover:bg-background-soft",
-        link: "button-fill-light border-transparent bg-transparent shadow-none underline-offset-4 transition-[opacity] hover:underline",
+          "button-gradient [--button-from:var(--button-outline-from)] [--button-to:var(--button-outline-to)] [--button-fg:var(--button-outline-fg)] [--button-border:var(--border)]",
+        ghost:
+          "relative origin-center border-transparent bg-transparent text-background shadow-none transition-[transform,background-color] hover:z-10 hover:scale-105 hover:bg-background-soft focus-visible:z-10 focus-visible:scale-105 motion-reduce:transform-none motion-reduce:transition-colors",
+        link: "relative origin-center border-transparent bg-transparent text-background shadow-none underline-offset-4 transition-transform hover:z-10 hover:scale-105 hover:underline focus-visible:z-10 focus-visible:scale-105 motion-reduce:transform-none motion-reduce:transition-none",
       },
       size: {
         default: "min-h-11 px-4 py-2",
@@ -36,21 +38,6 @@ const buttonVariants = cva(
   }
 );
 
-const silhouetteWrapClassName: Partial<
-  Record<NonNullable<VariantProps<typeof buttonVariants>["variant"]>, string>
-> = {
-  default: "[--button-silhouette-bg:var(--border-strong)]",
-  secondary: "[--button-silhouette-bg:var(--border)]",
-  accent: "[--button-silhouette-bg:#7a5519]",
-  outline: "[--button-silhouette-bg:var(--border)]",
-};
-
-function is3dVariant(
-  variant: VariantProps<typeof buttonVariants>["variant"]
-): variant is keyof typeof silhouetteWrapClassName {
-  return variant !== "ghost" && variant !== "link";
-}
-
 function Button({
   className,
   variant,
@@ -62,25 +49,13 @@ function Button({
     asChild?: boolean;
   }) {
   const Comp = asChild ? Slot : "button";
-  const classes = cn(buttonVariants({ variant, size, className }));
-
-  const face = (
-    <Comp data-slot="button" className={classes} {...props} />
-  );
-
-  if (!is3dVariant(variant)) {
-    return face;
-  }
 
   return (
-    <span
-      className={cn(
-        "button-3d-wrap rounded-md",
-        silhouetteWrapClassName[variant ?? "default"]
-      )}
-    >
-      {face}
-    </span>
+    <Comp
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
   );
 }
 

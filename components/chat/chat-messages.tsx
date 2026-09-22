@@ -42,8 +42,8 @@ export function ChatMessageList({
             key={message.id}
             className={`rounded-md border p-3 ${
               mine
-                ? "ms-6 border-foreground/30 bg-background-soft"
-                : "me-6 border-border bg-surface"
+                ? "ms-6 border-foreground/40 bg-foreground/10"
+                : "me-6 border-background/25 bg-background-soft"
             }`}
           >
             <div className="flex items-baseline justify-between gap-2">

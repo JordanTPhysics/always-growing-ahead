@@ -104,7 +104,7 @@ export function AdminDashboard({ initialTab = "access" }: { initialTab?: Tab }) 
                       </Button>
                       <Button
                         type="button"
-                        variant="secondary"
+                        variant="destructive"
                         onClick={() => void moderate(skill.id, "reject")}
                       >
                         {t("reject")}
