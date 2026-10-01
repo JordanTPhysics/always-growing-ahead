@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { PageHeader } from "@/components/ui/forms";
 import { PageSection } from "@/components/ui/card";
+import { isAdminTab } from "@/lib/admin/tabs";
 import { isAdmin } from "@/lib/db/repositories/users";
 
 export default async function AdminPage({
@@ -24,7 +25,7 @@ export default async function AdminPage({
   return (
     <PageSection>
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
-      <AdminDashboard initialTab={tab === "chat" ? "chat" : "access"} />
+      <AdminDashboard initialTab={isAdminTab(tab) ? tab : "access"} />
     </PageSection>
   );
 }

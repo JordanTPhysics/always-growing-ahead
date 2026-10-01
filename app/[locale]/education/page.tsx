@@ -26,7 +26,7 @@ export default async function EducationPage({
   const tier = session?.user?.tier ?? "none";
 
   return (
-    <PageSection>
+    <PageSection className="lg:flex lg:flex-1 lg:flex-col lg:max-w-3/4 lg:max-h-3/4 mx-auto">
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
       {canViewEducation(tier) ? (
         <EducationHub />

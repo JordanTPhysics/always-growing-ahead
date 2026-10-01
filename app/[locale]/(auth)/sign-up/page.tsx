@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import { Field, PageHeader, inputClassName } from "@/components/ui/forms";
@@ -31,6 +31,42 @@ type FieldKey =
   | "password"
   | "confirmPassword";
 
+type AbandonedRegistration = {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  city: string | null;
+  district: string | null;
+  error: string;
+  locale: string;
+};
+
+let abandonReportTimer: ReturnType<typeof setTimeout> | undefined;
+
+function clip(value: string, max: number): string | null {
+  const trimmed = value.trim().slice(0, max);
+  return trimmed ? trimmed : null;
+}
+
+function describeErrors(
+  fields: Partial<Record<FieldKey, string>>,
+  fallback: string
+): string {
+  const messages = [
+    ...new Set(Object.values(fields).filter((message): message is string => Boolean(message))),
+  ];
+  return (messages.length > 0 ? messages.join("; ") : fallback).slice(0, 2000);
+}
+
+function sendAbandonedRegistration(payload: AbandonedRegistration) {
+  void fetch("/api/auth/registration-attempts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    keepalive: true,
+  }).catch(() => undefined);
+}
+
 export default function SignUpPage() {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
@@ -52,6 +88,53 @@ export default function SignUpPage() {
   const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const districtOptions = useMemo(() => getDistrictsForCity(city), [city]);
+  const draftRef = useRef({ username, email, phone, city, district, locale });
+  const blockingErrorRef = useRef<string | null>(null);
+  const succeededRef = useRef(false);
+  draftRef.current = { username, email, phone, city, district, locale };
+
+  function rememberFailure(message: string) {
+    if (succeededRef.current) return;
+    blockingErrorRef.current = message.slice(0, 2000);
+  }
+
+  useEffect(() => {
+    if (abandonReportTimer) {
+      clearTimeout(abandonReportTimer);
+      abandonReportTimer = undefined;
+    }
+
+    function flush() {
+      const error = blockingErrorRef.current;
+      if (!error || succeededRef.current) return;
+      const draft = draftRef.current;
+      const name = clip(draft.username, 100);
+      const emailValue = clip(draft.email, 255);
+      const phoneValue = clip(draft.phone, 100);
+      if (!name && !emailValue && !phoneValue) return;
+      blockingErrorRef.current = null;
+      sendAbandonedRegistration({
+        name,
+        email: emailValue,
+        phone: phoneValue,
+        city: clip(draft.city, 100),
+        district: clip(draft.district, 100),
+        error,
+        locale: draft.locale,
+      });
+    }
+
+    function onPageHide(event: PageTransitionEvent) {
+      if (event.persisted) return;
+      flush();
+    }
+
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      window.removeEventListener("pagehide", onPageHide);
+      abandonReportTimer = setTimeout(flush, 0);
+    };
+  }, []);
 
   function clearField(key: FieldKey) {
     setFieldErrors((prev) => clearFieldError(prev, key));
@@ -95,55 +178,73 @@ export default function SignUpPage() {
     setFieldErrors(next);
     if (hasFieldErrors(next)) {
       setError(tCommon("validation.fixHighlighted"));
+      rememberFailure(describeErrors(next, tCommon("validation.fixHighlighted")));
       focusFirstInvalidField();
       return;
     }
 
     setPending(true);
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        username: username.trim() || null,
-        password,
-        phone: phone.trim(),
-        city,
-        district,
-        preferredLocale: locale,
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          username: username.trim() || null,
+          password,
+          phone: phone.trim(),
+          city,
+          district,
+          preferredLocale: locale,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPending(false);
+        if (res.status === 409 && data.error === "Username already taken") {
+          setFieldErrors({ username: t("usernameTaken") });
+          setError(t("usernameTaken"));
+          rememberFailure(t("usernameTaken"));
+          focusFirstInvalidField();
+          return;
+        }
+        if (res.status === 409) {
+          setFieldErrors({ email: t("emailTaken") });
+          setError(t("emailTaken"));
+          rememberFailure(t("emailTaken"));
+          focusFirstInvalidField();
+          return;
+        }
+        if (data.error === "Please select a valid city") {
+          setFieldErrors({ city: t("cityInvalid") });
+          setError(tCommon("validation.fixHighlighted"));
+          rememberFailure(t("cityInvalid"));
+          focusFirstInvalidField();
+          return;
+        }
+        if (typeof data.error === "string" && data.error.includes("district")) {
+          setFieldErrors({ district: t("districtInvalid") });
+          setError(tCommon("validation.fixHighlighted"));
+          rememberFailure(t("districtInvalid"));
+          focusFirstInvalidField();
+          return;
+        }
+        const message =
+          typeof data.error === "string" ? data.error : tCommon("status.error");
+        setError(message);
+        rememberFailure(message);
+        return;
+      }
+    } catch {
       setPending(false);
-      if (res.status === 409 && data.error === "Username already taken") {
-        setFieldErrors({ username: t("usernameTaken") });
-        setError(t("usernameTaken"));
-        focusFirstInvalidField();
-        return;
-      }
-      if (res.status === 409) {
-        setFieldErrors({ email: t("emailTaken") });
-        setError(t("emailTaken"));
-        focusFirstInvalidField();
-        return;
-      }
-      if (data.error === "Please select a valid city") {
-        setFieldErrors({ city: t("cityInvalid") });
-        setError(tCommon("validation.fixHighlighted"));
-        focusFirstInvalidField();
-        return;
-      }
-      if (typeof data.error === "string" && data.error.includes("district")) {
-        setFieldErrors({ district: t("districtInvalid") });
-        setError(tCommon("validation.fixHighlighted"));
-        focusFirstInvalidField();
-        return;
-      }
-      setError(data.error ?? tCommon("status.error"));
+      const message = tCommon("status.error");
+      setError(message);
+      rememberFailure(message);
       return;
     }
 
+    succeededRef.current = true;
+    blockingErrorRef.current = null;
     setPending(false);
     setCheckEmail(true);
   }

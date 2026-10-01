@@ -9,7 +9,9 @@ import { AdminChatPanel } from "@/components/admin/admin-chat-panel";
 import { AdminEducationPanel } from "@/components/admin/admin-education-panel";
 import { AdminNewsPanel } from "@/components/admin/admin-news-panel";
 import { AdminTranslationsPanel } from "@/components/admin/admin-translations-panel";
+import { AdminSignupsPanel } from "@/components/admin/admin-signups-panel";
 import { WorkersCsvUpload } from "@/components/admin/workers-csv-upload";
+import { type AdminTab } from "@/lib/admin/tabs";
 
 type PendingSkill = {
   id: number;
@@ -23,11 +25,9 @@ type User = {
   role: "user" | "admin";
 };
 
-type Tab = "access" | "chat" | "workers" | "education" | "news" | "translations";
-
-export function AdminDashboard({ initialTab = "access" }: { initialTab?: Tab }) {
+export function AdminDashboard({ initialTab = "access" }: { initialTab?: AdminTab }) {
   const t = useTranslations("admin");
-  const [tab, setTab] = useState<Tab>(initialTab);
+  const [tab, setTab] = useState<AdminTab>(initialTab);
   const [skills, setSkills] = useState<PendingSkill[]>([]);
   const [users, setUsers] = useState<User[]>([]);
 
@@ -78,6 +78,7 @@ export function AdminDashboard({ initialTab = "access" }: { initialTab?: Tab }) 
           { value: "education", label: t("tabs.education") },
           { value: "news", label: t("tabs.news") },
           { value: "translations", label: t("tabs.translations") },
+          { value: "signups", label: t("tabs.signups") },
         ]}
       />
 
@@ -155,6 +156,7 @@ export function AdminDashboard({ initialTab = "access" }: { initialTab?: Tab }) 
       {tab === "education" ? <AdminEducationPanel /> : null}
       {tab === "news" ? <AdminNewsPanel /> : null}
       {tab === "translations" ? <AdminTranslationsPanel /> : null}
+      {tab === "signups" ? <AdminSignupsPanel /> : null}
     </div>
   );
 }

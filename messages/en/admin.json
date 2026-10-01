@@ -1,6 +1,6 @@
 {
   "title": "Admin dashboard",
-  "subtitle": "Manage skills, users, live chat, worker imports, education uploads, news updates, and locale translations.",
+  "subtitle": "Manage skills, users, live chat, worker imports, education uploads, news updates, failed signups, and locale translations.",
   "tabsLabel": "Admin sections",
   "tabs": {
     "access": "Skills & users",
@@ -8,7 +8,8 @@
     "workers": "Workers",
     "education": "Education",
     "news": "News",
-    "translations": "Translations"
+    "translations": "Translations",
+    "signups": "Signups"
   },
   "pendingSkills": "Pending skills",
   "users": "Recent users",
@@ -111,6 +112,26 @@
     "invalidJson": "Content must be valid JSON.",
     "loadError": "Could not load translation file.",
     "saveError": "Could not save translation file."
+  },
+  "signups": {
+    "heading": "Abandoned signups",
+    "hint": "People who tried to create an account, hit an error, and left the page.",
+    "empty": "No abandoned signups yet.",
+    "loading": "Loading…",
+    "loadFailed": "Could not load abandoned signups.",
+    "updateFailed": "Could not update the status.",
+    "name": "Name",
+    "noName": "No name given",
+    "noContact": "No contact details",
+    "filterLabel": "Filter by status",
+    "filterAll": "All",
+    "status": "Status",
+    "created": "Attempted",
+    "statuses": {
+      "new": "New",
+      "contacted": "Contacted",
+      "resolved": "Resolved"
+    }
   },
   "workersImport": {
     "heading": "Import workers",

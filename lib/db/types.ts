@@ -302,6 +302,22 @@ export type SupportQuery = {
   created_at: Date;
 };
 
+export type RegistrationAttemptStatus = "new" | "contacted" | "resolved";
+
+export type RegistrationAttempt = {
+  id: number;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  city: string | null;
+  district: string | null;
+  error_message: string;
+  locale: string;
+  status: RegistrationAttemptStatus;
+  created_at: Date;
+  updated_at: Date;
+};
+
 export type EducationResource = {
   id: number;
   topic: string;

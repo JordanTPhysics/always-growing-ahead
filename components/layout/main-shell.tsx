@@ -6,12 +6,15 @@ import { cn } from "@/lib/utils";
 export function MainShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isEducationHub = pathname === "/education";
 
   return (
     <main
       className={cn(
         "mx-auto w-full flex-1 px-4 py-8 sm:px-6",
-        isHome ? "md:w-[80vw] md:max-w-[80vw]" : "max-w-5xl"
+        isHome && "md:w-[80vw] md:max-w-[80vw]",
+        isEducationHub && "max-w-none lg:flex lg:flex-col",
+        !isHome && !isEducationHub && "max-w-5xl"
       )}
     >
       {children}
