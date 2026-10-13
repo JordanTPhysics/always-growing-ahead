@@ -17,10 +17,16 @@ export type NewsExcerptInput = {
   body_en: string;
   body_ar?: string | null;
   body_ckb?: string | null;
+  article_url?: string | null;
   sort_order?: number;
   is_published?: boolean;
   created_by?: number | null;
 };
+
+function storedArticleUrl(value: string | null | undefined): string | null {
+  const trimmed = value?.trim() ?? "";
+  return trimmed || null;
+}
 
 export async function listPublishedNewsExcerpts(): Promise<NewsExcerpt[]> {
   if (!isRemoteDatabaseConfigured()) return [];
@@ -57,12 +63,13 @@ export async function createNewsExcerpt(
 ): Promise<NewsExcerpt> {
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO news_excerpts (
-      body_en, body_ar, body_ckb, sort_order, is_published, created_by
-    ) VALUES (?, ?, ?, ?, ?, ?)`,
+      body_en, body_ar, body_ckb, article_url, sort_order, is_published, created_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       input.body_en.trim(),
       input.body_ar?.trim() || null,
       input.body_ckb?.trim() || null,
+      storedArticleUrl(input.article_url),
       input.sort_order ?? 0,
       input.is_published === false ? 0 : 1,
       input.created_by ?? null,
@@ -90,6 +97,10 @@ export async function updateNewsExcerpt(
       input.body_ckb !== undefined
         ? input.body_ckb?.trim() || null
         : existing.body_ckb,
+    article_url:
+      input.article_url !== undefined
+        ? storedArticleUrl(input.article_url)
+        : existing.article_url,
     sort_order: input.sort_order ?? existing.sort_order,
     is_published:
       input.is_published !== undefined
@@ -99,13 +110,14 @@ export async function updateNewsExcerpt(
 
   await pool.execute(
     `UPDATE news_excerpts SET
-      body_en = ?, body_ar = ?, body_ckb = ?,
+      body_en = ?, body_ar = ?, body_ckb = ?, article_url = ?,
       sort_order = ?, is_published = ?
      WHERE id = ?`,
     [
       next.body_en,
       next.body_ar,
       next.body_ckb,
+      next.article_url,
       next.sort_order,
       next.is_published ? 1 : 0,
       id,

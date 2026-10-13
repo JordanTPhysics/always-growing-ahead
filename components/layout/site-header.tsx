@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { FiGlobe, FiMenu } from "react-icons/fi";
 import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
 import { HashLink } from "@/components/layout/hash-link";
 import { activeLocales, locales, type ActiveLocale } from "@/lib/i18n/locales";
 import { signOut, useSession } from "next-auth/react";
-import { NotificationBell } from "@/components/notifications/notification-bell";
+import {
+  NotificationBell,
+  UnreadCountBadge,
+  useUnreadNotificationCount,
+} from "@/components/notifications/notification-bell";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 type Props = {
@@ -78,7 +85,10 @@ const navGroups: NavGroup[] = [
 ];
 
 const menuItemClassName =
-  "block w-full px-3 py-2.5 text-start text-sm text-background duration-200 ease-out hover:bg-background hover:text-white motion-reduce:transition-none";
+  "block w-full px-3 py-2.5 text-start text-sm text-background dark:text-text duration-200 ease-out hover:bg-background hover:text-white motion-reduce:transition-none";
+
+const headerCircleClassName =
+  "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-white/40 text-white transition-colors hover:bg-white/15";
 
 function emailInitials(email: string) {
   return email.trim().slice(0, 2).toUpperCase() || "?";
@@ -125,31 +135,90 @@ function useLocationHash() {
   return hash;
 }
 
-function LanguageSelect() {
+function LanguageMenu({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const t = useTranslations("common");
   const pathname = usePathname();
   const router = useRouter();
   const locale = useLocale() as ActiveLocale;
+  const panelId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        onOpenChange(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onOpenChange(false);
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, onOpenChange]);
 
   return (
-    <label className="flex items-center gap-2">
-      <span className="sr-only">{t("language")}</span>
-      <select
-        className="rounded-md border border-border bg-surface px-2 py-1.5 text-text"
-        value={locale}
-        onChange={(e) => {
-          router.replace(pathname, {
-            locale: e.target.value as ActiveLocale,
-          });
-        }}
+    <div className="relative" ref={rootRef}>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        aria-haspopup="menu"
+        aria-label={t("language")}
+        className={headerCircleClassName}
+        onClick={() => onOpenChange(!open)}
       >
-        {activeLocales.map((code) => (
-          <option key={code} value={code}>
-            {locales[code].label}
-          </option>
-        ))}
-      </select>
-    </label>
+        <FiGlobe className="size-5" aria-hidden />
+      </button>
+      <div
+        className={`absolute end-0 top-full z-30 mt-2 w-max min-w-40 transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none ${
+          open
+            ? "grid grid-rows-[1fr] opacity-100"
+            : "pointer-events-none grid grid-rows-[0fr] opacity-0"
+        }`}
+        aria-hidden={!open}
+        inert={!open ? true : undefined}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div
+            id={panelId}
+            role="menu"
+            className="overflow-hidden rounded-md border border-border bg-surface text-text shadow-panel"
+          >
+            {activeLocales.map((code) => (
+              <button
+                key={code}
+                type="button"
+                role="menuitemradio"
+                aria-checked={locale === code}
+                className={`${menuItemClassName} whitespace-nowrap ${
+                  locale === code ? "font-medium" : ""
+                }`}
+                onClick={() => {
+                  onOpenChange(false);
+                  router.replace(pathname, { locale: code });
+                }}
+              >
+                {locales[code].label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -308,24 +377,19 @@ function DesktopNav({ user }: { user: Props["user"] }) {
 function MobileMenuPanel({
   open,
   user,
+  unread,
   menuId,
-  localeMenuId,
-  localeOpen,
-  setLocaleOpen,
   onClose,
 }: {
   open: boolean;
   user: Props["user"];
+  unread: number;
   menuId: string;
-  localeMenuId: string;
-  localeOpen: boolean;
-  setLocaleOpen: (open: boolean | ((value: boolean) => boolean)) => void;
   onClose: () => void;
 }) {
   const t = useTranslations("common");
   const pathname = usePathname();
   const hash = useLocationHash();
-  const router = useRouter();
   const locale = useLocale() as ActiveLocale;
   const [expandedGroup, setExpandedGroup] = useState<NavGroupKey | null>(null);
   const groups = navGroupsForUser(user);
@@ -421,56 +485,20 @@ function MobileMenuPanel({
               </div>
             );
           })}
-          <div role="none">
-            <button
-              type="button"
+          {user ? (
+            <Link
+              href="/notifications"
               role="menuitem"
-              aria-expanded={localeOpen}
-              aria-controls={localeMenuId}
-              aria-haspopup="menu"
-              className={`${menuItemClassName} flex items-center justify-between`}
-              onClick={() => setLocaleOpen((value) => !value)}
+              className={cn(
+                menuItemClassName,
+                "flex items-center justify-between gap-3",
+              )}
+              onClick={onClose}
             >
-              <span>{t("language")}</span>
-              <span
-                aria-hidden="true"
-                className={`text-muted transition-transform duration-200 ease-out motion-reduce:transition-none ${
-                  localeOpen ? "rotate-90" : ""
-                }`}
-              >
-                ▸
-              </span>
-            </button>
-            <div
-              id={localeMenuId}
-              role="menu"
-              className={`grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none ${
-                localeOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-              }`}
-              aria-hidden={!localeOpen}
-            >
-              <div className="min-h-0 overflow-hidden bg-background-soft/50">
-                {activeLocales.map((code) => (
-                  <button
-                    key={code}
-                    type="button"
-                    role="menuitemradio"
-                    aria-checked={locale === code}
-                    tabIndex={localeOpen ? 0 : -1}
-                    className={`${menuItemClassName} pl-6 ${
-                      locale === code ? "font-medium" : ""
-                    }`}
-                    onClick={() => {
-                      onClose();
-                      router.replace(pathname, { locale: code });
-                    }}
-                  >
-                    {locales[code].label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+              <span>{t("nav.notifications")}</span>
+              <UnreadCountBadge count={unread} />
+            </Link>
+          ) : null}
           {user ? (
             <button
               type="button"
@@ -511,7 +539,6 @@ function MobileMenuPanel({
 
 export function SiteHeader({ user: initialUser }: Props) {
   const t = useTranslations("common");
-  const locale = useLocale() as ActiveLocale;
   const { data: session } = useSession();
   const user = session?.user
     ? {
@@ -520,17 +547,23 @@ export function SiteHeader({ user: initialUser }: Props) {
         role: session.user.role,
       }
     : initialUser;
+  const unread = useUnreadNotificationCount(Boolean(user));
   const [menuOpen, setMenuOpen] = useState(false);
   const [localeOpen, setLocaleOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
-  const localeMenuId = useId();
+  const openLanguageMenu = useCallback((open: boolean) => {
+    setLocaleOpen(open);
+    if (open) setMenuOpen(false);
+  }, []);
+
+  function toggleMenu() {
+    setMenuOpen((open) => !open);
+    setLocaleOpen(false);
+  }
 
   useEffect(() => {
-    if (!menuOpen) {
-      setLocaleOpen(false);
-      return;
-    }
+    if (!menuOpen) return;
 
     function onPointerDown(event: PointerEvent) {
       if (!menuRef.current?.contains(event.target as Node)) {
@@ -539,10 +572,7 @@ export function SiteHeader({ user: initialUser }: Props) {
     }
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        if (localeOpen) setLocaleOpen(false);
-        else setMenuOpen(false);
-      }
+      if (event.key === "Escape") setMenuOpen(false);
     }
 
     document.addEventListener("pointerdown", onPointerDown);
@@ -551,13 +581,13 @@ export function SiteHeader({ user: initialUser }: Props) {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [menuOpen, localeOpen]);
+  }, [menuOpen]);
 
   return (
     <header className="relative z-20 bg-radial-gradient-to-l from-background to-foreground text-white">
-      <div className="flex flex-wrap items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
+      <div className="flex flex-nowrap items-center justify-between gap-2 px-4 sm:flex-wrap sm:px-6">
+        <div className="flex min-w-0 items-center gap-6">
+          <Link href="/" className="shrink-0 text-lg font-semibold tracking-tight">
             <Image
               src="/images/logo.png"
               alt="Logo"
@@ -566,17 +596,19 @@ export function SiteHeader({ user: initialUser }: Props) {
               className="rounded-full"
             />
           </Link>
-          <div className="mx-auto text-center text-lg text-muted">
+          <div className="mx-auto hidden text-center text-lg text-muted sm:block">
             AGA - Always Growing Ahead
           </div>
           <DesktopNav user={user} />
         </div>
 
-        <div className="flex items-center p-2 px-4 sm:px-6">
+        <div className="flex shrink-0 items-center gap-2 py-2 sm:px-6">
+          <ThemeToggle />
+          <LanguageMenu open={localeOpen} onOpenChange={openLanguageMenu} />
           {user ? (
             <>
               <div className="hidden items-center gap-2 md:flex">
-                <NotificationBell />
+                <NotificationBell unread={unread} />
                 <span className="text p-2">
                   {t("nav.welcome")} {user.email}
                 </span>
@@ -588,20 +620,26 @@ export function SiteHeader({ user: initialUser }: Props) {
                   aria-expanded={menuOpen}
                   aria-controls={menuId}
                   aria-haspopup="menu"
-                  aria-label={user.email}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-muted bg-gradient-to-l from-foreground to-background text-sm font-semibold tracking-wide text-muted"
-                  onClick={() => setMenuOpen((open) => !open)}
+                  aria-label={
+                    unread > 0
+                      ? `${user.email}, ${t("nav.notifications")} (${unread})`
+                      : user.email
+                  }
+                  className="relative flex h-10 w-10 items-center justify-center rounded-full border-2 border-muted bg-gradient-to-l from-foreground to-background text-sm font-semibold tracking-wide text-muted"
+                  onClick={toggleMenu}
                 >
                   {emailInitials(user.email)}
+                  <UnreadCountBadge
+                    count={unread}
+                    className="absolute -end-1 -top-1 md:hidden"
+                  />
                 </button>
 
                 <MobileMenuPanel
                   open={menuOpen}
                   user={user}
+                  unread={unread}
                   menuId={menuId}
-                  localeMenuId={localeMenuId}
-                  localeOpen={localeOpen}
-                  setLocaleOpen={setLocaleOpen}
                   onClose={() => setMenuOpen(false)}
                 />
               </div>
@@ -616,7 +654,6 @@ export function SiteHeader({ user: initialUser }: Props) {
                 <Button asChild size="sm" variant="accent">
                   <Link href="/sign-up">{t("nav.signUp")}</Link>
                 </Button>
-                <LanguageSelect />
               </div>
 
               <div className="relative sm:hidden" ref={menuRef}>
@@ -626,19 +663,17 @@ export function SiteHeader({ user: initialUser }: Props) {
                   aria-controls={menuId}
                   aria-haspopup="menu"
                   aria-label={t("nav.menu")}
-                  className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-text"
-                  onClick={() => setMenuOpen((open) => !open)}
+                  className={headerCircleClassName}
+                  onClick={toggleMenu}
                 >
-                  {t("nav.menu")}
+                  <FiMenu className="size-5" aria-hidden />
                 </button>
 
                 <MobileMenuPanel
                   open={menuOpen}
-                  user={user}
+                  user={null}
+                  unread={0}
                   menuId={menuId}
-                  localeMenuId={localeMenuId}
-                  localeOpen={localeOpen}
-                  setLocaleOpen={setLocaleOpen}
                   onClose={() => setMenuOpen(false)}
                 />
               </div>

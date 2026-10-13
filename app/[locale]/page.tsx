@@ -1,7 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SponsoredCarousel } from "@/components/sponsored/sponsored-carousel";
 import { NewsUpdatesBanner } from "@/components/news/news-updates-banner";
-import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigation";
 import { auth } from "@/auth";
 import { sponsoredItems } from "@/lib/sponsored/content";
@@ -13,6 +12,7 @@ import { localizedNewsBody } from "@/lib/news/localize";
 import { HelpContent } from "@/components/help/help-content";
 import { PrivacyContent } from "@/components/privacy/privacy-content";
 import { FeatureGrid } from "@/components/home/feature-grid";
+import { HomeShortcuts } from "@/components/home/home-shortcuts";
 
 export default async function HomePage({
   params,
@@ -28,13 +28,14 @@ export default async function HomePage({
     !!session?.user?.id && (await isAdmin(Number(session.user.id)));
 
   const activeLocale = isActiveLocale(locale) ? locale : "en";
-  const newsExcerpts = (
-    await listPublishedNewsExcerpts()
-  ).map((excerpt) => localizedNewsBody(excerpt, activeLocale));
+  const newsExcerpts = (await listPublishedNewsExcerpts()).map((excerpt) => ({
+    text: localizedNewsBody(excerpt, activeLocale),
+    href: excerpt.article_url,
+  }));
 
   return (
     <div className="mx-auto flex flex-col gap-8">
-      <div className="-mx-4 -mt-8 mb-8 sm:-mx-6">
+      <div className="-mx-4 -mt-8 sm:-mx-6">
         {newsExcerpts.length > 0 || isAdminUser ? (
           <div className="flex items-stretch border-1 border-white rounded-md bg-slate-700 text-white mt-2 px-2 lg:mx-16">
             <div className="min-w-0 flex-1">
@@ -44,7 +45,7 @@ export default async function HomePage({
                   label={t("news.label")}
                 />
               ) : (
-                <div className="px-4 py-2 text-sm text-background/70">
+                <div className="px-4 py-2 text-sm text-background/70 dark:text-text/70">
                   {t("news.empty")}
                 </div>
               )}
@@ -57,6 +58,8 @@ export default async function HomePage({
           </div>
         ) : null}
       </div>
+
+      <HomeShortcuts />
 
       <section className="space-y-8">
         <SponsoredCarousel items={sponsoredItems} />

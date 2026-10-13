@@ -101,7 +101,6 @@ export function BillingPlans({
         t("features.search"),
         t("features.workerProfile"),
         t("features.contact"),
-        t("features.education"),
       ],
     },
     {
@@ -112,7 +111,6 @@ export function BillingPlans({
         t("features.search"),
         t("features.workerProfile"),
         t("features.contact"),
-        t("features.education"),
         t("features.postJobs"),
       ],
     },

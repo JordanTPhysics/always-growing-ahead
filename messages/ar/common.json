@@ -61,6 +61,10 @@
     "fixHighlighted": "يرجى تصحيح الحقول المميزة."
   },
   "language": "اللغة",
+  "theme": {
+    "switchToDark": "التبديل إلى المظهر الداكن",
+    "switchToLight": "التبديل إلى المظهر الفاتح"
+  },
   "news": {
     "label": "تحديثات الأخبار",
     "manage": "إدارة الأخبار",
@@ -68,6 +72,13 @@
   },
   "footer": {
     "rights": "سوق عمل في المملكة المتحدة"
+  },
+  "shortcuts": {
+    "label": "الوظائف الرئيسية",
+    "findWork": "أبحث عن عمل",
+    "hire": "أبحث عن موظفين",
+    "education": "التعليم",
+    "marketplace": "السوق"
   },
   "features": {
     "kicker": "مع AGA يمكنك",

@@ -34,17 +34,17 @@ export const MOCK_TEST_ACCOUNTS: MockTestAccount[] = [
     password: MOCK_TEST_PASSWORD,
     password_hash: PASSWORD_HASH,
     subscription_tier: "advanced",
-    role: "user",
+    role: "admin",
     label: "Full subscription (Advanced)",
   },
   {
     id: 2,
-    email: "worker@aga.test",
+    email: "free@aga.test",
     password: MOCK_TEST_PASSWORD,
     password_hash: PASSWORD_HASH,
-    subscription_tier: "basic",
+    subscription_tier: "none",
     role: "user",
-    label: "Worker subscription (Basic)",
+    label: "Free subscription (None)",
   },
   {
     id: 3,
@@ -55,6 +55,24 @@ export const MOCK_TEST_ACCOUNTS: MockTestAccount[] = [
     role: "admin",
     label: "Admin",
   },
+  {
+    id: 4,
+    email: "employer@aga.test",
+    password: MOCK_TEST_PASSWORD,
+    password_hash: PASSWORD_HASH,
+    subscription_tier: "none",
+    role: "user",
+    label: "Employer subscription (None)",
+  },
+  {
+    id: 5,
+    email: "basic@aga.test",
+    password: MOCK_TEST_PASSWORD,
+    password_hash: PASSWORD_HASH,
+    subscription_tier: "basic",
+    role: "user",
+    label: "Basic subscription (Basic)",
+  }
 ];
 
 function toUser(account: MockTestAccount): User {

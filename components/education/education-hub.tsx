@@ -17,6 +17,7 @@ const hubMeta: Record<
       | "sectionPdfGuidesHint";
     Icon: typeof MdOndemandVideo;
     panelClassName: string;
+    iconClassName: string;
   }
 > = {
   "short-videos": {
@@ -25,6 +26,8 @@ const hubMeta: Record<
     Icon: MdOndemandVideo,
     panelClassName:
       "bg-[linear-gradient(135deg,var(--button-happy-from),var(--button-happy-to))] text-[var(--button-happy-fg)]",
+    iconClassName:
+      "dark:text-[color-mix(in_srgb,var(--button-happy-from)_50%,var(--button-happy-to))]",
   },
   lectures: {
     titleKey: "sectionLectures",
@@ -32,6 +35,8 @@ const hubMeta: Record<
     Icon: MdSchool,
     panelClassName:
       "bg-[linear-gradient(135deg,var(--button-secondary-from),var(--button-secondary-to))] text-[var(--button-secondary-fg)]",
+    iconClassName:
+      "dark:text-[color-mix(in_srgb,var(--button-secondary-from)_50%,var(--button-secondary-to))]",
   },
   pdf: {
     titleKey: "sectionPdfGuides",
@@ -39,6 +44,8 @@ const hubMeta: Record<
     Icon: MdPictureAsPdf,
     panelClassName:
       "bg-[linear-gradient(135deg,var(--button-accent-from),var(--button-accent-to))] text-[var(--button-accent-fg)]",
+    iconClassName:
+      "dark:text-[color-mix(in_srgb,var(--button-accent-from)_50%,var(--button-accent-to))]",
   },
 };
 
@@ -48,7 +55,8 @@ export async function EducationHub() {
   return (
     <div className="grid gap-4 sm:grid-cols-3 lg:min-h-0 lg:flex-1">
       {EDUCATION_TYPE_SLUGS.map((slug) => {
-        const { titleKey, hintKey, Icon, panelClassName } = hubMeta[slug];
+        const { titleKey, hintKey, Icon, panelClassName, iconClassName } =
+          hubMeta[slug];
         return (
           <Link
             key={slug}
@@ -60,7 +68,7 @@ export async function EducationHub() {
             )}
           >
             <span className="flex h-24 w-24 items-center justify-center rounded-2xl bg-white/75 text-current transition group-hover:bg-white">
-              <Icon className="h-14 w-14" aria-hidden />
+              <Icon className={cn("h-14 w-14", iconClassName)} aria-hidden />
             </span>
             <span className="space-y-2">
               <span className="block text-xl font-semibold">{t(titleKey)}</span>

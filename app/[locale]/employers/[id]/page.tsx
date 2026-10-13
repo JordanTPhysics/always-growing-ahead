@@ -7,6 +7,10 @@ import { stripProfileContact } from "@/lib/profiles/contact";
 import { PageHeader } from "@/components/ui/forms";
 import { Card, PageSection } from "@/components/ui/card";
 import { FavouriteButton } from "@/components/favourites/favourite-button";
+import {
+  ContactChannels,
+  WebsiteLink,
+} from "@/components/profile/contact-channels";
 
 export default async function EmployerPublicPage({
   params,
@@ -37,26 +41,19 @@ export default async function EmployerPublicPage({
       />
 
       <Card elevation="nested" className="space-y-4 p-5">
-        <div className="flex flex-wrap items-start gap-4">
-          {publicProfile.logo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={publicProfile.logo_url}
-              alt=""
-              className="h-16 w-16 rounded-md object-cover"
-            />
-          ) : null}
-          {publicProfile.website_url ? (
-            <a
-              href={publicProfile.website_url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm text-muted underline"
-            >
-              {publicProfile.website_url}
-            </a>
-          ) : null}
-        </div>
+        {publicProfile.logo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={publicProfile.logo_url}
+            alt=""
+            className="h-16 w-16 rounded-md object-cover"
+          />
+        ) : null}
+        {publicProfile.address_text || publicProfile.postcode ? (
+          <p className="text-sm text-muted">
+            {publicProfile.address_text ?? publicProfile.postcode}
+          </p>
+        ) : null}
         {publicProfile.company_description ? (
           <p className="whitespace-pre-wrap text-muted">
             {publicProfile.company_description}
@@ -64,6 +61,19 @@ export default async function EmployerPublicPage({
         ) : (
           <p className="text-sm text-muted">{t("empty")}</p>
         )}
+        {profile.website_url ||
+        profile.contact_email ||
+        profile.contact_phone ||
+        profile.linkedin_url ? (
+          <div className="space-y-3">
+            {profile.website_url ? <WebsiteLink url={profile.website_url} /> : null}
+            <ContactChannels
+              email={profile.contact_email}
+              phone={profile.contact_phone}
+              linkedinUrl={profile.linkedin_url}
+            />
+          </div>
+        ) : null}
       </Card>
     </PageSection>
   );

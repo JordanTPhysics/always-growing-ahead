@@ -7,6 +7,7 @@ export function MainShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isEducationHub = pathname === "/education";
+  const isAuthPanel = pathname === "/sign-in" || pathname === "/sign-up";
 
   return (
     <main
@@ -14,7 +15,8 @@ export function MainShell({ children }: { children: React.ReactNode }) {
         "mx-auto w-full flex-1 px-4 py-8 sm:px-6",
         isHome && "md:w-[80vw] md:max-w-[80vw]",
         isEducationHub && "max-w-none lg:flex lg:flex-col",
-        !isHome && !isEducationHub && "max-w-5xl"
+        !isHome && !isEducationHub && "max-w-5xl",
+        isAuthPanel && "flex flex-col max-lg:py-4"
       )}
     >
       {children}

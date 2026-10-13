@@ -18,7 +18,8 @@
       "summary": "Browse the marketplace at no cost.",
       "feature1": "Search jobs and workers on the map",
       "feature2": "Filter by location, role, and radius",
-      "feature3": "View job and profile summaries without contact details"
+      "feature3": "View job and profile summaries without contact details",
+      "feature4": "Watch education videos and download PDF guides"
     },
     "worker": {
       "name": "Worker",
@@ -26,8 +27,7 @@
       "summary": "Find work and connect with employers.",
       "feature1": "Create and manage your worker profile",
       "feature2": "Search for jobs near you",
-      "feature3": "Reveal employer contact details",
-      "feature4": "Access PDF and video education guides"
+      "feature3": "Reveal employer contact details"
     },
     "employer": {
       "name": "Employer",

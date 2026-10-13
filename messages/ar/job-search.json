@@ -24,5 +24,8 @@
   "nearMeLabel": "بالقرب مني",
   "nearMeFailed": "تعذر الحصول على موقعك. تحقق من الأذونات وحاول مرة أخرى.",
   "legendStandard": "إعلان وظيفة",
-  "legendActive": "يوظّف بنشاط"
+  "legendActive": "يوظّف بنشاط",
+  "notActivelyHiring": "لا يوظّف حالياً",
+  "viewBusiness": "عرض العمل",
+  "resultCountWithBusinesses": "{jobs} وظائف · {businesses} أعمال"
 }

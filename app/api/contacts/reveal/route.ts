@@ -114,7 +114,24 @@ async function revealJobContact(
   const employer = await getEmployerById(job.employer_id);
   if (!employer) return jsonError("Employer not found", 404);
 
-  const contactUser = await getUserById(employer.user_id);
+  const ownerId = employer.user_id;
+  if (ownerId == null) {
+    if (
+      !employer.contact_email &&
+      !employer.contact_phone &&
+      !employer.linkedin_url
+    ) {
+      return jsonError("Contact not found", 404);
+    }
+    return NextResponse.json({
+      email: employer.contact_email,
+      phone: employer.contact_phone,
+      linkedinUrl: employer.linkedin_url,
+      companyName: employer.company_name,
+    });
+  }
+
+  const contactUser = await getUserById(ownerId);
   if (!contactUser) return jsonError("Contact not found", 404);
 
   await logContact({
@@ -123,13 +140,13 @@ async function revealJobContact(
     initiated_by: "worker",
   });
   await createNotification({
-    userId: employer.user_id,
+    userId: ownerId,
     type: "contact_reveal",
     title: "Your job contact was revealed",
     body: "A worker has revealed the contact details for your job.",
     linkUrl: `/jobs/${job.id}`,
   });
-  void dispatchPushToUser(employer.user_id, {
+  void dispatchPushToUser(ownerId, {
     title: "Your job contact was revealed",
     body: "A worker has revealed the contact details for your job.",
     linkUrl: `/jobs/${job.id}`,

@@ -14,7 +14,10 @@ import {
 } from "@/components/ui/forms";
 import { EmployerJobsPanel } from "@/components/profile/employer-jobs-panel";
 import { FavouritesPanel } from "@/components/favourites/favourites-panel";
-import { ContactChannels } from "@/components/profile/contact-channels";
+import {
+  ContactChannels,
+  WebsiteLink,
+} from "@/components/profile/contact-channels";
 import {
   clearFieldError,
   focusFirstInvalidField,
@@ -168,16 +171,7 @@ export function EmployerProfileForm() {
           <h2 className="text-2xl font-semibold tracking-tight">
             {companyName || t("title")}
           </h2>
-          {website ? (
-            <a
-              href={website}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-1 inline-block text-sm text-muted underline"
-            >
-              {website}
-            </a>
-          ) : null}
+          {website ? <WebsiteLink url={website} /> : null}
         </div>
       </div>
       {description ? (

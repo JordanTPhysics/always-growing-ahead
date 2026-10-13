@@ -10,6 +10,7 @@ import { FaExclamation } from "react-icons/fa";
 import { MdOutlinePersonPinCircle } from "react-icons/md";
 import { BsPersonRaisedHand, BsPersonStanding } from "react-icons/bs";
 import { IoIosBriefcase } from "react-icons/io";
+import { TbCashRegister } from "react-icons/tb";
 
 export type MapSearchMode = "workers" | "jobs";
 
@@ -50,8 +51,8 @@ function getMarkerIcon(searchMode: MapSearchMode, active: boolean) {
   }
 
   return {
-    Icon: active ? FaExclamation : IoIosBriefcase,
-    color: active ? "red" : "blue",
+    Icon: active ? FaExclamation : TbCashRegister,
+    color: active ? "red" : "green",
   };
 }
 
@@ -99,7 +100,7 @@ function MapLegend({
               color={color}
               aria-hidden
             />
-            <span className="text-xs text-black">{label}</span>
+            <span className="text-xs text-text">{label}</span>
           </div>
         );
       })}

@@ -61,6 +61,10 @@
     "fixHighlighted": "Please correct the highlighted fields."
   },
   "language": "Language",
+  "theme": {
+    "switchToDark": "Switch to dark theme",
+    "switchToLight": "Switch to light theme"
+  },
   "news": {
     "label": "News updates",
     "manage": "Manage news",
@@ -68,6 +72,13 @@
   },
   "footer": {
     "rights": "UK job marketplace"
+  },
+  "shortcuts": {
+    "label": "Main functions",
+    "findWork": "Looking For Work",
+    "hire": "Looking For Employees",
+    "education": "Education",
+    "marketplace": "Marketplace"
   },
   "features": {
     "kicker": "With AGA you can",

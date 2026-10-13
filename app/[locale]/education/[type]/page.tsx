@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
-import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { EducationTypeLibrary } from "@/components/education/education-type-library";
 import { PageHeader } from "@/components/ui/forms";
 import { PageSection } from "@/components/ui/card";
+import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { listPublishedEducationResourcesByMediaType } from "@/lib/db/repositories/education";
 import { resolveStoredFileUrl } from "@/lib/storage";
 import {
@@ -16,7 +15,6 @@ import {
   isEducationTypeSlug,
   type EducationTypeSlug,
 } from "@/lib/education/media-types";
-import { canViewEducation } from "@/lib/entitlements";
 import { isActiveLocale, type ActiveLocale } from "@/lib/i18n/locales";
 
 const titleKeyBySlug: Record<
@@ -50,28 +48,25 @@ export default async function EducationTypePage({
     : "en";
   setRequestLocale(locale);
 
+  await requireAuthOrSignUp(locale, "education");
+
   const mediaType = educationSlugToMediaType(type);
-  const [t, resources, session] = await Promise.all([
+  const [t, resources] = await Promise.all([
     getTranslations("education"),
     listPublishedEducationResourcesByMediaType(mediaType),
-    auth(),
   ]);
 
-  const tier = session?.user?.tier ?? "none";
-  const canWatch = canViewEducation(tier);
-  const libraryItems = canWatch
-    ? await Promise.all(
-        resources.map(async (resource) => ({
-          id: resource.id,
-          topic: resource.topic,
-          media_type: resource.media_type,
-          file_url:
-            (await resolveStoredFileUrl(resource.file_url)) ?? resource.file_url,
-          title: localizedEducationTitle(resource, locale),
-          description: localizedEducationDescription(resource, locale),
-        }))
-      )
-    : [];
+  const libraryItems = await Promise.all(
+    resources.map(async (resource) => ({
+      id: resource.id,
+      topic: resource.topic,
+      media_type: resource.media_type,
+      file_url:
+        (await resolveStoredFileUrl(resource.file_url)) ?? resource.file_url,
+      title: localizedEducationTitle(resource, locale),
+      description: localizedEducationDescription(resource, locale),
+    }))
+  );
 
   return (
     <PageSection>
@@ -79,14 +74,7 @@ export default async function EducationTypePage({
         title={t(titleKeyBySlug[type])}
         subtitle={t(subtitleKeyBySlug[type])}
       />
-      {canWatch ? (
-        <EducationTypeLibrary slug={type} resources={libraryItems} />
-      ) : (
-        <UpgradePrompt
-          title={t("upgradeTitle")}
-          description={t("upgradeBody")}
-        />
-      )}
+      <EducationTypeLibrary slug={type} resources={libraryItems} />
     </PageSection>
   );
 }

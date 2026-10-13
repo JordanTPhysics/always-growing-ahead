@@ -1,10 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
-import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { EducationHub } from "@/components/education/education-hub";
 import { PageHeader } from "@/components/ui/forms";
 import { PageSection } from "@/components/ui/card";
-import { canViewEducation } from "@/lib/entitlements";
+import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { isActiveLocale, type ActiveLocale } from "@/lib/i18n/locales";
 
 export default async function EducationPage({
@@ -18,24 +16,13 @@ export default async function EducationPage({
     : "en";
   setRequestLocale(locale);
 
-  const [t, session] = await Promise.all([
-    getTranslations("education"),
-    auth(),
-  ]);
-
-  const tier = session?.user?.tier ?? "none";
+  await requireAuthOrSignUp(locale, "education");
+  const t = await getTranslations("education");
 
   return (
     <PageSection className="lg:flex lg:flex-1 lg:flex-col lg:max-w-3/4 lg:max-h-3/4 mx-auto">
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
-      {canViewEducation(tier) ? (
-        <EducationHub />
-      ) : (
-        <UpgradePrompt
-          title={t("upgradeTitle")}
-          description={t("upgradeBody")}
-        />
-      )}
+      <EducationHub />
     </PageSection>
   );
 }

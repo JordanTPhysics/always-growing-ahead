@@ -5,16 +5,12 @@ import { Link } from "@/lib/i18n/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function NotificationBell({
-  className = cn(buttonVariants({ variant: "secondary", size: "sm" }), "relative"),
-  children,
-}: {
-  className?: string;
-  children?: ReactNode;
-}) {
+export function useUnreadNotificationCount(enabled: boolean) {
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
+    if (!enabled) return;
+
     let cancelled = false;
     fetch("/api/notifications")
       .then((response) => response.json())
@@ -31,13 +27,42 @@ export function NotificationBell({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
-  const badge = unread ? (
-    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-background px-1 text-center text-xs leading-5 text-white mx-2">
-      {unread > 99 ? "99+" : unread}
+  return unread;
+}
+
+export function UnreadCountBadge({
+  count,
+  className,
+}: {
+  count: number;
+  className?: string;
+}) {
+  if (count <= 0) return null;
+
+  return (
+    <span
+      className={cn(
+        "inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-danger px-1 text-center text-xs leading-5 text-white",
+        className
+      )}
+    >
+      {count > 99 ? "99+" : count}
     </span>
-  ) : null;
+  );
+}
+
+export function NotificationBell({
+  unread,
+  className = cn(buttonVariants({ variant: "secondary", size: "sm" }), "relative"),
+  children,
+}: {
+  unread: number;
+  className?: string;
+  children?: ReactNode;
+}) {
+  const badge = <UnreadCountBadge count={unread} className={children ? "mx-2" : undefined} />;
 
   return (
     <Link
@@ -53,8 +78,10 @@ export function NotificationBell({
       ) : (
         <>
           <span aria-hidden="true" className="text-xl">🔔</span>
-          {badge ? (
-            <span className="absolute -end-1 -top-1">{badge}</span>
+          {unread > 0 ? (
+            <span className="absolute -end-1 -top-1">
+              <UnreadCountBadge count={unread} />
+            </span>
           ) : null}
         </>
       )}

@@ -1,5 +1,6 @@
 import type {
   Availability,
+  BusinessMapResult,
   EmployerProfile,
   JobType,
   Proficiency,
@@ -49,6 +50,25 @@ export type EmployerProfileInput = {
   contact_phone?: string | null;
   linkedin_url?: string | null;
   actively_hiring?: boolean;
+  location_lat?: number | null;
+  location_lng?: number | null;
+  postcode?: string | null;
+  address_text?: string | null;
+  external_id?: string | null;
+};
+
+export type DirectoryEmployerInput = {
+  company_name: string;
+  company_description?: string | null;
+  website_url?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  linkedin_url?: string | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
+  postcode?: string | null;
+  address_text?: string | null;
+  external_id?: string | null;
 };
 
 export type StoredWorkerRecord = {
@@ -98,15 +118,40 @@ function reviveWorkerProfile(profile: WorkerProfile): WorkerProfile {
 function reviveEmployerProfile(profile: EmployerProfile): EmployerProfile {
   return {
     ...profile,
+    user_id: profile.user_id ?? null,
     actively_hiring: profile.actively_hiring ?? false,
     contact_email: profile.contact_email ?? null,
     contact_phone: profile.contact_phone ?? null,
     linkedin_url: profile.linkedin_url ?? null,
+    location_lat:
+      profile.location_lat == null ? null : Number(profile.location_lat),
+    location_lng:
+      profile.location_lng == null ? null : Number(profile.location_lng),
+    postcode: profile.postcode ?? null,
+    address_text: profile.address_text ?? null,
+    external_id: profile.external_id ?? null,
     created_at: new Date(profile.created_at),
     updated_at: profile.updated_at
       ? new Date(profile.updated_at)
       : new Date(profile.created_at),
   };
+}
+
+function haversineMeters(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const toRad = (degrees: number) => (degrees * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) ** 2;
+  return 2 * 6371000 * Math.asin(Math.sqrt(a));
 }
 
 export function getJsonWorkerByUserId(
@@ -402,6 +447,11 @@ export function createJsonEmployerProfile(
     contact_phone: input.contact_phone ?? null,
     linkedin_url: input.linkedin_url ?? null,
     actively_hiring: input.actively_hiring ?? false,
+    location_lat: input.location_lat ?? null,
+    location_lng: input.location_lng ?? null,
+    postcode: input.postcode ?? null,
+    address_text: input.address_text ?? null,
+    external_id: input.external_id ?? null,
     created_at: new Date(stamp),
     updated_at: new Date(stamp),
   };
@@ -449,10 +499,170 @@ export function updateJsonEmployerProfile(
       input.actively_hiring !== undefined
         ? input.actively_hiring
         : current.actively_hiring,
+    location_lat:
+      input.location_lat !== undefined
+        ? input.location_lat
+        : (current.location_lat ?? null),
+    location_lng:
+      input.location_lng !== undefined
+        ? input.location_lng
+        : (current.location_lng ?? null),
+    postcode:
+      input.postcode !== undefined ? input.postcode : (current.postcode ?? null),
+    address_text:
+      input.address_text !== undefined
+        ? input.address_text
+        : (current.address_text ?? null),
+    external_id:
+      input.external_id !== undefined
+        ? input.external_id
+        : (current.external_id ?? null),
     updated_at: new Date(nowIso()),
   };
 
   db.employers[index] = updated;
   writeEmployers(db);
   return reviveEmployerProfile(updated);
+}
+
+/** Directory businesses have no login. Re-imports with the same external id update in place. */
+export function upsertJsonDirectoryEmployer(
+  input: DirectoryEmployerInput
+): { profile: EmployerProfile; created: boolean } {
+  const db = readEmployers();
+  const externalId = input.external_id?.trim() || null;
+  const index = externalId
+    ? db.employers.findIndex((employer) => employer.external_id === externalId)
+    : -1;
+  const stamp = nowIso();
+
+  if (index >= 0) {
+    const current = db.employers[index]!;
+    const updated: EmployerProfile = {
+      ...current,
+      company_name: input.company_name,
+      company_description: input.company_description ?? null,
+      website_url: input.website_url ?? null,
+      contact_email: input.contact_email ?? null,
+      contact_phone: input.contact_phone ?? null,
+      linkedin_url: input.linkedin_url ?? current.linkedin_url ?? null,
+      actively_hiring: false,
+      location_lat: input.location_lat ?? null,
+      location_lng: input.location_lng ?? null,
+      postcode: input.postcode ?? null,
+      address_text: input.address_text ?? null,
+      external_id: externalId,
+      updated_at: new Date(stamp),
+    };
+    db.employers[index] = updated;
+    writeEmployers(db);
+    return { profile: reviveEmployerProfile(updated), created: false };
+  }
+
+  const profile: EmployerProfile = {
+    id: nextNumericId(db.employers, EMPLOYER_ID_MIN),
+    user_id: null,
+    company_name: input.company_name,
+    company_description: input.company_description ?? null,
+    logo_url: null,
+    website_url: input.website_url ?? null,
+    contact_email: input.contact_email ?? null,
+    contact_phone: input.contact_phone ?? null,
+    linkedin_url: input.linkedin_url ?? null,
+    actively_hiring: false,
+    location_lat: input.location_lat ?? null,
+    location_lng: input.location_lng ?? null,
+    postcode: input.postcode ?? null,
+    address_text: input.address_text ?? null,
+    external_id: externalId,
+    created_at: new Date(stamp),
+    updated_at: new Date(stamp),
+  };
+  db.employers.push(profile);
+  writeEmployers(db);
+  return { profile: reviveEmployerProfile(profile), created: true };
+}
+
+export function searchJsonDirectoryBusinesses(filters: {
+  lat?: number;
+  lng?: number;
+  radiusMeters?: number | null;
+  field?: string;
+  limit?: number;
+} = {}): BusinessMapResult[] {
+  const safeLimit = Math.min(Math.max(Number(filters.limit) || 200, 1), 200);
+  let businesses = readEmployers()
+    .employers
+    .map(reviveEmployerProfile)
+    .filter(
+      (employer) =>
+        employer.location_lat != null && employer.location_lng != null
+    );
+
+  const hasOrigin =
+    filters.lat != null &&
+    filters.lng != null &&
+    Number.isFinite(filters.lat) &&
+    Number.isFinite(filters.lng);
+
+  const withDistance = businesses.map((employer) => {
+    const distance =
+      hasOrigin && employer.location_lat != null && employer.location_lng != null
+        ? haversineMeters(
+            Number(filters.lat),
+            Number(filters.lng),
+            employer.location_lat,
+            employer.location_lng
+          )
+        : null;
+    return { employer, distance };
+  });
+
+  businesses = withDistance
+    .filter((row) => {
+      if (
+        filters.radiusMeters != null &&
+        Number.isFinite(filters.radiusMeters) &&
+        (row.distance == null || row.distance > filters.radiusMeters)
+      ) {
+        return false;
+      }
+      return true;
+    })
+    .map((row) => row.employer);
+
+  if (filters.field?.trim()) {
+    const term = filters.field.trim().toLowerCase();
+    businesses = businesses.filter((employer) =>
+      [employer.company_name, employer.company_description, employer.address_text, employer.postcode]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(term))
+    );
+  }
+
+  const distanceFor = (employer: EmployerProfile) =>
+    withDistance.find((row) => row.employer.id === employer.id)?.distance ?? null;
+
+  businesses.sort((a, b) => {
+    if (!hasOrigin) {
+      return (
+        new Date(b.updated_at ?? b.created_at).getTime() -
+        new Date(a.updated_at ?? a.created_at).getTime()
+      );
+    }
+    return (distanceFor(a) ?? Infinity) - (distanceFor(b) ?? Infinity);
+  });
+
+  return businesses.slice(0, safeLimit).map((employer) => ({
+    id: employer.id,
+    company_name: employer.company_name,
+    company_description: employer.company_description,
+    website_url: employer.website_url,
+    address_text: employer.address_text,
+    postcode: employer.postcode,
+    location_lat: Number(employer.location_lat),
+    location_lng: Number(employer.location_lng),
+    actively_hiring: employer.actively_hiring,
+    distance_m: distanceFor(employer),
+  }));
 }

@@ -11,7 +11,7 @@ import { SaveSearchButton } from "@/components/search/save-search-button";
 import { FavouriteButton } from "@/components/favourites/favourite-button";
 import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";
-import type { JobSearchResult, JobType } from "@/lib/db/types";
+import type { BusinessMapResult, JobSearchResult, JobType } from "@/lib/db/types";
 import {
   RADIUS_PRESETS_MI,
   formatDistance,
@@ -92,6 +92,159 @@ function JobCard({
   );
 }
 
+function websiteHref(url: string) {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
+function BusinessCard({
+  business,
+  selected,
+  hovered,
+  onSelect,
+  onHoverChange,
+  notHiringLabel,
+}: {
+  business: BusinessMapResult;
+  selected: boolean;
+  hovered: boolean;
+  onSelect: (id: number) => void;
+  onHoverChange: (id: number | null) => void;
+  notHiringLabel: string;
+}) {
+  const pointId = -business.id;
+  const mutedClass = `mt-1 text-sm transition-colors duration-200 ease-out motion-reduce:transition-none ${
+    hovered ? "text-white" : "text-muted"
+  }`;
+  const place = [business.address_text, business.postcode]
+    .filter(Boolean)
+    .join(" · ");
+  return (
+    <div
+      onMouseEnter={() => onHoverChange(pointId)}
+      onMouseLeave={() => onHoverChange(null)}
+      className={`w-full rounded-md border px-3 py-3 transition-[color,background-color,border-color] duration-200 ease-out motion-reduce:transition-none ${
+        hovered
+          ? "border-accent bg-background text-white"
+          : selected
+            ? "border-accent bg-background"
+            : "border-border bg-surface"
+      }`}
+    >
+      <div className="flex items-start gap-2">
+        <button
+          type="button"
+          onClick={() => onSelect(pointId)}
+          className="min-w-0 flex-1 text-start"
+        >
+          <p className="font-medium">{business.company_name}</p>
+          {place ? <p className={mutedClass}>{place}</p> : null}
+          <p className={mutedClass}>
+            {[
+              business.actively_hiring ? null : notHiringLabel,
+              formatDistance(business.distance_m),
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        </button>
+        <FavouriteButton targetType="employer" targetId={business.id} />
+      </div>
+    </div>
+  );
+}
+
+type SearchListItem =
+  | { kind: "job"; key: number; distance: number; job: JobSearchResult }
+  | {
+      kind: "business";
+      key: number;
+      distance: number;
+      business: BusinessMapResult;
+    };
+
+function orderedResults(
+  jobs: JobSearchResult[],
+  businesses: BusinessMapResult[]
+): SearchListItem[] {
+  const items: SearchListItem[] = [
+    ...jobs.map((job) => ({
+      kind: "job" as const,
+      key: job.id,
+      distance: job.distance_m ?? Number.POSITIVE_INFINITY,
+      job,
+    })),
+    ...businesses.map((business) => ({
+      kind: "business" as const,
+      key: -business.id,
+      distance: business.distance_m ?? Number.POSITIVE_INFINITY,
+      business,
+    })),
+  ];
+  if (items.some((item) => Number.isFinite(item.distance))) {
+    items.sort((a, b) => a.distance - b.distance);
+  }
+  return items;
+}
+
+function SearchResultList({
+  items,
+  loading,
+  emptyLabel,
+  selectedId,
+  hoveredId,
+  onSelect,
+  onHoverChange,
+  companyFallback,
+  notHiringLabel,
+  jobTypeLabel,
+  salaryTypeLabel,
+}: {
+  items: SearchListItem[];
+  loading: boolean;
+  emptyLabel: string;
+  selectedId: number | null;
+  hoveredId: number | null;
+  onSelect: (id: number) => void;
+  onHoverChange: (id: number | null) => void;
+  companyFallback: string;
+  notHiringLabel: string;
+  jobTypeLabel: (job: JobSearchResult) => string | null;
+  salaryTypeLabel: (job: JobSearchResult) => string | null;
+}) {
+  if (items.length === 0 && !loading) {
+    return <p className="p-3 text-sm text-muted">{emptyLabel}</p>;
+  }
+  return (
+    <>
+      {items.map((item) =>
+        item.kind === "job" ? (
+          <JobCard
+            key={item.key}
+            job={item.job}
+            selected={selectedId === item.key}
+            hovered={hoveredId === item.key}
+            onSelect={onSelect}
+            onHoverChange={onHoverChange}
+            companyFallback={companyFallback}
+            jobTypeLabel={jobTypeLabel(item.job)}
+            salaryTypeLabel={salaryTypeLabel(item.job)}
+          />
+        ) : (
+          <BusinessCard
+            key={item.key}
+            business={item.business}
+            selected={selectedId === item.key}
+            hovered={hoveredId === item.key}
+            onSelect={onSelect}
+            onHoverChange={onHoverChange}
+            notHiringLabel={notHiringLabel}
+          />
+        )
+      )}
+    </>
+  );
+}
+
 export function JobSearchView({
   mapsApiKey,
   mapsMapId,
@@ -110,6 +263,7 @@ export function JobSearchView({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [jobs, setJobs] = useState<JobSearchResult[]>([]);
+  const [businesses, setBusinesses] = useState<BusinessMapResult[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
@@ -183,11 +337,47 @@ export function JobSearchView({
         if (skillId) params.set("skillIds", skillId);
         if (debouncedField.trim()) params.set("field", debouncedField.trim());
 
-        const res = await fetch(`/api/jobs?${params}`);
+        const jobSpecific = Boolean(
+          jobType || salaryMin || salaryMax || postedWithinDays || skillId
+        );
+        const businessParams = new URLSearchParams();
+        if (origin) {
+          businessParams.set("lat", String(origin.lat));
+          businessParams.set("lng", String(origin.lng));
+          businessParams.set(
+            "radius",
+            radius === "nationwide"
+              ? "nationwide"
+              : String(milesToMeters(radius))
+          );
+        } else {
+          businessParams.set("radius", "nationwide");
+        }
+        if (debouncedField.trim()) {
+          businessParams.set("field", debouncedField.trim());
+        }
+
+        const [res, businessRes] = await Promise.all([
+          fetch(`/api/jobs?${params}`),
+          jobSpecific
+            ? Promise.resolve(null)
+            : fetch(`/api/employers/map?${businessParams}`),
+        ]);
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) throw new Error(data.error ?? tCommon("status.error"));
         setJobs(data.jobs ?? []);
+
+        if (!businessRes) {
+          setBusinesses([]);
+        } else {
+          const businessData = await businessRes.json();
+          if (cancelled) return;
+          if (!businessRes.ok) {
+            throw new Error(businessData.error ?? tCommon("status.error"));
+          }
+          setBusinesses(businessData.businesses ?? []);
+        }
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : tCommon("status.error"));
@@ -202,13 +392,22 @@ export function JobSearchView({
   }, [queryKey, origin, radius, debouncedField, jobType, salaryMin, salaryMax, postedWithinDays, skillId, tCommon]);
 
   const selected = useMemo(
-    () => jobs.find((j) => j.id === selectedId) ?? null,
+    () => (selectedId != null && selectedId > 0
+      ? jobs.find((j) => j.id === selectedId) ?? null
+      : null),
     [jobs, selectedId]
+  );
+  const selectedBusiness = useMemo(
+    () =>
+      selectedId != null && selectedId < 0
+        ? businesses.find((business) => business.id === -selectedId) ?? null
+        : null,
+    [businesses, selectedId]
   );
 
   const mapPoints = useMemo(
-    () =>
-      jobs
+    () => [
+      ...jobs
         .filter((j) => j.location_lat != null && j.location_lng != null)
         .map((j) => ({
           id: j.id,
@@ -217,7 +416,20 @@ export function JobSearchView({
           active: j.employer_actively_hiring ?? false,
           properties: { title: j.title },
         })),
-    [jobs]
+      ...businesses.map((business) => ({
+        id: -business.id,
+        lat: business.location_lat,
+        lng: business.location_lng,
+        active: business.actively_hiring,
+        properties: { title: business.company_name },
+      })),
+    ],
+    [jobs, businesses]
+  );
+
+  const listItems = useMemo(
+    () => orderedResults(jobs, businesses),
+    [jobs, businesses]
   );
 
   const mapCenter = origin
@@ -400,7 +612,12 @@ export function JobSearchView({
           <p className="text-sm text-muted">
             {loading
               ? tCommon("status.loading")
-              : t("resultCount", { count: jobs.length })}
+              : businesses.length > 0
+                ? t("resultCountWithBusinesses", {
+                    jobs: jobs.length,
+                    businesses: businesses.length,
+                  })
+                : t("resultCount", { count: jobs.length })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -479,29 +696,25 @@ export function JobSearchView({
           ) : (
             <div className="absolute inset-0 overflow-y-auto bg-surface p-3 md:hidden">
               <div className="space-y-2">
-                {jobs.length === 0 && !loading ? (
-                  <p className="p-3 text-sm text-muted">{t("empty")}</p>
-                ) : (
-                  jobs.map((job) => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      selected={selectedId === job.id}
-                      hovered={hoveredId === job.id}
-                      onSelect={selectJob}
-                      onHoverChange={setHoveredId}
-                      companyFallback={tJobs("company")}
-                      jobTypeLabel={
-                        job.job_type ? tJobs(`jobTypes.${job.job_type}`) : null
-                      }
-                      salaryTypeLabel={
-                        job.salary_type
-                          ? tJobs(`salaryTypes.${job.salary_type}`)
-                          : null
-                      }
-                    />
-                  ))
-                )}
+                <SearchResultList
+                  items={listItems}
+                  loading={loading}
+                  emptyLabel={t("empty")}
+                  selectedId={selectedId}
+                  hoveredId={hoveredId}
+                  onSelect={selectJob}
+                  onHoverChange={setHoveredId}
+                  companyFallback={tJobs("company")}
+                  notHiringLabel={t("notActivelyHiring")}
+                  jobTypeLabel={(job) =>
+                    job.job_type ? tJobs(`jobTypes.${job.job_type}`) : null
+                  }
+                  salaryTypeLabel={(job) =>
+                    job.salary_type
+                      ? tJobs(`salaryTypes.${job.salary_type}`)
+                      : null
+                  }
+                />
               </div>
             </div>
           )}
@@ -514,29 +727,23 @@ export function JobSearchView({
 
         <aside className="hidden w-80 shrink-0 overflow-y-auto border-s border-border bg-surface md:block lg:w-96">
           <div className="space-y-2 p-3">
-            {jobs.length === 0 && !loading ? (
-              <p className="p-3 text-sm text-muted">{t("empty")}</p>
-            ) : (
-              jobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={job}
-                  selected={selectedId === job.id}
-                  hovered={hoveredId === job.id}
-                  onSelect={selectJob}
-                  onHoverChange={setHoveredId}
-                  companyFallback={tJobs("company")}
-                  jobTypeLabel={
-                    job.job_type ? tJobs(`jobTypes.${job.job_type}`) : null
-                  }
-                  salaryTypeLabel={
-                    job.salary_type
-                      ? tJobs(`salaryTypes.${job.salary_type}`)
-                      : null
-                  }
-                />
-              ))
-            )}
+            <SearchResultList
+              items={listItems}
+              loading={loading}
+              emptyLabel={t("empty")}
+              selectedId={selectedId}
+              hoveredId={hoveredId}
+              onSelect={selectJob}
+              onHoverChange={setHoveredId}
+              companyFallback={tJobs("company")}
+              notHiringLabel={t("notActivelyHiring")}
+              jobTypeLabel={(job) =>
+                job.job_type ? tJobs(`jobTypes.${job.job_type}`) : null
+              }
+              salaryTypeLabel={(job) =>
+                job.salary_type ? tJobs(`salaryTypes.${job.salary_type}`) : null
+              }
+            />
           </div>
         </aside>
       </div>
@@ -551,10 +758,57 @@ export function JobSearchView({
       </BottomSheet>
 
       <BottomSheet
-        open={Boolean(selected)}
+        open={Boolean(selected || selectedBusiness)}
         onClose={() => setSelectedId(null)}
-        title={selected?.title}
+        title={selected?.title ?? selectedBusiness?.company_name ?? undefined}
       >
+        {selectedBusiness ? (
+          <div className="space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm text-muted">
+                {[
+                  selectedBusiness.actively_hiring
+                    ? null
+                    : t("notActivelyHiring"),
+                  selectedBusiness.address_text,
+                  formatDistance(selectedBusiness.distance_m),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+              <FavouriteButton
+                targetType="employer"
+                targetId={selectedBusiness.id}
+              />
+            </div>
+            {selectedBusiness.company_description ? (
+              <p className="line-clamp-4 text-sm text-muted">
+                {selectedBusiness.company_description}
+              </p>
+            ) : null}
+            {selectedBusiness.website_url ? (
+              <a
+                href={websiteHref(selectedBusiness.website_url)}
+                target="_blank"
+                rel="noreferrer"
+                className="block text-sm text-muted underline"
+              >
+                {selectedBusiness.website_url}
+              </a>
+            ) : null}
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() =>
+                requireAuth(() =>
+                  router.push(`/employers/${selectedBusiness.id}`)
+                )
+              }
+            >
+              {t("viewBusiness")}
+            </Button>
+          </div>
+        ) : null}
         {selected ? (
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-3">

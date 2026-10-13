@@ -14,10 +14,6 @@ export function canCreateWorkerProfile(tier: Tier) {
   return tier === "basic" || tier === "advanced";
 }
 
-export function canViewEducation(tier: Tier) {
-  return tier === "basic" || tier === "advanced";
-}
-
 export function canPostMarketplace(tier: Tier) {
   return tier === "basic" || tier === "advanced";
 }

@@ -10,6 +10,7 @@ import { AdminEducationPanel } from "@/components/admin/admin-education-panel";
 import { AdminNewsPanel } from "@/components/admin/admin-news-panel";
 import { AdminTranslationsPanel } from "@/components/admin/admin-translations-panel";
 import { AdminSignupsPanel } from "@/components/admin/admin-signups-panel";
+import { BusinessesCsvUpload } from "@/components/admin/businesses-csv-upload";
 import { WorkersCsvUpload } from "@/components/admin/workers-csv-upload";
 import { type AdminTab } from "@/lib/admin/tabs";
 
@@ -75,6 +76,7 @@ export function AdminDashboard({ initialTab = "access" }: { initialTab?: AdminTa
           { value: "access", label: t("tabs.access") },
           { value: "chat", label: t("tabs.chat") },
           { value: "workers", label: t("tabs.workers") },
+          { value: "businesses", label: t("tabs.businesses") },
           { value: "education", label: t("tabs.education") },
           { value: "news", label: t("tabs.news") },
           { value: "translations", label: t("tabs.translations") },
@@ -153,6 +155,7 @@ export function AdminDashboard({ initialTab = "access" }: { initialTab?: AdminTa
 
       {tab === "chat" ? <AdminChatPanel /> : null}
       {tab === "workers" ? <WorkersCsvUpload /> : null}
+      {tab === "businesses" ? <BusinessesCsvUpload /> : null}
       {tab === "education" ? <AdminEducationPanel /> : null}
       {tab === "news" ? <AdminNewsPanel /> : null}
       {tab === "translations" ? <AdminTranslationsPanel /> : null}

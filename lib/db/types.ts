@@ -203,7 +203,7 @@ export type WorkerQualification = {
 
 export type EmployerProfile = {
   id: number;
-  user_id: number;
+  user_id: number | null;
   company_name: string | null;
   company_description: string | null;
   logo_url: string | null;
@@ -212,8 +212,27 @@ export type EmployerProfile = {
   contact_phone: string | null;
   linkedin_url: string | null;
   actively_hiring: boolean;
+  location_lat: number | null;
+  location_lng: number | null;
+  postcode: string | null;
+  address_text: string | null;
+  /** External place id (for example a Google Places id) so bulk imports can update the same business. */
+  external_id: string | null;
   created_at: Date;
   updated_at?: Date;
+};
+
+export type BusinessMapResult = {
+  id: number;
+  company_name: string | null;
+  company_description: string | null;
+  website_url: string | null;
+  address_text: string | null;
+  postcode: string | null;
+  location_lat: number;
+  location_lng: number;
+  actively_hiring: boolean;
+  distance_m: number | null;
 };
 
 export type Job = {
@@ -344,6 +363,7 @@ export type NewsExcerpt = {
   body_en: string;
   body_ar: string | null;
   body_ckb: string | null;
+  article_url: string | null;
   sort_order: number;
   is_published: boolean;
   created_by: number | null;

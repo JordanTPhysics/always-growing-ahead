@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import { Field, PageHeader, inputClassName } from "@/components/ui/forms";
@@ -43,6 +44,42 @@ type AbandonedRegistration = {
 
 let abandonReportTimer: ReturnType<typeof setTimeout> | undefined;
 
+function EducationAccountNotice({ onClose }: { onClose: () => void }) {
+  const t = useTranslations("auth");
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="education-account-title"
+        className="w-full max-w-md rounded-lg border border-border bg-surface p-6 text-text shadow-panel"
+      >
+        <h2 id="education-account-title" className="text-xl font-semibold">
+          {t("educationAccountTitle")}
+        </h2>
+        <p className="mt-3 text-base">{t("educationAccountBody")}</p>
+        <Button
+          type="button"
+          autoFocus
+          className="mt-6 w-full"
+          onClick={onClose}
+        >
+          {t("educationAccountAction")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function clip(value: string, max: number): string | null {
   const trimmed = value.trim().slice(0, max);
   return trimmed ? trimmed : null;
@@ -71,6 +108,8 @@ export default function SignUpPage() {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const [educationNoticeOpen, setEducationNoticeOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -97,6 +136,12 @@ export default function SignUpPage() {
     if (succeededRef.current) return;
     blockingErrorRef.current = message.slice(0, 2000);
   }
+
+  useEffect(() => {
+    if (searchParams.get("notice") === "education") {
+      setEducationNoticeOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (abandonReportTimer) {
@@ -263,8 +308,8 @@ export default function SignUpPage() {
 
   if (checkEmail) {
     return (
-      <div className="mx-auto max-w-md">
-        <PageSection>
+      <div className="mx-auto flex w-full flex-1 flex-col lg:max-w-md">
+        <PageSection className="flex flex-1 flex-col">
           <PageHeader
             title={t("checkEmailTitle")}
             subtitle={t("checkEmailBody")}
@@ -292,8 +337,8 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md">
-      <PageSection>
+    <div className="mx-auto flex w-full flex-1 flex-col lg:max-w-md">
+      <PageSection className="flex flex-1 flex-col">
         <PageHeader title={t("signUpTitle")} subtitle={t("signUpSubtitle")} />
         <form onSubmit={onSubmit} noValidate className="space-y-4">
           <Field label={t("email")} error={fieldErrors.email}>
@@ -403,6 +448,9 @@ export default function SignUpPage() {
           </p>
         </form>
       </PageSection>
+      {educationNoticeOpen ? (
+        <EducationAccountNotice onClose={() => setEducationNoticeOpen(false)} />
+      ) : null}
     </div>
   );
 }

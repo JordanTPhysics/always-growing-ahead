@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
-export async function requireAuthOrSignUp(locale: string) {
+export async function requireAuthOrSignUp(
+  locale: string,
+  notice?: "education"
+) {
   const session = await auth();
   if (!session?.user) {
-    redirect(`/${locale}/sign-up`);
+    const query = notice ? `?notice=${notice}` : "";
+    redirect(`/${locale}/sign-up${query}`);
   }
   return session;
 }

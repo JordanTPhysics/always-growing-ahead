@@ -18,11 +18,13 @@ const buttonVariants = cva(
           "button-gradient [--button-from:var(--button-accent-from)] [--button-to:var(--button-accent-to)] [--button-fg:var(--button-accent-fg)]",
         destructive:
           "button-gradient [--button-from:var(--button-danger-from)] [--button-to:var(--button-danger-to)] [--button-fg:var(--button-danger-fg)]",
+        indigo:
+          "button-gradient [--button-from:var(--button-indigo-from)] [--button-to:var(--button-indigo-to)] [--button-fg:var(--button-indigo-fg)]",
         outline:
           "button-gradient [--button-from:var(--button-outline-from)] [--button-to:var(--button-outline-to)] [--button-fg:var(--button-outline-fg)] [--button-border:var(--border)]",
         ghost:
-          "relative origin-center border-transparent bg-transparent text-background shadow-none transition-[transform,background-color] hover:z-10 hover:scale-105 hover:bg-background-soft focus-visible:z-10 focus-visible:scale-105 motion-reduce:transform-none motion-reduce:transition-colors",
-        link: "relative origin-center border-transparent bg-transparent text-background shadow-none underline-offset-4 transition-transform hover:z-10 hover:scale-105 hover:underline focus-visible:z-10 focus-visible:scale-105 motion-reduce:transform-none motion-reduce:transition-none",
+          "relative origin-center border-transparent bg-transparent text-background shadow-none transition-[transform,background-color] hover:z-10 hover:scale-105 hover:bg-background-soft focus-visible:z-10 focus-visible:scale-105 motion-reduce:transform-none motion-reduce:transition-colors dark:text-text",
+        link: "relative origin-center border-transparent bg-transparent text-background shadow-none underline-offset-4 transition-transform hover:z-10 hover:scale-105 hover:underline focus-visible:z-10 focus-visible:scale-105 motion-reduce:transform-none motion-reduce:transition-none dark:text-text",
       },
       size: {
         default: "min-h-11 px-4 py-2",

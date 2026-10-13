@@ -74,8 +74,8 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md">
-      <PageSection>
+    <div className="mx-auto flex w-full flex-1 flex-col lg:max-w-md">
+      <PageSection className="flex flex-1 flex-col">
         <PageHeader title={t("signInTitle")} />
         <form onSubmit={onSubmit} noValidate className="space-y-4">
           <Field

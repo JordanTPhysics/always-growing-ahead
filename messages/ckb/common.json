@@ -61,6 +61,10 @@
     "fixHighlighted": "تکایە خانە دیاریکراوەکان ڕاست بکەرەوە."
   },
   "language": "Language",
+  "theme": {
+    "switchToDark": "گۆڕین بۆ ڕووکاری تاریک",
+    "switchToLight": "گۆڕین بۆ ڕووکاری ڕووناک"
+  },
   "news": {
     "label": "نوێکارییەکانی هەواڵ",
     "manage": "بەڕێوەبردنی هەواڵ",
@@ -68,6 +72,13 @@
   },
   "footer": {
     "rights": "UK job marketplace"
+  },
+  "shortcuts": {
+    "label": "ئەرکە سەرەکییەکان",
+    "findWork": "بەدوای کاردا دەگەڕێم",
+    "hire": "بەدوای کارمەنددا دەگەڕێم",
+    "education": "پەروەردە",
+    "marketplace": "بازاڕ"
   },
   "features": {
     "kicker": "لەگەڵ AGA دەتوانیت",

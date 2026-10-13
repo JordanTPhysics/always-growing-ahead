@@ -24,5 +24,8 @@
   "nearMeLabel": "Near me",
   "nearMeFailed": "Could not get your location. Check permissions and try again.",
   "legendStandard": "Job listing",
-  "legendActive": "Actively hiring"
+  "legendActive": "Actively hiring",
+  "notActivelyHiring": "Not actively hiring",
+  "viewBusiness": "View business",
+  "resultCountWithBusinesses": "{jobs} jobs · {businesses} businesses"
 }

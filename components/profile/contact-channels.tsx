@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { FaEnvelope, FaLinkedin, FaPhone, FaWhatsapp } from "react-icons/fa";
+import { TbHandClick } from "react-icons/tb";
 import { iconFill } from "@/components/icons/icon-gradients";
 import { toWhatsAppHref } from "@/lib/validation/fields";
 
@@ -15,6 +16,20 @@ const iconBadgeClassName =
 
 const channelLinkClassName =
   "inline-flex items-center gap-2 text-white rounded-md px-3 py-2 no-underline hover:opacity-80";
+
+export function WebsiteLink({ url }: { url: string }) {
+  return (
+    <a
+      className={`${channelLinkClassName} max-w-full bg-[#6a3dff]`}
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+    >
+      <span className="break-all">Go to website</span>
+      <TbHandClick size={20} className="shrink-0" aria-hidden />
+    </a>
+  );
+}
 
 export function ContactChannels({
   email,

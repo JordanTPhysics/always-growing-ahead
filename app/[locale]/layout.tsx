@@ -14,6 +14,7 @@ import { AuthSessionProvider } from "@/components/auth/session-provider";
 import { NativeBootstrap } from "@/components/native/native-bootstrap";
 import { LiveChatWidget } from "@/components/chat/live-chat-widget";
 import { auth } from "@/auth";
+import { themeInitScript } from "@/lib/theme";
 import "../globals.css";
 
 const latin = Source_Sans_3({
@@ -54,9 +55,11 @@ export default async function LocaleLayout({
       lang={locale}
       dir={meta.dir}
       data-font={meta.font}
-      className={`${latin.variable} ${arabic.variable} h-full`}
+      className={`${latin.variable} ${arabic.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col antialiased">
+      <body className="flex min-h-dvh flex-col antialiased">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <IconGradients />
         <NextIntlClientProvider messages={messages}>
           <AuthSessionProvider>

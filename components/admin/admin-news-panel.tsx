@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, inputClassName } from "@/components/ui/forms";
 import type { NewsExcerpt } from "@/lib/db/types";
+import { isSafeArticleUrl } from "@/lib/news/article-url";
 
 type FormState = {
   body_en: string;
   body_ar: string;
   body_ckb: string;
+  article_url: string;
   sort_order: string;
   is_published: boolean;
 };
@@ -19,6 +21,7 @@ const emptyForm = (): FormState => ({
   body_en: "",
   body_ar: "",
   body_ckb: "",
+  article_url: "",
   sort_order: "0",
   is_published: true,
 });
@@ -28,6 +31,7 @@ function fromExcerpt(excerpt: NewsExcerpt): FormState {
     body_en: excerpt.body_en,
     body_ar: excerpt.body_ar ?? "",
     body_ckb: excerpt.body_ckb ?? "",
+    article_url: excerpt.article_url ?? "",
     sort_order: String(excerpt.sort_order),
     is_published: excerpt.is_published,
   };
@@ -78,6 +82,11 @@ export function AdminNewsPanel() {
       setError(t("bodyRequired"));
       return;
     }
+    const articleUrl = form.article_url.trim();
+    if (articleUrl && !isSafeArticleUrl(articleUrl)) {
+      setError(t("articleUrlInvalid"));
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -85,6 +94,7 @@ export function AdminNewsPanel() {
         body_en: form.body_en,
         body_ar: form.body_ar || null,
         body_ckb: form.body_ckb || null,
+        article_url: articleUrl || null,
         sort_order: Number(form.sort_order) || 0,
         is_published: form.is_published,
       };
@@ -177,6 +187,21 @@ export function AdminNewsPanel() {
               }
             />
           </Field>
+          <Field label={t("articleUrl")} hint={t("articleUrlHint")}>
+            <input
+              className={inputClassName}
+              type="text"
+              inputMode="url"
+              placeholder="https://"
+              value={form.article_url}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  article_url: event.target.value,
+                }))
+              }
+            />
+          </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("sortOrder")}>
               <input
@@ -233,6 +258,11 @@ export function AdminNewsPanel() {
             >
               <div className="min-w-0 flex-1 space-y-1">
                 <p className="text-sm">{excerpt.body_en}</p>
+                {excerpt.article_url ? (
+                  <p className="truncate text-xs text-muted">
+                    {excerpt.article_url}
+                  </p>
+                ) : null}
                 <p className="text-xs text-muted">
                   {t("sortOrder")}: {excerpt.sort_order}
                   {" · "}

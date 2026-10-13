@@ -1,11 +1,12 @@
 {
   "title": "Admin dashboard",
-  "subtitle": "Manage skills, users, live chat, worker imports, education uploads, news updates, failed signups, and locale translations.",
+  "subtitle": "Manage skills, users, live chat, worker imports, business imports, education uploads, news updates, failed signups, and locale translations.",
   "tabsLabel": "Admin sections",
   "tabs": {
     "access": "Skills & users",
     "chat": "Chat",
     "workers": "Workers",
+    "businesses": "Businesses",
     "education": "Education",
     "news": "News",
     "translations": "Translations",
@@ -91,6 +92,9 @@
     "bodyAr": "Excerpt (Arabic)",
     "bodyCkb": "Excerpt (Kurdish Sorani)",
     "bodyRequired": "Enter an English excerpt before saving.",
+    "articleUrl": "Article link",
+    "articleUrlHint": "Optional. The excerpt becomes a link to this article. Use a full http(s) URL or a site path such as /jobs.",
+    "articleUrlInvalid": "Use a full http(s) URL or a path starting with /.",
     "sortOrder": "Sort order",
     "published": "Published",
     "unpublished": "Unpublished",
@@ -146,5 +150,21 @@
     "resultFailed": "{count} rows failed",
     "resultWarnings": "{count} rows created with warnings",
     "row": "Row {n}"
+  },
+  "businessesImport": {
+    "heading": "Import businesses",
+    "hint": "CSV rows create public business profiles with no app account. They are saved as not actively hiring, and they still appear on the jobs map when they have coordinates. Uploading the same place id again updates that business.",
+    "required": "name is required. A Google Places export works (id, name, url, phone, categories, address, lat, lng). id is the external place id, so the same business is not added twice. Actively hiring is always off.",
+    "chooseFile": "CSV file",
+    "uploadCta": "Upload businesses",
+    "downloadSample": "Download sample CSV",
+    "noFile": "Choose a CSV file first.",
+    "uploading": "Uploading…",
+    "resultCreated": "{count} businesses created",
+    "resultUpdated": "{count} businesses updated",
+    "resultFailed": "{count} rows failed",
+    "resultWarnings": "{count} rows saved with warnings",
+    "row": "Row {n}",
+    "viewOnMap": "View on the map"
   }
 }

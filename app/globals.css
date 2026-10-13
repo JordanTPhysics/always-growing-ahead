@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @property --button-gradient-angle {
   syntax: "<angle>";
   inherits: false;
@@ -13,6 +15,7 @@
 }
 
 :root {
+  color-scheme: light;
   --background: #0b4824;
   --foreground: #a97c1c;
   --text: #0c0a02;
@@ -50,9 +53,60 @@
   --button-danger-from: #ff5aa8;
   --button-danger-to: #ff1f5c;
   --button-danger-fg: #2a0010;
+  --button-indigo-from: #c4b5ff;
+  --button-indigo-to: #6a3dff;
+  --button-indigo-fg: #1a0840;
   --button-outline-from: #f3ffd6;
   --button-outline-to: #c8ff6a;
   --button-outline-fg: #0b4824;
+}
+
+/* Darker versions of the light palette, same hues. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #06180f;
+  --foreground: #7a5914;
+  --text: #f3efe6;
+  --surface: #10261c;
+  --muted: #7a9786;
+  --accent: #f3efe6;
+  --accent-soft: #16352a;
+  --background-soft: #16352a;
+  --danger: #c45a5a;
+  --border: #174d35;
+  --border-strong: #0c2818;
+  --shadow-panel:
+    0 4px 8px rgb(0 0 0 / 0.4),
+    0 12px 32px rgb(6 24 15 / 0.55),
+    0 24px 56px rgb(0 0 0 / 0.45);
+  --shadow-panel-sm:
+    0 3px 6px rgb(0 0 0 / 0.35),
+    0 8px 22px rgb(6 24 15 / 0.45);
+  --shadow-button:
+    0 3px 6px rgb(0 0 0 / 0.4),
+    0 8px 22px rgb(6 24 15 / 0.5);
+  --shadow-button-hover:
+    0 6px 12px rgb(0 0 0 / 0.45),
+    0 14px 36px rgb(6 24 15 / 0.55);
+
+  --button-happy-from: #658c22;
+  --button-happy-to: #00803d;
+  --button-happy-fg: #f2ffe6;
+  --button-secondary-from: #9e6c00;
+  --button-secondary-to: #a47a1f;
+  --button-secondary-fg: #fff4dc;
+  --button-accent-from: #888c29;
+  --button-accent-to: #8c7f00;
+  --button-accent-fg: #fffad8;
+  --button-danger-from: #9e3868;
+  --button-danger-to: #8c1133;
+  --button-danger-fg: #ffe6f0;
+  --button-indigo-from: #5c4a99;
+  --button-indigo-to: #3d2494;
+  --button-indigo-fg: #f3eeff;
+  --button-outline-from: #142e24;
+  --button-outline-to: #1e5c3e;
+  --button-outline-fg: #e7f6ee;
 }
 
 @theme inline {
@@ -69,11 +123,13 @@
   --font-sans: var(--font-latin);
   --font-arabic: var(--font-arabic-face);
   --animate-scroll: scroll 40s linear infinite;
+  --animate-scroll-backward: scroll-backward 40s linear infinite;
   --animate-scroll-paused: scroll 40s linear infinite paused;
 }
 
 html {
   min-height: 100%;
+  min-height: 100dvh;
   scroll-behavior: smooth;
 }
 
@@ -85,6 +141,7 @@ html {
 
 body {
   min-height: 100%;
+  min-height: 100dvh;
   background: radial-gradient(
     ellipse 120% 90% at 100% 0%,
     var(--foreground) 0%,
@@ -94,6 +151,13 @@ body {
   background-color: var(--background);
   color: var(--text);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Fixed backgrounds paint a short viewport on many Android browsers. */
+@media (max-width: 1023px) {
+  body {
+    background-attachment: scroll;
+  }
 }
 
 html[data-font="arabic"] body {
@@ -253,6 +317,22 @@ button {
   background: var(--foreground);
 }
 
+html[data-theme="dark"] .pill-toggle-thumb {
+  background: #1a6b45;
+}
+
+.theme-toggle-sun {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-toggle-moon {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-toggle-sun {
+  display: block;
+}
+
 [dir="rtl"] .pill-toggle-thumb {
   transform: translateX(calc(var(--active-index, 0) * -100%));
 }
@@ -410,6 +490,15 @@ button {
   }
   to {
     transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-backward {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
 

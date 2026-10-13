@@ -7,11 +7,21 @@ import {
   getNewsExcerptById,
   updateNewsExcerpt,
 } from "@/lib/db/repositories/news-excerpts";
+import { isSafeArticleUrl } from "@/lib/news/article-url";
+
+const articleUrlSchema = z
+  .string()
+  .trim()
+  .max(1000)
+  .nullable()
+  .optional()
+  .refine((value) => value == null || value === "" || isSafeArticleUrl(value));
 
 const updateSchema = z.object({
   body_en: z.string().trim().min(1).max(500).optional(),
   body_ar: z.string().trim().max(500).nullable().optional(),
   body_ckb: z.string().trim().max(500).nullable().optional(),
+  article_url: articleUrlSchema,
   sort_order: z.number().int().optional(),
   is_published: z.boolean().optional(),
 });
