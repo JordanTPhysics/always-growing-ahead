@@ -9,6 +9,36 @@ import type { RowDataPacket } from "mysql2";
 
 const TOKEN_TTL_MS = 60 * 60 * 1000;
 
+const CREATE_PASSWORD_RESET_TOKENS = `
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id     BIGINT UNSIGNED NOT NULL,
+  token_hash  CHAR(64) NOT NULL UNIQUE,
+  expires_at  DATETIME NOT NULL,
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_user_id (user_id),
+  INDEX idx_expires_at (expires_at)
+)`;
+
+let tokensTableReady: Promise<void> | null = null;
+
+function ensurePasswordResetTable(): Promise<void> {
+  tokensTableReady ??= (async () => {
+    try {
+      await pool.execute("SELECT 1 FROM password_reset_tokens LIMIT 0");
+    } catch (err) {
+      const code = (err as { code?: string }).code;
+      if (code !== "ER_NO_SUCH_TABLE") throw err;
+      await pool.execute(CREATE_PASSWORD_RESET_TOKENS);
+    }
+  })().catch((err: unknown) => {
+    tokensTableReady = null;
+    throw err;
+  });
+  return tokensTableReady;
+}
+
 type TokenRow = RowDataPacket & {
   user_id: number;
   expires_at: Date;
@@ -45,6 +75,7 @@ function copyForLocale(locale: string) {
 
 export async function sendPasswordResetEmail(email: string): Promise<void> {
   if (isMockMapDataEnabled()) return;
+  await ensurePasswordResetTable();
 
   const [rows] = await pool.execute<
     (RowDataPacket & {
@@ -97,6 +128,7 @@ export async function peekPasswordResetToken(
   token: string
 ): Promise<{ ok: true } | { ok: false; reason: "invalid" | "expired" }> {
   if (!token || isMockMapDataEnabled()) return { ok: false, reason: "invalid" };
+  await ensurePasswordResetTable();
 
   const tokenHash = hashToken(token);
   const [rows] = await pool.execute<TokenRow[]>(
@@ -121,6 +153,7 @@ export async function resetPasswordWithToken(input: {
   if (!input.token || isMockMapDataEnabled()) {
     return { ok: false, reason: "invalid" };
   }
+  await ensurePasswordResetTable();
 
   const tokenHash = hashToken(input.token);
   const [rows] = await pool.execute<TokenRow[]>(
