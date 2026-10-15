@@ -50,8 +50,8 @@
   --button-accent-from: #f8ff4a;
   --button-accent-to: #ffe600;
   --button-accent-fg: #2a2400;
-  --button-danger-from: #ff5aa8;
-  --button-danger-to: #ff1f5c;
+  --button-danger-from: #ff6f15;
+  --button-danger-to: #ff1f1f;
   --button-danger-fg: #2a0010;
   --button-indigo-from: #c4b5ff;
   --button-indigo-to: #6a3dff;
@@ -98,8 +98,8 @@ html[data-theme="dark"] {
   --button-accent-from: #888c29;
   --button-accent-to: #8c7f00;
   --button-accent-fg: #fffad8;
-  --button-danger-from: #9e3868;
-  --button-danger-to: #8c1133;
+  --button-danger-from: #9e3838;
+  --button-danger-to: #8c1111;
   --button-danger-fg: #ffe6f0;
   --button-indigo-from: #5c4a99;
   --button-indigo-to: #3d2494;
@@ -353,6 +353,29 @@ html[data-theme="dark"] .theme-toggle-sun {
   flex: 1;
   min-width: 0;
   text-align: center;
+}
+
+.pill-toggle-scroll-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.pill-toggle-scroll {
+  width: max-content;
+  min-width: 100%;
+}
+
+.pill-toggle-scroll .pill-toggle-option {
+  flex: 1 0 auto;
+  white-space: nowrap;
+}
+
+.pill-toggle-scroll .pill-toggle-thumb {
+  left: 0;
 }
 
 .pill-toggle-option[aria-pressed="true"] {

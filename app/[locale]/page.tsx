@@ -103,7 +103,7 @@ export default async function HomePage({
               title: t("features.marketplace.title"),
               body: t("features.marketplace.body"),
               href: "/marketplace",
-              imageSrc: "/images/home/marketplace.jpg",
+              imageSrc: "/images/home/barber.jpg",
               imageAlt: t("features.marketplace.imageAlt"),
             },
             {

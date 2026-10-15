@@ -8,12 +8,7 @@ import { Field, PageHeader, inputClassName } from "@/components/ui/forms";
 import { Button } from "@/components/ui/button";
 import { PageSection } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
-import {
-  UK_CITIES,
-  getDistrictsForCity,
-  isValidCity,
-  isValidDistrict,
-} from "@/lib/locations/uk-locations";
+import { UK_CITIES, getDistrictsForCity } from "@/lib/locations/uk-locations";
 import {
   clearFieldError,
   focusFirstInvalidField,
@@ -21,6 +16,7 @@ import {
   isValidEmail,
   isValidPhone,
   isValidUsername,
+  normalizeUkPostcode,
 } from "@/lib/validation/fields";
 
 type FieldKey =
@@ -29,6 +25,7 @@ type FieldKey =
   | "phone"
   | "city"
   | "district"
+  | "postcode"
   | "password"
   | "confirmPassword";
 
@@ -38,6 +35,7 @@ type AbandonedRegistration = {
   phone: string | null;
   city: string | null;
   district: string | null;
+  postcode: string | null;
   error: string;
   locale: string;
 };
@@ -80,6 +78,14 @@ function EducationAccountNotice({ onClose }: { onClose: () => void }) {
   );
 }
 
+function preferListed(value: string, options: readonly string[]): string {
+  const trimmed = value.trim();
+  return (
+    options.find((option) => option.toLowerCase() === trimmed.toLowerCase()) ??
+    trimmed
+  );
+}
+
 function clip(value: string, max: number): string | null {
   const trimmed = value.trim().slice(0, max);
   return trimmed ? trimmed : null;
@@ -117,6 +123,7 @@ export default function SignUpPage() {
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
+  const [postcode, setPostcode] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>(
     {}
   );
@@ -127,10 +134,10 @@ export default function SignUpPage() {
   const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const districtOptions = useMemo(() => getDistrictsForCity(city), [city]);
-  const draftRef = useRef({ username, email, phone, city, district, locale });
+  const draftRef = useRef({ username, email, phone, city, district, postcode, locale });
   const blockingErrorRef = useRef<string | null>(null);
   const succeededRef = useRef(false);
-  draftRef.current = { username, email, phone, city, district, locale };
+  draftRef.current = { username, email, phone, city, district, postcode, locale };
 
   function rememberFailure(message: string) {
     if (succeededRef.current) return;
@@ -164,6 +171,7 @@ export default function SignUpPage() {
         phone: phoneValue,
         city: clip(draft.city, 100),
         district: clip(draft.district, 100),
+        postcode: clip(draft.postcode, 10),
         error,
         locale: draft.locale,
       });
@@ -197,13 +205,14 @@ export default function SignUpPage() {
     if (!phone.trim()) next.phone = t("phoneRequired");
     else if (!isValidPhone(phone)) next.phone = t("phoneInvalid");
 
-    if (!city) next.city = t("cityRequired");
-    else if (!isValidCity(city)) next.city = t("cityInvalid");
+    const cityValue = preferListed(city, UK_CITIES);
+    const districtValue = preferListed(district, getDistrictsForCity(cityValue));
 
-    if (!district) next.district = t("districtRequired");
-    else if (city && !isValidDistrict(city, district)) {
-      next.district = t("districtInvalid");
-    }
+    if (!cityValue) next.city = t("cityRequired");
+    if (!districtValue) next.district = t("districtRequired");
+
+    if (!postcode.trim()) next.postcode = t("postcodeRequired");
+    else if (!normalizeUkPostcode(postcode)) next.postcode = t("postcodeInvalid");
 
     if (!password) next.password = t("passwordRequired");
     else if (password.length < 8) next.password = t("passwordTooShort");
@@ -228,6 +237,13 @@ export default function SignUpPage() {
       return;
     }
 
+    const cityValue = preferListed(city, UK_CITIES);
+    const districtValue = preferListed(district, getDistrictsForCity(cityValue));
+    const postcodeValue = normalizeUkPostcode(postcode) ?? postcode.trim();
+    if (cityValue !== city) setCity(cityValue);
+    if (districtValue !== district) setDistrict(districtValue);
+    if (postcodeValue !== postcode) setPostcode(postcodeValue);
+
     setPending(true);
     try {
       const res = await fetch("/api/auth/register", {
@@ -238,8 +254,9 @@ export default function SignUpPage() {
           username: username.trim() || null,
           password,
           phone: phone.trim(),
-          city,
-          district,
+          city: cityValue,
+          district: districtValue,
+          postcode: postcodeValue,
           preferredLocale: locale,
         }),
       });
@@ -260,17 +277,10 @@ export default function SignUpPage() {
           focusFirstInvalidField();
           return;
         }
-        if (data.error === "Please select a valid city") {
-          setFieldErrors({ city: t("cityInvalid") });
+        if (data.error === "Enter a valid UK postcode") {
+          setFieldErrors({ postcode: t("postcodeInvalid") });
           setError(tCommon("validation.fixHighlighted"));
-          rememberFailure(t("cityInvalid"));
-          focusFirstInvalidField();
-          return;
-        }
-        if (typeof data.error === "string" && data.error.includes("district")) {
-          setFieldErrors({ district: t("districtInvalid") });
-          setError(tCommon("validation.fixHighlighted"));
-          rememberFailure(t("districtInvalid"));
+          rememberFailure(t("postcodeInvalid"));
           focusFirstInvalidField();
           return;
         }
@@ -389,27 +399,50 @@ export default function SignUpPage() {
             value={city}
             onChange={(nextCity) => {
               setCity(nextCity);
-              setDistrict("");
+              const listed = getDistrictsForCity(nextCity);
+              const currentDistrict = district.trim().toLowerCase();
+              const stillListed = listed.some(
+                (option) => option.toLowerCase() === currentDistrict
+              );
+              if (!nextCity.trim() || (listed.length > 0 && currentDistrict && !stillListed)) {
+                setDistrict("");
+              }
               clearField("city");
               clearField("district");
             }}
             options={UK_CITIES}
             required
+            maxLength={100}
             error={fieldErrors.city}
           />
           <Combobox
             label={t("district")}
-            placeholder={city ? t("selectDistrict") : t("selectCityFirst")}
+            placeholder={city.trim() ? t("selectDistrict") : t("selectCityFirst")}
             value={district}
             onChange={(nextDistrict) => {
               setDistrict(nextDistrict);
               clearField("district");
             }}
             options={districtOptions}
-            disabled={!city}
+            disabled={!city.trim()}
             required
+            maxLength={100}
             error={fieldErrors.district}
           />
+          <Field label={t("postcode")} error={fieldErrors.postcode}>
+            <input
+              className={inputClassName}
+              type="text"
+              required
+              autoComplete="postal-code"
+              maxLength={10}
+              value={postcode}
+              onChange={(e) => {
+                setPostcode(e.target.value);
+                clearField("postcode");
+              }}
+            />
+          </Field>
           <Field label={t("password")} error={fieldErrors.password}>
             <input
               className={inputClassName}

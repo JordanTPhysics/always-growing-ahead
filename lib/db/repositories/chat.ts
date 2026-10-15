@@ -192,6 +192,7 @@ export async function getUserAccountSummary(
        u.phone,
        u.city,
        u.district,
+       u.postcode,
        u.subscription_tier,
        u.role,
        u.email_verified_at,

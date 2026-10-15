@@ -391,13 +391,7 @@ export const UK_DISTRICTS_BY_CITY: Record<UkCity, readonly string[]> = {
 };
 
 export function getDistrictsForCity(city: string): readonly string[] {
-  return UK_DISTRICTS_BY_CITY[city as UkCity] ?? [];
-}
-
-export function isValidCity(city: string): city is UkCity {
-  return (UK_CITIES as readonly string[]).includes(city);
-}
-
-export function isValidDistrict(city: string, district: string): boolean {
-  return getDistrictsForCity(city).includes(district);
+  const key = city.trim().toLowerCase();
+  const match = UK_CITIES.find((option) => option.toLowerCase() === key);
+  return match ? UK_DISTRICTS_BY_CITY[match] : [];
 }

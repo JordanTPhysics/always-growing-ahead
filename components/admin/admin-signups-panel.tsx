@@ -12,6 +12,7 @@ type Attempt = {
   phone: string | null;
   city: string | null;
   district: string | null;
+  postcode: string | null;
   error_message: string;
   status: RegistrationAttemptStatus;
   created_at: string;
@@ -114,7 +115,9 @@ export function AdminSignupsPanel() {
           <p className="text-sm text-muted">{t("empty")}</p>
         ) : (
           attempts.map((attempt) => {
-            const location = [attempt.city, attempt.district].filter(Boolean).join(", ");
+            const location = [attempt.city, attempt.district, attempt.postcode]
+              .filter(Boolean)
+              .join(", ");
             return (
               <div key={attempt.id} className="rounded-md border border-border p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">

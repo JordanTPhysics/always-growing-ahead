@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readFile, writeFile } from "node:fs/promises";
+import { revalidatePath } from "next/cache";
 import path from "node:path";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/api/admin";
@@ -92,7 +93,16 @@ export async function PUT(request: Request) {
   }
 
   const formatted = `${JSON.stringify(data, null, 2)}\n`;
-  await writeFile(filePath, formatted, "utf8");
+  try {
+    await writeFile(filePath, formatted, "utf8");
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === "EACCES" || code === "EPERM" || code === "EROFS") {
+      return jsonError("The messages directory is not writable", 500);
+    }
+    throw err;
+  }
 
+  revalidatePath("/", "layout");
   return NextResponse.json({ ok: true });
 }

@@ -21,7 +21,7 @@ COPY --from=builder /app/package.json /app/package-lock.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/messages ./messages
+COPY --from=builder --chown=nextjs:nodejs /app/messages ./messages
 COPY --from=builder /app/i18n ./i18n
 COPY --from=builder /app/next.config.ts ./
 COPY infra/app/docker-entrypoint.sh ./docker-entrypoint.sh

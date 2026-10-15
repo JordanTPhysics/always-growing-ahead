@@ -19,6 +19,7 @@ export async function createRegistrationAttempt(input: {
   phone?: string | null;
   city?: string | null;
   district?: string | null;
+  postcode?: string | null;
   errorMessage: string;
   locale?: string | null;
 }): Promise<RegistrationAttempt> {
@@ -27,6 +28,7 @@ export async function createRegistrationAttempt(input: {
   const phone = blankToNull(input.phone, 100);
   const city = blankToNull(input.city, 100);
   const district = blankToNull(input.district, 100);
+  const postcode = blankToNull(input.postcode, 10);
   const errorMessage = input.errorMessage.trim().slice(0, 2000);
   if (!name && !email && !phone) {
     throw new Error("Registration attempt is missing contact information");
@@ -37,9 +39,9 @@ export async function createRegistrationAttempt(input: {
 
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO registration_attempts
-      (name, email, phone, city, district, error_message, locale)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [name, email, phone, city, district, errorMessage, input.locale?.trim().slice(0, 10) || "en"]
+      (name, email, phone, city, district, postcode, error_message, locale)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name, email, phone, city, district, postcode, errorMessage, input.locale?.trim().slice(0, 10) || "en"]
   );
   const created = await getRegistrationAttemptById(result.insertId);
   if (!created) throw new Error("Failed to load registration attempt");

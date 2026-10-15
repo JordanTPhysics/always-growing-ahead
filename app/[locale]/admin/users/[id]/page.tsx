@@ -41,6 +41,7 @@ export default async function AdminUserAccountPage({
     { label: t("account.phone"), value: user.phone || "—" },
     { label: t("account.city"), value: user.city || "—" },
     { label: t("account.district"), value: user.district || "—" },
+    { label: t("account.postcode"), value: user.postcode || "—" },
     { label: t("account.tier"), value: user.subscription_tier },
     { label: t("account.role"), value: user.role },
     {

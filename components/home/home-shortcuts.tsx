@@ -17,7 +17,7 @@ export function HomeShortcuts() {
   return (
     <nav
       aria-label={t("shortcuts.label")}
-      className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+      className="grid h-auto w-full grid-cols-2 content-start gap-2 sm:grid-cols-4"
     >
       {shortcuts.map((item) => (
         <Button
@@ -25,7 +25,7 @@ export function HomeShortcuts() {
           asChild
           variant={item.variant}
           size="sm"
-          className="h-full min-h-9 w-full min-w-0 whitespace-normal px-2 py-1.5 text-center text-xs leading-snug sm:text-sm"
+          className="h-auto w-full min-w-0 whitespace-normal px-2 py-1.5 text-center text-xs leading-snug sm:text-sm"
         >
           <Link href={item.href}>
             <span className="min-w-0 text-balance">{t(`shortcuts.${item.label}`)}</span>

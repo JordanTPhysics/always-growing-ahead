@@ -84,13 +84,14 @@ export async function createUser(input: {
   phone?: string | null;
   city?: string | null;
   district?: string | null;
+  postcode?: string | null;
   preferredLocale?: string;
   emailVerifiedAt?: Date | null;
 }): Promise<User> {
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO users
-      (email, username, password_hash, phone, city, district, preferred_locale, email_verified_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      (email, username, password_hash, phone, city, district, postcode, preferred_locale, email_verified_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.email.toLowerCase(),
       input.username?.trim().toLowerCase() ?? null,
@@ -98,6 +99,7 @@ export async function createUser(input: {
       input.phone ?? null,
       input.city ?? null,
       input.district ?? null,
+      input.postcode ?? null,
       input.preferredLocale ?? "en",
       input.emailVerifiedAt ?? null,
     ]

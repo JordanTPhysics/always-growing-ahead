@@ -70,7 +70,7 @@ export function AdminDashboard({ initialTab = "access" }: { initialTab?: AdminTa
       <PillToggle
         value={tab}
         onChange={setTab}
-        fullWidth
+        scrollable
         ariaLabel={t("tabsLabel")}
         options={[
           { value: "access", label: t("tabs.access") },

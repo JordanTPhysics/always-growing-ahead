@@ -8,7 +8,7 @@ import {
 } from "@/lib/db/repositories/users";
 import { sendVerificationEmail } from "@/lib/auth/email-verification";
 import { jsonError } from "@/lib/api/auth";
-import { isValidCity, isValidDistrict } from "@/lib/locations/uk-locations";
+import { normalizeUkPostcode } from "@/lib/validation/fields";
 
 const usernameSchema = z
   .string()
@@ -25,8 +25,9 @@ const schema = z.object({
   password: z.string().min(8),
   username: usernameSchema.optional().nullable(),
   phone: z.string().trim().min(7).max(30),
-  city: z.string().trim().min(1),
-  district: z.string().trim().min(1),
+  city: z.string().trim().min(1).max(100),
+  district: z.string().trim().min(1).max(100),
+  postcode: z.string().trim().min(1).max(10),
   preferredLocale: z.string().max(10).optional(),
 });
 
@@ -53,11 +54,9 @@ export async function POST(request: Request) {
 
   const city = parsed.data.city.trim();
   const district = parsed.data.district.trim();
-  if (!isValidCity(city)) {
-    return jsonError("Please select a valid city");
-  }
-  if (!isValidDistrict(city, district)) {
-    return jsonError("Please select a valid district for the chosen city");
+  const postcode = normalizeUkPostcode(parsed.data.postcode);
+  if (!postcode) {
+    return jsonError("Enter a valid UK postcode");
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
@@ -68,6 +67,7 @@ export async function POST(request: Request) {
     phone: parsed.data.phone.trim(),
     city,
     district,
+    postcode,
     preferredLocale: parsed.data.preferredLocale ?? "en",
   });
 

@@ -13,7 +13,17 @@ type Props = {
   disabled?: boolean;
   required?: boolean;
   error?: string;
+  maxLength?: number;
 };
+
+function listedValue(value: string, options: readonly string[]): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  return (
+    options.find((option) => option.toLowerCase() === trimmed.toLowerCase()) ??
+    trimmed
+  );
+}
 
 export function Combobox({
   label,
@@ -24,16 +34,15 @@ export function Combobox({
   disabled,
   required,
   error,
+  maxLength,
 }: Props) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const queryRef = useRef(query);
-  const valueRef = useRef(value);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   queryRef.current = query;
-  valueRef.current = value;
 
   useEffect(() => {
     setQuery(value);
@@ -59,33 +68,21 @@ export function Combobox({
     return options.filter((option) => option.toLowerCase().includes(q));
   }, [options, query]);
 
-  function pick(option: string) {
+  function commit(raw: string) {
     if (blurTimeoutRef.current) {
       clearTimeout(blurTimeoutRef.current);
       blurTimeoutRef.current = null;
     }
-    onChange(option);
-    setQuery(option);
+    const next = listedValue(raw, options);
+    onChange(next);
+    setQuery(next);
     setOpen(false);
   }
 
   function syncOnBlur() {
     blurTimeoutRef.current = setTimeout(() => {
       blurTimeoutRef.current = null;
-      const trimmed = queryRef.current.trim();
-      if (!trimmed) {
-        onChange("");
-        setQuery("");
-        return;
-      }
-      const exact = options.find(
-        (option) => option.toLowerCase() === trimmed.toLowerCase()
-      );
-      if (exact) {
-        pick(exact);
-        return;
-      }
-      setQuery(valueRef.current);
+      commit(queryRef.current);
     }, 0);
   }
 
@@ -106,20 +103,18 @@ export function Combobox({
         disabled={disabled}
         placeholder={placeholder}
         required={required}
+        maxLength={maxLength}
         aria-invalid={error ? true : undefined}
+        aria-autocomplete="list"
         autoComplete="off"
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
-          if (!e.target.value.trim()) onChange("");
+          onChange(e.target.value);
         }}
         onFocus={() => setOpen(true)}
         onBlur={syncOnBlur}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && filtered[0]) {
-            e.preventDefault();
-            pick(filtered[0]);
-          }
           if (e.key === "Escape") setOpen(false);
         }}
       />
@@ -139,7 +134,7 @@ export function Combobox({
                 }`}
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  pick(option);
+                  commit(option);
                 }}
               >
                 {option}

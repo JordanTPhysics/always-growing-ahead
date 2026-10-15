@@ -85,6 +85,7 @@ function toUser(account: MockTestAccount): User {
     phone: null,
     city: null,
     district: null,
+    postcode: null,
     preferred_locale: "en",
     subscription_tier: account.subscription_tier,
     role: account.role,

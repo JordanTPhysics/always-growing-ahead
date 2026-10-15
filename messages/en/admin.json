@@ -29,6 +29,7 @@
     "phone": "Phone",
     "city": "City",
     "district": "District",
+    "postcode": "Postcode",
     "tier": "Tier",
     "role": "Role",
     "verified": "Email verified",
@@ -105,7 +106,7 @@
   },
   "translations": {
     "heading": "Locale translations",
-    "hint": "Edits write directly to messages/{locale}/{namespace}.json on the server. The messages directory must be writable.",
+    "hint": "Edits are saved to the JSON files in the messages folder on the server. That folder must be writable.",
     "locale": "Locale",
     "namespace": "Namespace",
     "content": "JSON content",

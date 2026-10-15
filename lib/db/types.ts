@@ -33,6 +33,7 @@ export type User = {
   phone: string | null;
   city: string | null;
   district: string | null;
+  postcode: string | null;
   preferred_locale: string;
   subscription_tier: Tier;
   role: UserRole;
@@ -330,6 +331,7 @@ export type RegistrationAttempt = {
   phone: string | null;
   city: string | null;
   district: string | null;
+  postcode: string | null;
   error_message: string;
   locale: string;
   status: RegistrationAttemptStatus;
@@ -408,6 +410,7 @@ export type UserAccountSummary = {
   phone: string | null;
   city: string | null;
   district: string | null;
+  postcode: string | null;
   subscription_tier: Tier;
   role: UserRole;
   email_verified_at: Date | null;

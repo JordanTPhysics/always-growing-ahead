@@ -6,6 +6,18 @@ export function isValidUsername(value: string): boolean {
   return /^[a-zA-Z0-9_]{3,30}$/.test(value.trim());
 }
 
+const UK_OUTWARD = /^[A-Z]{1,2}\d[A-Z\d]?$/i;
+const UK_POSTCODE = /^([A-Z]{1,2}\d[A-Z\d]?) ?(\d[A-Z]{2})$/i;
+
+/** Full UK postcode ("NG1 1AA") or just the first half ("NG1"). */
+export function normalizeUkPostcode(value: string): string | null {
+  const trimmed = value.trim().toUpperCase();
+  const full = trimmed.match(UK_POSTCODE);
+  if (full) return `${full[1]} ${full[2]}`;
+  if (UK_OUTWARD.test(trimmed)) return trimmed;
+  return null;
+}
+
 export function isValidPhone(value: string): boolean {
   const trimmed = value.trim();
   if (trimmed.length < 7 || trimmed.length > 30) return false;

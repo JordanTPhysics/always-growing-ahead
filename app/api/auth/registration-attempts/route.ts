@@ -11,6 +11,7 @@ const schema = z
     phone: z.string().trim().max(100).nullable().optional(),
     city: z.string().trim().max(100).nullable().optional(),
     district: z.string().trim().max(100).nullable().optional(),
+    postcode: z.string().trim().max(10).nullable().optional(),
     error: z.string().trim().min(1).max(2000),
     locale: z.string().trim().max(10).optional(),
   })
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
     phone: parsed.data.phone,
     city: parsed.data.city,
     district: parsed.data.district,
+    postcode: parsed.data.postcode,
     errorMessage: parsed.data.error,
     locale: parsed.data.locale,
   });
