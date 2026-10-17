@@ -1,17 +1,21 @@
 export type BillingPeriod = "monthly" | "yearly";
 
-export const YEARLY_GBP_BY_PAID_TIER = {
-  basic: 10,
-  advanced: 100,
-} as const;
+export type PlanPrices = {
+  monthly: number;
+  yearly: number;
+};
+
+export const GBP_BY_PAID_TIER = {
+  basic: { monthly: 1.99, yearly: 19.99 },
+  advanced: { monthly: 6.99, yearly: 69.99 },
+} as const satisfies Record<string, PlanPrices>;
 
 export function parseBillingPeriod(value: string | undefined): BillingPeriod {
   return value === "monthly" ? "monthly" : "yearly";
 }
 
-export function gbpForPeriod(yearlyGbp: number, period: BillingPeriod): number {
-  if (yearlyGbp === 0) return 0;
-  return period === "yearly" ? yearlyGbp : yearlyGbp / 10;
+export function gbpForPeriod(prices: PlanPrices, period: BillingPeriod): number {
+  return prices[period];
 }
 
 export function formatGbp(amount: number): string {

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import type { Tier } from "@/lib/entitlements";
-import { YEARLY_GBP_BY_PAID_TIER } from "@/lib/stripe/billing-period";
+import { GBP_BY_PAID_TIER, type PlanPrices } from "@/lib/stripe/billing-period";
 import {
   PricingTiersGrid,
   type PricingTierData,
@@ -41,8 +41,10 @@ export async function PricingTiers() {
       name: t(`tiers.${key}.name`),
       summary: t(`tiers.${key}.summary`),
       features: tierFeatures(key, t),
-      yearlyPrice:
-        internalTier === "none" ? 0 : YEARLY_GBP_BY_PAID_TIER[internalTier],
+      prices:
+        internalTier === "none"
+          ? ({ monthly: 0, yearly: 0 } satisfies PlanPrices)
+          : GBP_BY_PAID_TIER[internalTier],
       isCurrent: currentTier === internalTier,
       isPaid: key !== "free",
       isHighlighted: key === "worker",

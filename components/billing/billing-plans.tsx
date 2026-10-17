@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import type { Tier } from "@/lib/entitlements";
 import {
   formatGbp,
   gbpForPeriod,
-  YEARLY_GBP_BY_PAID_TIER,
+  GBP_BY_PAID_TIER,
   type BillingPeriod,
 } from "@/lib/stripe/billing-period";
+import type { TrialView } from "@/lib/stripe/trial-view";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PillToggle } from "@/components/ui/pill-toggle";
@@ -21,6 +23,9 @@ type Props = {
   initialPeriod?: BillingPeriod;
   success?: boolean;
   canceled?: boolean;
+  trial?: TrialView | null;
+  trialAvailable?: boolean;
+  trialStarted?: boolean;
 };
 
 export function BillingPlans({
@@ -30,17 +35,21 @@ export function BillingPlans({
   initialPeriod = "yearly",
   success,
   canceled,
+  trial = null,
+  trialAvailable = false,
+  trialStarted = false,
 }: Props) {
   const t = useTranslations("billing");
   const locale = useLocale();
+  const router = useRouter();
   const { data: session, update } = useSession();
   const liveTier = (session?.user?.tier as Tier | undefined) ?? currentTier;
   const [error, setError] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] =
     useState<BillingPeriod>(initialPeriod);
-  const [loading, setLoading] = useState<"basic" | "advanced" | "portal" | null>(
-    null
-  );
+  const [loading, setLoading] = useState<
+    "basic" | "advanced" | "portal" | "cancel-trial" | null
+  >(null);
 
   useEffect(() => {
     if (success) {
@@ -65,6 +74,24 @@ export function BillingPlans({
       window.location.href = data.url;
     } catch {
       setError(t("checkoutFailed"));
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function cancelTrial() {
+    setLoading("cancel-trial");
+    setError(null);
+    try {
+      const res = await fetch("/api/billing/trial/cancel", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? t("cancelTrialFailed"));
+        return;
+      }
+      router.refresh();
+    } catch {
+      setError(t("cancelTrialFailed"));
     } finally {
       setLoading(null);
     }
@@ -96,7 +123,7 @@ export function BillingPlans({
     {
       id: "basic" as const,
       name: t("tiers.basic"),
-      yearlyPrice: YEARLY_GBP_BY_PAID_TIER.basic,
+      prices: GBP_BY_PAID_TIER.basic,
       features: [
         t("features.search"),
         t("features.workerProfile"),
@@ -106,7 +133,7 @@ export function BillingPlans({
     {
       id: "advanced" as const,
       name: t("tiers.advanced"),
-      yearlyPrice: YEARLY_GBP_BY_PAID_TIER.advanced,
+      prices: GBP_BY_PAID_TIER.advanced,
       features: [
         t("features.search"),
         t("features.workerProfile"),
@@ -120,7 +147,7 @@ export function BillingPlans({
     <div className="space-y-6">
       {success ? (
         <p className="rounded-md bg-background-soft px-3 py-2 text-sm text-muted">
-          {t("checkoutSuccess")}
+          {trialStarted ? t("trialCheckoutSuccess") : t("checkoutSuccess")}
         </p>
       ) : null}
       {canceled ? (
@@ -140,6 +167,37 @@ export function BillingPlans({
           {t(`tiers.${liveTier}`)}
         </span>
       </p>
+
+      {!trial && liveTier === "none" && trialAvailable ? (
+        <p className="text-sm text-muted">{t("trialBlurb")}</p>
+      ) : null}
+
+      {trial ? (
+        <div className="space-y-3 rounded-md border border-border px-3 py-3">
+          <p className="text-sm text-muted">
+            {trial.status === "cancelled"
+              ? t("trialCancelled", {
+                  date: formatTrialEnd(trial.endsAt, locale),
+                })
+              : t("trialActive", {
+                  date: formatTrialEnd(trial.endsAt, locale),
+                  price: `${formatGbp(
+                    gbpForPeriod(GBP_BY_PAID_TIER[trial.tier], trial.period)
+                  )} ${t(trial.period === "yearly" ? "perYear" : "perMonth")}`,
+                })}
+          </p>
+          {trial.status === "active" ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={loading !== null}
+              onClick={() => void cancelTrial()}
+            >
+              {loading === "cancel-trial" ? t("cancellingTrial") : t("cancelTrial")}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
@@ -172,7 +230,7 @@ export function BillingPlans({
               <div>
                 <h2 className="text-xl font-semibold">{plan.name}</h2>
                 <p className="mt-1 text-muted">
-                  {formatGbp(gbpForPeriod(plan.yearlyPrice, billingPeriod))}{" "}
+                  {formatGbp(gbpForPeriod(plan.prices, billingPeriod))}{" "}
                   {t(billingPeriod === "yearly" ? "perYear" : "perMonth")}
                 </p>
               </div>
@@ -185,6 +243,8 @@ export function BillingPlans({
                 <p className="mt-auto text-sm font-medium text-muted">
                   {t("currentBadge")}
                 </p>
+              ) : trial ? (
+                <p className="mt-auto text-sm text-muted">{t("trialPlanLocked")}</p>
               ) : needsPortal ? (
                 <Button
                   type="button"
@@ -206,7 +266,11 @@ export function BillingPlans({
                   disabled={!stripeConfigured || loading !== null}
                   onClick={() => void startCheckout(plan.id)}
                 >
-                  {loading === plan.id ? t("redirecting") : t("subscribe")}
+                  {loading === plan.id
+                    ? t("redirecting")
+                    : trialAvailable
+                      ? t("startTrial")
+                      : t("subscribe")}
                 </Button>
               )}
             </Card>
@@ -226,4 +290,11 @@ export function BillingPlans({
       ) : null}
     </div>
   );
+}
+
+function formatTrialEnd(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(iso));
 }

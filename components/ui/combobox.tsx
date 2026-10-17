@@ -1,27 +1,38 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { inputClassName } from "@/components/ui/forms";
 import { cn } from "@/lib/utils";
 
+export type ComboboxOption = {
+  value: string;
+  icon?: ReactNode;
+};
+
+type OptionInput = string | ComboboxOption;
+
 type Props = {
-  label: string;
+  label: ReactNode;
   placeholder?: string;
   value: string;
   onChange: (value: string) => void;
-  options: readonly string[];
+  options: readonly OptionInput[];
   disabled?: boolean;
   required?: boolean;
   error?: string;
   maxLength?: number;
 };
 
-function listedValue(value: string, options: readonly string[]): string {
+function asOption(option: OptionInput): ComboboxOption {
+  return typeof option === "string" ? { value: option } : option;
+}
+
+function listedValue(value: string, options: readonly ComboboxOption[]): string {
   const trimmed = value.trim();
   if (!trimmed) return "";
   return (
-    options.find((option) => option.toLowerCase() === trimmed.toLowerCase()) ??
-    trimmed
+    options.find((option) => option.value.toLowerCase() === trimmed.toLowerCase())
+      ?.value ?? trimmed
   );
 }
 
@@ -62,18 +73,20 @@ export function Combobox({
     };
   }, []);
 
+  const choices = useMemo(() => options.map(asOption), [options]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options;
-    return options.filter((option) => option.toLowerCase().includes(q));
-  }, [options, query]);
+    if (!q) return choices;
+    return choices.filter((option) => option.value.toLowerCase().includes(q));
+  }, [choices, query]);
 
   function commit(raw: string) {
     if (blurTimeoutRef.current) {
       clearTimeout(blurTimeoutRef.current);
       blurTimeoutRef.current = null;
     }
-    const next = listedValue(raw, options);
+    const next = listedValue(raw, choices);
     onChange(next);
     setQuery(next);
     setOpen(false);
@@ -126,18 +139,20 @@ export function Combobox({
       {open && !disabled && filtered.length > 0 ? (
         <ul className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-surface shadow-panel">
           {filtered.map((option) => (
-            <li key={option}>
+            <li key={option.value}>
               <button
                 type="button"
-                className={`w-full px-3 py-2.5 text-start text-sm hover:bg-background-soft ${
-                  option === value ? "bg-background-soft font-medium" : ""
-                }`}
+                className={cn(
+                  "flex w-full items-center gap-2 px-3 py-2.5 text-start text-sm hover:bg-background-soft",
+                  option.value === value && "bg-background-soft font-medium"
+                )}
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  commit(option);
+                  commit(option.value);
                 }}
               >
-                {option}
+                {option.icon}
+                <span>{option.value}</span>
               </button>
             </li>
           ))}

@@ -12,9 +12,14 @@ import {
 } from "@/lib/db/repositories/subscriptions";
 import { tierFromPriceId, type PaidTier } from "@/lib/stripe/prices";
 
-function mapStripeStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
+function mapStripeStatus(
+  status: Stripe.Subscription.Status,
+  trialCharge: boolean
+): SubscriptionStatus {
   if (status === "active" || status === "trialing") return "active";
   if (status === "past_due" || status === "unpaid") return "past_due";
+  // A trial charge via UK bank debit stays incomplete while the debit clears.
+  if (status === "incomplete" && trialCharge) return "past_due";
   return "canceled";
 }
 
@@ -60,7 +65,10 @@ export async function syncStripeSubscription(
     return;
   }
 
-  const status = mapStripeStatus(subscription.status);
+  const status = mapStripeStatus(
+    subscription.status,
+    Boolean(subscription.metadata?.trialId)
+  );
   await upsertSubscription({
     userId: user.id,
     tier,

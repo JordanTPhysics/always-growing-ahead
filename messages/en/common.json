@@ -107,5 +107,13 @@
       "body": "Post photos and videos to the feed, then like, comment and share with other workers and employers.",
       "imageAlt": "Tradesperson creating content on a laptop in a workshop"
     }
+  },
+  "occupations": {
+    "barber": "Barber",
+    "mechanic": "Mechanic",
+    "restaurant": "Restaurant",
+    "supermarket": "Supermarket",
+    "carWash": "Car wash",
+    "tyreShop": "Tyre shop"
   }
 }

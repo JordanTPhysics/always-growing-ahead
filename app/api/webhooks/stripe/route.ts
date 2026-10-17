@@ -5,6 +5,7 @@ import {
   applyCheckoutCompleted,
   syncStripeSubscription,
 } from "@/lib/stripe/sync";
+import { applyTrialSetup } from "@/lib/stripe/trial";
 
 export const runtime = "nodejs";
 
@@ -52,6 +53,10 @@ export async function POST(request: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        if (session.mode === "setup") {
+          await applyTrialSetup(session);
+          break;
+        }
         if (session.mode === "subscription" && session.subscription) {
           const subId =
             typeof session.subscription === "string"

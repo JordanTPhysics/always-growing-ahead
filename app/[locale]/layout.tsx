@@ -81,7 +81,7 @@ export default async function LocaleLayout({
             <LiveChatWidget role={session?.user?.role} />
             <footer className="border-t border-border bg-surface px-4 py-6 text-center text-sm text-muted">
               <div className="mb-3 flex items-center justify-center gap-4">
-                <Link href="https://www.facebook.com/story.php?story_fbid=122102407125507754&id=61595232638680&mibextid=wwXIfr&rdid=oJRlHvbNfadpyl1k#" aria-label="Facebook" className="hover:opacity-80">
+                <Link href="https://www.facebook.com/people/A-G-A-%D8%A6%D8%A7%DA%AF%D8%A7/61595232638680/" aria-label="Facebook" className="hover:opacity-80">
                   <FaFacebook size={30} aria-hidden style={iconFill.facebook} />
                 </Link>
                 <Link href="/" aria-label="Instagram" className="hover:opacity-80">

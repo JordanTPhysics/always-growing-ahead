@@ -6,6 +6,8 @@ import { useRouter } from "@/lib/i18n/navigation";
 import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import { ClusteredMap } from "@/components/map/clustered-map";
 import { BottomSheet } from "@/components/map/bottom-sheet";
+import { OccupationField } from "@/components/map/occupation-field";
+import { occupationIdFromText, OCCUPATIONS } from "@/components/map/occupations";
 import { PostcodeInput } from "@/components/map/postcode-input";
 import { SaveSearchButton } from "@/components/search/save-search-button";
 import { FavouriteButton } from "@/components/favourites/favourite-button";
@@ -405,6 +407,14 @@ export function JobSearchView({
     [businesses, selectedId]
   );
 
+  const occupationLabels = useMemo(() => {
+    const labels: Record<string, string> = {};
+    for (const occupation of OCCUPATIONS) {
+      labels[occupation.id] = tCommon(`occupations.${occupation.id}`);
+    }
+    return labels;
+  }, [tCommon]);
+
   const mapPoints = useMemo(
     () => [
       ...jobs
@@ -414,6 +424,7 @@ export function JobSearchView({
           lat: Number(j.location_lat),
           lng: Number(j.location_lng),
           active: j.employer_actively_hiring ?? false,
+          occupationId: occupationIdFromText(j.title, occupationLabels),
           properties: { title: j.title },
         })),
       ...businesses.map((business) => ({
@@ -421,10 +432,16 @@ export function JobSearchView({
         lat: business.location_lat,
         lng: business.location_lng,
         active: business.actively_hiring,
+        occupationId: occupationIdFromText(
+          [business.company_name, business.company_description]
+            .filter(Boolean)
+            .join(" "),
+          occupationLabels
+        ),
         properties: { title: business.company_name },
       })),
     ],
-    [jobs, businesses]
+    [jobs, businesses, occupationLabels]
   );
 
   const listItems = useMemo(
@@ -485,16 +502,12 @@ export function JobSearchView({
         </Button>
       </div>
 
-      <label className="block space-y-1.5">
-        <span className="text-sm font-medium">{t("field")}</span>
-        <input
-          className={inputClassName}
-          type="search"
-          value={field}
-          placeholder={t("fieldPlaceholder")}
-          onChange={(e) => setField(e.target.value)}
-        />
-      </label>
+      <OccupationField
+        label={t("field")}
+        placeholder={t("fieldPlaceholder")}
+        value={field}
+        onChange={setField}
+      />
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t("radius")}</legend>
@@ -605,7 +618,7 @@ export function JobSearchView({
   );
 
   return (
-    <div className="fixed inset-x-0 top-[3.75rem] bottom-14 z-10 flex flex-col md:bottom-0">
+    <div className="fixed inset-x-0 top-[3.75rem] bottom-32 z-10 flex flex-col">
       <div className="flex mx-auto rounded-md w-[95vw] shrink-0 items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3 sm:px-6">
         <div>
           <h1 className="text-lg font-semibold tracking-tight">{t("title")}</h1>
@@ -685,7 +698,7 @@ export function JobSearchView({
                 standard: t("legendStandard"),
                 active: t("legendActive"),
               }}
-              className="h-full max-h-[95%] w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
+              className="h-full w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
               points={mapPoints}
               selectedId={selectedId}
               hoveredId={hoveredId}

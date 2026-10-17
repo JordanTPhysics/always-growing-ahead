@@ -1,8 +1,9 @@
 import mysql from "mysql2/promise";
 import { isRemoteDatabaseConfigured } from "@/lib/db/config";
 import {
+  databaseNameCandidates,
+  isDatabaseNameError,
   requestedDatabaseName,
-  resolveDatabaseName,
 } from "@/lib/db/database-name";
 
 function required(name: string): string {
@@ -14,7 +15,8 @@ function required(name: string): string {
 }
 
 const globalForDb = globalThis as unknown as {
-  mysqlPool?: Promise<mysql.Pool>;
+  /** A Pool from an older hot reload, or the in-flight connect promise. */
+  mysqlPool?: mysql.Pool | Promise<mysql.Pool>;
 };
 
 function connectionOptions(database?: string): mysql.PoolOptions {
@@ -51,46 +53,44 @@ async function createPool(): Promise<mysql.Pool> {
   }
 
   const requested = requestedDatabaseName();
-  let database = requested;
-  try {
-    const probe = await mysql.createConnection(connectionOptions());
+  const names = databaseNameCandidates(requested);
+  let lastError: unknown;
+  for (const name of names) {
     try {
-      const resolved = await resolveDatabaseName(probe, requested);
-      if (resolved.exists) database = resolved.name;
-    } finally {
-      await probe.end();
+      const opened = await openPool(name);
+      if (name !== requested) {
+        console.warn(
+          `DB_NAME=${requested} could not be opened. Connected to ${name}.`
+        );
+      }
+      return opened;
+    } catch (err) {
+      if (!isDatabaseNameError(err)) throw err;
+      lastError = err;
     }
-  } catch (err) {
-    console.warn(
-      `Could not look up MySQL schema case for ${requested}. Using that name as configured.`
-    );
-    console.warn(err);
   }
+  throw lastError;
+}
 
-  if (database === requested) return openPool(database);
-
-  console.warn(
-    `DB_NAME=${requested} is not the MySQL schema name. Connecting to ${database}.`
-  );
-  try {
-    return await openPool(database);
-  } catch (err) {
-    console.warn(
-      `Could not open schema ${database}. Falling back to DB_NAME=${requested}.`
-    );
-    console.warn(err);
-    return openPool(requested);
+function asPoolPromise(
+  value: mysql.Pool | Promise<mysql.Pool>
+): Promise<mysql.Pool> {
+  if (typeof (value as Promise<mysql.Pool>).then === "function") {
+    return value as Promise<mysql.Pool>;
   }
+  return Promise.resolve(value as mysql.Pool);
 }
 
 function getPool(): Promise<mysql.Pool> {
-  if (!globalForDb.mysqlPool) {
-    globalForDb.mysqlPool = createPool().catch((err) => {
-      globalForDb.mysqlPool = undefined;
-      throw err;
-    });
-  }
-  return globalForDb.mysqlPool;
+  const existing = globalForDb.mysqlPool;
+  if (existing) return asPoolPromise(existing);
+
+  const created = createPool().catch((err: unknown) => {
+    if (globalForDb.mysqlPool === created) globalForDb.mysqlPool = undefined;
+    throw err;
+  });
+  globalForDb.mysqlPool = created;
+  return created;
 }
 
 /** Lazy so mock / Netlify deploys never open a connection to 127.0.0.1. */

@@ -6,10 +6,11 @@ import {
   Map,
 } from "@vis.gl/react-google-maps";
 import { useMemo } from "react";
-import { FaExclamation } from "react-icons/fa";
+import { useTranslations } from "next-intl";
 import { MdOutlinePersonPinCircle } from "react-icons/md";
 import { BsPersonRaisedHand, BsPersonStanding } from "react-icons/bs";
 import { IoIosBriefcase } from "react-icons/io";
+import { OCCUPATIONS, occupationById } from "@/components/map/occupations";
 import { TbCashRegister } from "react-icons/tb";
 
 export type MapSearchMode = "workers" | "jobs";
@@ -19,6 +20,7 @@ export type MapPoint = {
   lat: number;
   lng: number;
   active?: boolean;
+  occupationId?: string | null;
   properties?: Record<string, string | null | undefined>;
 };
 
@@ -42,17 +44,18 @@ type Props = {
   mapId?: string;
 };
 
-function getMarkerIcon(searchMode: MapSearchMode, active: boolean) {
-  if (searchMode === "workers") {
-    return {
-      Icon: active ? BsPersonRaisedHand : BsPersonStanding,
-      color: active ? "red" : "green",
-    };
-  }
-
+function getWorkerMarkerIcon(active: boolean) {
   return {
-    Icon: active ? FaExclamation : TbCashRegister,
+    Icon: active ? BsPersonRaisedHand : BsPersonStanding,
     color: active ? "red" : "green",
+  };
+}
+
+function jobMarkerAppearance(occupationId: string | null | undefined, active: boolean) {
+  const occupation = occupationById(occupationId);
+  return {
+    Icon: occupation?.Icon ?? TbCashRegister,
+    colorClass: active ? (occupation?.color ?? "text-red-600") : "text-black",
   };
 }
 
@@ -81,6 +84,7 @@ function MapLegend({
   searchMode: MapSearchMode;
   labels: LegendLabels;
 }) {
+  const t = useTranslations("common");
   const items = [
     { active: false, label: labels.standard },
     { active: true, label: labels.active },
@@ -88,41 +92,73 @@ function MapLegend({
 
   return (
     <div
-      className="pointer-events-none absolute start-3 bottom-3 z-10 flex flex-col gap-1.5 rounded-md border border-border bg-surface/95 px-3 py-2 shadow-sm backdrop-blur-sm"
+      className="pointer-events-none absolute start-3 bottom-3 z-10 flex max-h-[50%] flex-col gap-1.5 overflow-y-auto rounded-md border border-border bg-surface/95 px-3 py-2 shadow-sm backdrop-blur-sm"
       aria-label="Map legend"
     >
-      {items.map(({ active, label }) => {
-        const { Icon, color } = getMarkerIcon(searchMode, active);
-        return (
-          <div key={label} className="flex items-center gap-2">
-            <Icon
-              className={`shrink-0 drop-shadow-sm ${active ? "size-6" : "size-5"}`}
-              color={color}
+      {searchMode === "jobs" ? (
+        <>
+          <p className="text-xs font-medium text-text">{labels.active}</p>
+          {OCCUPATIONS.map((occupation) => (
+            <div key={occupation.id} className="flex items-center gap-2">
+              <occupation.Icon
+                className={`size-5 shrink-0 drop-shadow-sm ${occupation.color}`}
+                aria-hidden
+              />
+              <span className="text-xs text-text">
+                {t(`occupations.${occupation.id}`)}
+              </span>
+            </div>
+          ))}
+          <div className="flex items-center gap-2">
+            <IoIosBriefcase
+              className="size-5 shrink-0 text-gray-400 drop-shadow-sm"
               aria-hidden
             />
-            <span className="text-xs text-text">{label}</span>
+            <span className="text-xs text-text">{labels.standard}</span>
           </div>
-        );
-      })}
+        </>
+      ) : (
+        items.map(({ active, label }) => {
+          const { Icon, color } = getWorkerMarkerIcon(active);
+          return (
+            <div key={label} className="flex items-center gap-2">
+              <Icon
+                className={`shrink-0 drop-shadow-sm ${active ? "size-6" : "size-5"}`}
+                color={color}
+                aria-hidden
+              />
+              <span className="text-xs text-text">{label}</span>
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }
 
 function MapMarkerContent({
   searchMode,
+  occupationId,
   active,
   hovered,
   title,
 }: {
   searchMode: MapSearchMode;
+  occupationId?: string | null;
   active: boolean;
   hovered: boolean;
   title?: string;
 }) {
-  const { Icon, color } = getMarkerIcon(searchMode, active);
-  const iconClassName = active
-    ? "size-8 text-amber-600 drop-shadow-md"
-    : "size-7 text-foreground drop-shadow-sm";
+  const jobMarker =
+    searchMode === "jobs" ? jobMarkerAppearance(occupationId, active) : null;
+  const workerMarker = jobMarker ? null : getWorkerMarkerIcon(active);
+  const Icon = jobMarker ? jobMarker.Icon : workerMarker!.Icon;
+  const color = workerMarker?.color;
+  const iconClassName = jobMarker
+    ? `${active ? "size-8 drop-shadow-md" : "size-7 drop-shadow-sm"} ${jobMarker.colorClass}`
+    : active
+      ? "size-8 text-amber-600 drop-shadow-md"
+      : "size-7 text-foreground drop-shadow-sm";
 
   return (
     <div
@@ -200,6 +236,7 @@ export function ClusteredMap({
               >
                 <MapMarkerContent
                   searchMode={searchMode}
+                  occupationId={point.occupationId}
                   active={point.active ?? false}
                   hovered={hovered}
                   title={point.properties?.title ?? undefined}

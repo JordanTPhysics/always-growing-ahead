@@ -6,6 +6,7 @@ import { useRouter } from "@/lib/i18n/navigation";
 import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import { ClusteredMap } from "@/components/map/clustered-map";
 import { BottomSheet } from "@/components/map/bottom-sheet";
+import { OccupationField } from "@/components/map/occupation-field";
 import { PostcodeInput } from "@/components/map/postcode-input";
 import { SaveSearchButton } from "@/components/search/save-search-button";
 import { FavouriteButton } from "@/components/favourites/favourite-button";
@@ -262,16 +263,12 @@ export function WorkerSearchView({
         </Button>
       </div>
 
-      <label className="block space-y-1.5">
-        <span className="text-sm font-medium">{t("field")}</span>
-        <input
-          className={inputClassName}
-          type="search"
-          value={field}
-          placeholder={t("fieldPlaceholder")}
-          onChange={(e) => setField(e.target.value)}
-        />
-      </label>
+      <OccupationField
+        label={t("field")}
+        placeholder={t("fieldPlaceholder")}
+        value={field}
+        onChange={setField}
+      />
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t("radius")}</legend>
@@ -361,7 +358,7 @@ export function WorkerSearchView({
   );
 
   return (
-    <div className="fixed inset-x-0 top-[3.75rem] bottom-14 z-10 flex flex-col md:bottom-0">
+    <div className="fixed inset-x-0 top-[3.75rem] bottom-32 z-10 flex flex-col">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3 sm:px-6">
         <div>
           <h1 className="text-lg font-semibold tracking-tight">{t("title")}</h1>
@@ -434,7 +431,7 @@ export function WorkerSearchView({
                 standard: t("legendStandard"),
                 active: t("legendActive"),
               }}
-              className="h-full max-h-80% w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
+              className="h-full w-[90vw] overflow-hidden rounded-md md:absolute md:inset-0 md:h-auto md:w-auto md:rounded-none"
               points={mapPoints}
               selectedId={selectedId}
               hoveredId={hoveredId}

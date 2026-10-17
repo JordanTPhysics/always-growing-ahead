@@ -6,9 +6,11 @@ import {
   setStripeCustomerId,
 } from "@/lib/db/repositories/users";
 import { getLatestSubscriptionForUser } from "@/lib/db/repositories/subscriptions";
+import { getTrialForUser } from "@/lib/db/repositories/trials";
 import { appBaseUrl, getStripe, isStripeConfigured } from "@/lib/stripe/client";
 import { priceIdForTier, type PaidTier } from "@/lib/stripe/prices";
 import { parseBillingPeriod } from "@/lib/stripe/billing-period";
+import { trialBlocksNewCheckout } from "@/lib/stripe/trial";
 
 const schema = z.object({
   tier: z.enum(["basic", "advanced"]),
@@ -46,6 +48,12 @@ export async function POST(request: Request) {
     );
   }
 
+  const trial = await getTrialForUser(userId);
+  if (trial && trialBlocksNewCheckout(trial)) {
+    return jsonError("You already have a free trial.", 409);
+  }
+  const startTrial = !trial;
+
   const stripe = getStripe();
   let customerId = user.stripe_customer_id;
 
@@ -59,25 +67,50 @@ export async function POST(request: Request) {
   }
 
   const base = appBaseUrl();
-  const checkout = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    line_items: [{ price: priceIdForTier(tier, period), quantity: 1 }],
-    success_url: `${base}/${locale}/billing?success=1`,
-    cancel_url: `${base}/${locale}/billing?canceled=1`,
-    metadata: {
-      userId: String(user.id),
-      tier,
-      period,
-    },
-    subscription_data: {
-      metadata: {
-        userId: String(user.id),
-        tier,
-        period,
-      },
-    },
-  });
+  const checkout = await stripe.checkout.sessions.create(
+    startTrial
+      ? {
+          mode: "setup",
+          customer: customerId,
+          currency: "gbp",
+          payment_method_types: ["bacs_debit"],
+          success_url: `${base}/${locale}/billing?success=1&trial=1`,
+          cancel_url: `${base}/${locale}/billing?canceled=1`,
+          metadata: {
+            userId: String(user.id),
+            tier,
+            period,
+            purpose: "trial",
+          },
+          setup_intent_data: {
+            metadata: {
+              userId: String(user.id),
+              tier,
+              period,
+              purpose: "trial",
+            },
+          },
+        }
+      : {
+          mode: "subscription",
+          customer: customerId,
+          line_items: [{ price: priceIdForTier(tier, period), quantity: 1 }],
+          success_url: `${base}/${locale}/billing?success=1`,
+          cancel_url: `${base}/${locale}/billing?canceled=1`,
+          metadata: {
+            userId: String(user.id),
+            tier,
+            period,
+          },
+          subscription_data: {
+            metadata: {
+              userId: String(user.id),
+              tier,
+              period,
+            },
+          },
+        }
+  );
 
   if (!checkout.url) return jsonError("Failed to create checkout session", 500);
   return NextResponse.json({ url: checkout.url });

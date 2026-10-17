@@ -9,8 +9,7 @@ export function canPostJobs(tier: Tier) {
 }
 
 export function canCreateWorkerProfile(tier: Tier) {
-  // Spec: contact reveal requires Basic+, but profile create is allowed for paying users.
-  // Until a free/trial tier exists, require at least Basic.
+  // Trial weeks are stored as basic or advanced, so they pass this check.
   return tier === "basic" || tier === "advanced";
 }
 

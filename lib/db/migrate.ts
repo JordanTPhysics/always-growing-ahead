@@ -3,8 +3,10 @@ import path from "node:path";
 import dotenv from "dotenv";
 import mysql, { type RowDataPacket } from "mysql2/promise";
 import {
+  databaseNameCandidates,
+  isDatabaseNameError,
+  mysqlErrorCode,
   requestedDatabaseName,
-  resolveDatabaseName,
 } from "./database-name";
 
 dotenv.config({ path: ".env.local" });
@@ -18,55 +20,63 @@ async function main() {
   const user = process.env.DB_USER ?? "root";
   const password = process.env.DB_PASSWORD ?? "";
   const requested = requestedDatabaseName();
-
-  const root = await mysql.createConnection({
+  const names = databaseNameCandidates(requested);
+  const connection = {
     host,
     port,
     user,
     password,
     multipleStatements: true,
-  });
-  let database = requested;
-  try {
-    const resolved = await resolveDatabaseName(root, requested);
-    if (resolved.exists) {
-      database = resolved.name;
-      if (database !== requested) {
+  };
+
+  let conn: mysql.Connection | null = null;
+  let openedName = requested;
+  let lastError: unknown;
+  for (const name of names) {
+    try {
+      conn = await mysql.createConnection({ ...connection, database: name });
+      openedName = name;
+      if (name !== requested) {
         console.log(
-          `DB_NAME=${requested} matches existing schema ${database}; not creating a second database`
+          `DB_NAME=${requested} could not be opened. Using schema ${name}.`
         );
       }
-    } else {
-      database = requested.toLowerCase();
-      try {
-        await root.query(
-          `CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-        );
-      } catch (err) {
-        const code = (err as { code?: string }).code;
-        if (
-          code !== "ER_DBACCESS_DENIED_ERROR" &&
-          code !== "ER_SPECIFIC_ACCESS_DENIED_ERROR"
-        ) {
-          throw err;
-        }
-        console.log(
-          `skip  CREATE DATABASE (no privilege); expecting ${database} to exist`
-        );
-      }
+      break;
+    } catch (err) {
+      if (!isDatabaseNameError(err)) throw err;
+      lastError = err;
     }
-  } finally {
-    await root.end();
   }
 
-  const conn = await mysql.createConnection({
-    host,
-    port,
-    user,
-    password,
-    database,
-    multipleStatements: true,
-  });
+  if (!conn) {
+    const root = await mysql.createConnection(connection);
+    try {
+      await root.query(
+        `CREATE DATABASE IF NOT EXISTS \`${requested}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+      );
+    } catch (err) {
+      const code = mysqlErrorCode(err);
+      if (
+        code !== "ER_DBACCESS_DENIED_ERROR" &&
+        code !== "ER_SPECIFIC_ACCESS_DENIED_ERROR"
+      ) {
+        throw err;
+      }
+      console.log(
+        `skip  CREATE DATABASE (no privilege); expecting ${names.join(" or ")} to exist`
+      );
+      throw lastError;
+    } finally {
+      await root.end();
+    }
+    conn = await mysql.createConnection({
+      ...connection,
+      database: requested,
+    });
+    openedName = requested;
+  }
+
+  console.log(`Migrating schema ${openedName}.`);
 
   await conn.query(`
     CREATE TABLE IF NOT EXISTS schema_migrations (

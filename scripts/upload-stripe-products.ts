@@ -2,7 +2,7 @@
  * Creates the pricing-page subscription products in Stripe (idempotent).
  *
  * Source of truth: scripts/stripe-products.csv
- * (Worker £10/year or £1/month, Employer £100/year or £10/month).
+ * (Worker £19.99/year or £1.99/month, Employer £69.99/year or £6.99/month).
  * Usage: npm run stripe:upload-products
  *
  * Requires STRIPE_SECRET_KEY in .env.local (use a test key first).
@@ -28,6 +28,7 @@ type CatalogRow = {
   productId: string;
   tier: string;
   envVar: string;
+  taxCode: string;
 };
 
 function parseCsvLine(line: string): string[] {
@@ -78,6 +79,10 @@ async function readCatalog(csvPath: string): Promise<CatalogRow[]> {
     ) {
       throw new Error(`Unsupported interval: ${interval}`);
     }
+    const taxCode = cols[10]?.trim();
+    if (!taxCode?.startsWith("txcd_")) {
+      throw new Error(`Missing product tax code for ${cols[0] || "row"}`);
+    }
     rows.push({
       name: cols[0],
       description: cols[1],
@@ -89,6 +94,7 @@ async function readCatalog(csvPath: string): Promise<CatalogRow[]> {
       productId: cols[7],
       tier: cols[8],
       envVar: cols[9],
+      taxCode,
     });
   }
 
@@ -108,6 +114,7 @@ async function ensureProduct(stripe: Stripe, row: CatalogRow): Promise<Stripe.Pr
     name: row.name,
     description: row.description,
     statement_descriptor: row.statementDescriptor,
+    tax_code: row.taxCode,
     metadata: { tier: row.tier },
   };
 
@@ -134,7 +141,15 @@ async function ensurePrice(
     lookup_keys: [row.lookupKey],
     limit: 1,
   });
-  if (existing.data[0]) return existing.data[0];
+  if (existing.data[0]) {
+    const expected = amountToPence(row.price);
+    if (existing.data[0].unit_amount !== expected) {
+      console.warn(
+        `${row.lookupKey} already exists as ${existing.data[0].id} at a different amount. Leaving that price unchanged. Checkout uses the price ids in the env file.`
+      );
+    }
+    return existing.data[0];
+  }
 
   return stripe.prices.create({
     product: productId,
@@ -145,6 +160,20 @@ async function ensurePrice(
     nickname: `${row.name} ${row.interval === "year" ? "yearly" : "monthly"}`,
     metadata: { tier: row.tier },
   });
+}
+
+async function ensureConfiguredPriceTaxCode(stripe: Stripe, row: CatalogRow) {
+  const priceId = process.env[row.envVar];
+  if (!priceId) return;
+
+  const price = await stripe.prices.retrieve(priceId);
+  const productId = typeof price.product === "string" ? price.product : price.product.id;
+  if (productId === row.productId) return;
+
+  const product = await stripe.products.update(productId, { tax_code: row.taxCode });
+  console.log(
+    `${row.envVar} points at product ${product.id}; set tax code ${product.tax_code ?? row.taxCode}`
+  );
 }
 
 async function main() {
@@ -167,7 +196,10 @@ async function main() {
     const product = await ensureProduct(stripe, row);
     const price = await ensurePrice(stripe, product.id, row);
     envLines.push(`${row.envVar}=${price.id}`);
-    console.log(`${row.name}: product ${product.id} · price ${price.id} (${row.price} ${row.currency}/${row.interval})`);
+    await ensureConfiguredPriceTaxCode(stripe, row);
+    console.log(
+      `${row.name}: product ${product.id} · price ${price.id} · tax ${row.taxCode} (${row.price} ${row.currency}/${row.interval})`
+    );
   }
 
   console.log("\nAdd these to .env.local:\n");

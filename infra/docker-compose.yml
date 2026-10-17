@@ -139,6 +139,21 @@ services:
       retries: 8
       start_period: 40s
 
+  trial-billing:
+    image: alpine:3.21
+    restart: unless-stopped
+    env_file:
+      - .env
+      - ../.env
+    environment:
+      TZ: Europe/London
+    volumes:
+      - ./trial-billing/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    depends_on:
+      app:
+        condition: service_healthy
+
   migrate:
     build:
       context: ..

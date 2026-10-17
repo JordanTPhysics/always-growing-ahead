@@ -140,7 +140,14 @@ export function AdminChatPanel() {
                   <li key={item.id}>
                     <button
                       type="button"
-                      onClick={() => setSelectedId(item.id)}
+                      onClick={() => {
+                        if (item.id === selectedId) return;
+                        setSelectedId(item.id);
+                        setConversation(null);
+                        setMessages([]);
+                        setUser(null);
+                        setError(null);
+                      }}
                       className={`w-full rounded-md border px-3 py-2 text-start ${
                         active
                           ? "border-foreground bg-background-soft"
@@ -172,8 +179,12 @@ export function AdminChatPanel() {
         </Card>
 
         <Card elevation="nested" className="flex min-h-[28rem] flex-col p-4">
-          {selectedId == null || !conversation ? (
+          {selectedId == null ? (
             <p className="text-sm text-muted">{t("admin.select")}</p>
+          ) : !conversation ? (
+            <p className={`text-sm ${error ? "text-danger" : "text-muted"}`}>
+              {error ?? tCommon("status.loading")}
+            </p>
           ) : (
             <>
               {user ? (

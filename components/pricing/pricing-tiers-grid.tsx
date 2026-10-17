@@ -7,6 +7,7 @@ import {
   formatGbp,
   gbpForPeriod,
   type BillingPeriod,
+  type PlanPrices,
 } from "@/lib/stripe/billing-period";
 import { Button } from "@/components/ui/button";
 import { PillToggle } from "@/components/ui/pill-toggle";
@@ -17,7 +18,7 @@ export type PricingTierData = {
   name: string;
   summary: string;
   features: string[];
-  yearlyPrice: number;
+  prices: PlanPrices;
   isCurrent: boolean;
   isPaid: boolean;
   isHighlighted: boolean;
@@ -78,7 +79,7 @@ export function PricingTiersGrid({ tiers }: Props) {
                     key={billingPeriod}
                     className="pricing-card-price pricing-price-animate mt-2 text-3xl font-semibold tracking-tight"
                   >
-                    {formatGbp(gbpForPeriod(tier.yearlyPrice, billingPeriod))}
+                    {formatGbp(gbpForPeriod(tier.prices, billingPeriod))}
                     {tier.isPaid ? (
                       <span className="pricing-card-muted text-base font-normal">
                         {" "}

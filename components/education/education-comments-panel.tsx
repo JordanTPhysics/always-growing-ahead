@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/lib/i18n/navigation";
 import { BottomSheet } from "@/components/map/bottom-sheet";
@@ -41,6 +41,8 @@ export function EducationCommentsPanel({
   const [error, setError] = useState<string | null>(null);
   const [body, setBody] = useState("");
   const [pending, setPending] = useState(false);
+  const onCountChangeRef = useRef(onCountChange);
+  onCountChangeRef.current = onCountChange;
 
   const loadComments = useCallback(async () => {
     setLoading(true);
@@ -57,13 +59,13 @@ export function EducationCommentsPanel({
       };
       const nextComments = data.comments ?? [];
       setComments(nextComments);
-      onCountChange?.(data.total ?? nextComments.length);
+      onCountChangeRef.current?.(data.total ?? nextComments.length);
     } catch {
       setError(tCommon("status.error"));
     } finally {
       setLoading(false);
     }
-  }, [onCountChange, resourceId, tCommon]);
+  }, [resourceId, tCommon]);
 
   useEffect(() => {
     if (!open) return;
