@@ -1,7 +1,7 @@
 /**
  * Creates the pricing-page subscription products in Stripe (idempotent).
  *
- * Source of truth: scripts/stripe-products.csv
+ * Source of truth: lib/stripe/stripe-products.csv
  * (Worker £19.99/year or £1.99/month, Employer £69.99/year or £6.99/month).
  * Usage: npm run stripe:upload-products
  *
@@ -183,7 +183,7 @@ async function main() {
   }
 
   const stripe = new Stripe(secret);
-  const csvPath = path.join(process.cwd(), "scripts", "stripe-products.csv");
+  const csvPath = path.join(process.cwd(), "lib", "stripe", "stripe-products.csv");
   const catalog = await readCatalog(csvPath);
   if (catalog.length === 0) {
     throw new Error(`No products found in ${csvPath}`);
