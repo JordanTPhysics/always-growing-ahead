@@ -93,6 +93,9 @@ export async function POST(request: Request) {
         }
       : {
           mode: "subscription",
+          managed_payments: {
+            enabled: true,
+          },
           customer: customerId,
           line_items: [{ price: priceIdForTier(tier, period), quantity: 1 }],
           success_url: `${base}/${locale}/billing?success=1`,
