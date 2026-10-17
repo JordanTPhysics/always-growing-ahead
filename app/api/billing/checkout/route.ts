@@ -71,6 +71,7 @@ export async function POST(request: Request) {
     startTrial
       ? {
           mode: "setup",
+          managed_payments: { enabled: false },
           customer: customerId,
           currency: "gbp",
           payment_method_types: ["bacs_debit"],
