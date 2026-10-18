@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { FiGlobe, FiMenu } from "react-icons/fi";
 import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import { HashLink } from "@/components/layout/hash-link";
 import { activeLocales, locales, type ActiveLocale } from "@/lib/i18n/locales";
 import { signOut, useSession } from "next-auth/react";
@@ -514,7 +515,7 @@ function MobileMenuPanel({
           ) : (
             <>
               <Link
-                href="/sign-in"
+                href={authHref("/sign-in", { next: pathname })}
                 role="menuitem"
                 className={menuItemClassName}
                 onClick={onClose}
@@ -522,7 +523,7 @@ function MobileMenuPanel({
                 {t("nav.signIn")}
               </Link>
               <Link
-                href="/sign-up"
+                href={authHref("/sign-up", { next: pathname })}
                 role="menuitem"
                 className={menuItemClassName}
                 onClick={onClose}
@@ -547,6 +548,7 @@ export function SiteHeader({ user: initialUser }: Props) {
         role: session.user.role,
       }
     : initialUser;
+  const pathname = usePathname();
   const unread = useUnreadNotificationCount(Boolean(user));
   const [menuOpen, setMenuOpen] = useState(false);
   const [localeOpen, setLocaleOpen] = useState(false);
@@ -648,11 +650,15 @@ export function SiteHeader({ user: initialUser }: Props) {
             <>
               <div className="hidden items-center gap-2 sm:flex">
                 <Button asChild size="sm" variant="default">
-                  <Link href="/sign-in">{t("nav.signIn")}</Link>
+                  <Link href={authHref("/sign-in", { next: pathname })}>
+                    {t("nav.signIn")}
+                  </Link>
                 </Button>
 
                 <Button asChild size="sm" variant="accent">
-                  <Link href="/sign-up">{t("nav.signUp")}</Link>
+                  <Link href={authHref("/sign-up", { next: pathname })}>
+                    {t("nav.signUp")}
+                  </Link>
                 </Button>
               </div>
 

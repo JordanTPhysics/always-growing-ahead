@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { BillingPlans } from "@/components/billing/billing-plans";
@@ -26,7 +27,12 @@ export default async function BillingPage({
   const query = await searchParams;
   setRequestLocale(locale);
   const session = await auth();
-  if (!session?.user) redirect(`/${locale}/sign-in`);
+  if (!session?.user) {
+    const next = query.period
+      ? `/billing?period=${encodeURIComponent(query.period)}`
+      : "/billing";
+    redirect(`/${locale}${authHref("/sign-in", { next })}`);
+  }
 
   const t = await getTranslations("billing");
   const user = await getUserById(Number(session.user.id));

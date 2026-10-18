@@ -20,7 +20,7 @@ export default async function WorkerPublicPage({
 }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  await requireAuthOrSignUp(locale);
+  await requireAuthOrSignUp(locale, { next: `/workers/${id}` });
   const t = await getTranslations("worker-profile");
   const workerId = Number(id);
 

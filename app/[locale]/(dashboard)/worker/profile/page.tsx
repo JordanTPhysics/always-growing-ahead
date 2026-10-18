@@ -11,7 +11,10 @@ export default async function WorkerProfilePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await requireAuthOrSignUp(locale);
+  const session = await requireAuthOrSignUp(locale, {
+    paid: true,
+    next: "/worker/profile",
+  });
 
   if (!canCreateWorkerProfile(session.user.tier)) {
     const t = await getTranslations("billing");

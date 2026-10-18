@@ -2,22 +2,24 @@
 
 import { useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "@/lib/i18n/navigation";
+import { usePathname, useRouter } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 
 export function useRequireAuth() {
   const { status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   const requireAuth = useCallback(
-    (action: () => void) => {
+    (action: () => void, next?: string) => {
       if (status === "loading") return;
       if (status === "unauthenticated") {
-        router.push("/sign-up");
+        router.push(authHref("/sign-up", { next: next ?? pathname }));
         return;
       }
       action();
     },
-    [status, router]
+    [pathname, status, router]
   );
 
   return { requireAuth, isAuthenticated: status === "authenticated" };

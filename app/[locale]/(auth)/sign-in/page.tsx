@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/lib/i18n/navigation";
+import { authSearchQuery, continuePath } from "@/lib/auth/continue-path";
 import { Field, PageHeader, inputClassName } from "@/components/ui/forms";
 import { Button } from "@/components/ui/button";
 import { PageSection } from "@/components/ui/card";
@@ -19,7 +21,14 @@ type FieldKey = "email" | "password";
 export default function SignInPage() {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const destination = continuePath({
+    intent: searchParams.get("intent"),
+    next: searchParams.get("next"),
+  });
+  const signUpHref = `/sign-up${authSearchQuery(searchParams)}`;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>(
@@ -69,7 +78,7 @@ export default function SignInPage() {
       focusFirstInvalidField();
       return;
     }
-    router.push("/");
+    router.push(destination);
     router.refresh();
   }
 
@@ -150,13 +159,17 @@ export default function SignInPage() {
             type="button"
             variant="secondary"
             className="w-full"
-            onClick={() => signIn("google")}
+            onClick={() =>
+              signIn("google", {
+                callbackUrl: `/${locale}${destination === "/" ? "" : destination}`,
+              })
+            }
           >
             {t("google")}
           </Button>
           <p className="text-sm text-muted">
             {t("noAccount")}{" "}
-            <Link href="/sign-up" className="text-muted underline">
+            <Link href={signUpHref} className="text-muted underline">
               {t("submitSignUp")}
             </Link>
           </p>

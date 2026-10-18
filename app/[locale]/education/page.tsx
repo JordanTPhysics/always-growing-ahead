@@ -16,7 +16,10 @@ export default async function EducationPage({
     : "en";
   setRequestLocale(locale);
 
-  await requireAuthOrSignUp(locale, "education");
+  await requireAuthOrSignUp(locale, {
+    notice: "education",
+    next: "/education",
+  });
   const t = await getTranslations("education");
 
   return (

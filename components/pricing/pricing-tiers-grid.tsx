@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import {
   formatGbp,
   gbpForPeriod,
@@ -106,7 +107,9 @@ export function PricingTiersGrid({ tiers }: Props) {
                     <p className="pricing-card-muted text-sm font-medium">{t("currentPlan")}</p>
                   ) : (
                     <Button asChild className={pricingButtonClassName}>
-                      <Link href="/sign-up">{t("getStarted")}</Link>
+                      <Link href={authHref("/sign-up", { next: "/pricing" })}>
+                        {t("getStarted")}
+                      </Link>
                     </Button>
                   )
                 ) : tier.isSignedIn ? (
@@ -121,7 +124,13 @@ export function PricingTiersGrid({ tiers }: Props) {
                   )
                 ) : (
                   <Button asChild variant={ctaVariant} className={pricingButtonClassName}>
-                    <Link href="/sign-in">{t("signInToSubscribe")}</Link>
+                    <Link
+                      href={authHref("/sign-in", {
+                        next: `/billing?period=${billingPeriod}`,
+                      })}
+                    >
+                      {t("signInToSubscribe")}
+                    </Link>
                   </Button>
                 )}
               </div>

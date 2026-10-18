@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { MdChatBubbleOutline, MdShare } from "react-icons/md";
 import { FavouriteButton } from "@/components/favourites/favourite-button";
 import { EducationCommentsPanel } from "@/components/education/education-comments-panel";
+import { PdfThumbnail } from "@/components/education/pdf-thumbnail";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { inputClassName } from "@/components/ui/forms";
@@ -234,15 +235,28 @@ export function EducationTypeLibrary({ slug, resources }: Props) {
 
                       <div className="mt-4">
                         {resource.media_type === "pdf" ? (
-                          <Button asChild>
+                          <div className="flex flex-col items-start gap-3">
                             <a
                               href={resource.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
+                              className="inline-block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text focus-visible:ring-offset-2"
                             >
-                              {t("openPdf")}
+                              <PdfThumbnail
+                                src={resource.file_url}
+                                title={resource.title}
+                              />
                             </a>
-                          </Button>
+                            <Button asChild>
+                              <a
+                                href={resource.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {t("openPdf")}
+                              </a>
+                            </Button>
+                          </div>
                         ) : (
                           <div className="space-y-2">
                             <p className="text-sm text-muted">

@@ -1,12 +1,18 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { auth } from "@/auth";
 import { getEmployerById } from "@/lib/db/repositories/employers";
 import { getJsonEmployerById } from "@/lib/mock/profiles-store";
 import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
+import { canViewContactInfo } from "@/lib/entitlements";
 import { stripProfileContact } from "@/lib/profiles/contact";
+import { Link } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import { PageHeader } from "@/components/ui/forms";
+import { Button } from "@/components/ui/button";
 import { Card, PageSection } from "@/components/ui/card";
 import { FavouriteButton } from "@/components/favourites/favourite-button";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import {
   ContactChannels,
   WebsiteLink,
@@ -20,7 +26,9 @@ export default async function EmployerPublicPage({
   const { locale, id } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("employer-profile");
+  const billing = await getTranslations("billing");
   const employerId = Number(id);
+  const session = await auth();
 
   const profile = isMockMapDataEnabled()
     ? getJsonEmployerById(employerId)
@@ -29,6 +37,13 @@ export default async function EmployerPublicPage({
   if (!profile) notFound();
 
   const publicProfile = stripProfileContact(profile);
+  const hasContact = Boolean(
+    profile.contact_email || profile.contact_phone || profile.linkedin_url
+  );
+  const subscribed = Boolean(
+    session?.user && canViewContactInfo(session.user.tier)
+  );
+  const canViewContact = subscribed && Boolean(session?.user.isEmailVerified);
 
   return (
     <PageSection>
@@ -61,20 +76,45 @@ export default async function EmployerPublicPage({
         ) : (
           <p className="text-sm text-muted">{t("empty")}</p>
         )}
-        {profile.website_url ||
-        profile.contact_email ||
-        profile.contact_phone ||
-        profile.linkedin_url ? (
-          <div className="space-y-3">
-            {profile.website_url ? <WebsiteLink url={profile.website_url} /> : null}
-            <ContactChannels
-              email={profile.contact_email}
-              phone={profile.contact_phone}
-              linkedinUrl={profile.linkedin_url}
-            />
-          </div>
+        {publicProfile.website_url ? (
+          <WebsiteLink url={publicProfile.website_url} />
         ) : null}
       </Card>
+
+      {hasContact && canViewContact ? (
+        <Card elevation="nested" className="space-y-3 p-5">
+          <h2 className="font-medium">{billing("contactDetails")}</h2>
+          <ContactChannels
+            email={profile.contact_email}
+            phone={profile.contact_phone}
+            linkedinUrl={profile.linkedin_url}
+          />
+        </Card>
+      ) : null}
+
+      {hasContact && !session?.user ? (
+        <Card elevation="nested" className="space-y-3 p-5">
+          <p className="text-sm text-muted">{billing("signInToContact")}</p>
+          <Button asChild>
+            <Link href={authHref("/sign-in", { paid: true, next: `/employers/${id}` })}>
+              {billing("signIn")}
+            </Link>
+          </Button>
+        </Card>
+      ) : null}
+
+      {hasContact && session?.user && !subscribed ? (
+        <UpgradePrompt
+          description={billing("contactLocked")}
+          requiredTier="basic"
+        />
+      ) : null}
+
+      {hasContact && subscribed && !session?.user.isEmailVerified ? (
+        <p className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-muted">
+          {billing("verifyEmailFirst")}
+        </p>
+      ) : null}
     </PageSection>
   );
 }

@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { MdChat, MdClose } from "react-icons/md";
-import { useRouter } from "@/lib/i18n/navigation";
+import { usePathname, useRouter } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";
 import {
@@ -26,6 +27,8 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
   const tCommon = useTranslations("common");
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+  const signInHref = authHref("/sign-in", { next: pathname });
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [conversation, setConversation] = useState<ChatConversation | null>(
@@ -109,7 +112,7 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
     if (!trimmed || pending) return;
 
     if (!isAuthenticated) {
-      router.push("/sign-in");
+      router.push(signInHref);
       return;
     }
 
@@ -122,7 +125,7 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
         body: JSON.stringify({ body: trimmed }),
       });
       if (response.status === 401) {
-        router.push("/sign-in");
+        router.push(signInHref);
         return;
       }
       if (!response.ok) {
@@ -179,7 +182,7 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
             {!isAuthenticated ? (
               <div className="space-y-3">
                 <p className="text-sm text-muted">{t("signInPrompt")}</p>
-                <Button type="button" onClick={() => router.push("/sign-in")}>
+                <Button type="button" onClick={() => router.push(signInHref)}>
                   {t("signIn")}
                 </Button>
               </div>

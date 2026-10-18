@@ -9,7 +9,8 @@ import { BottomSheet } from "@/components/map/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, inputClassName } from "@/components/ui/forms";
-import { Link } from "@/lib/i18n/navigation";
+import { Link, usePathname } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import { cn } from "@/lib/utils";
 import {
   canPostMarketplace,
@@ -30,6 +31,7 @@ type Props = {
 export function MarketplaceComposer({ quota, onCreated }: Props) {
   const t = useTranslations("marketplace");
   const tCommon = useTranslations("common");
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -132,7 +134,9 @@ export function MarketplaceComposer({ quota, onCreated }: Props) {
           <div className="space-y-3">
             <p className="text-sm text-white/80">{t("signInToPost")}</p>
             <Button asChild>
-              <Link href="/sign-in">{t("signIn")}</Link>
+              <Link href={authHref("/sign-in", { paid: true, next: pathname })}>
+                {t("signIn")}
+              </Link>
             </Button>
           </div>
         ) : !canPost ? (

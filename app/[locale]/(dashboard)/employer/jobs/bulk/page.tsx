@@ -12,7 +12,10 @@ export default async function BulkJobsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await requireAuthOrSignUp(locale);
+  const session = await requireAuthOrSignUp(locale, {
+    paid: true,
+    next: "/employer/jobs/bulk",
+  });
 
   if (!isMockMapDataEnabled() && !canPostJobs(session.user.tier)) {
     const t = await getTranslations("billing");

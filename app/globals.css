@@ -301,7 +301,7 @@ button {
   position: absolute;
   top: 0.25rem;
   bottom: 0.25rem;
-  left: 0.25rem;
+  inset-inline-start: 0.25rem;
   width: calc((100% - 0.5rem) / var(--option-count, 2));
   border-radius: 0.25rem;
   background: var(--background);
@@ -375,6 +375,7 @@ html[data-theme="dark"] .theme-toggle-sun {
 }
 
 .pill-toggle-scroll .pill-toggle-thumb {
+  inset-inline-start: auto;
   left: 0;
 }
 
@@ -629,6 +630,65 @@ html[data-theme="dark"] .theme-toggle-sun {
 .group:hover .feature-title-underline::after,
 .group:focus-visible .feature-title-underline::after {
   transform: scaleX(1);
+}
+
+@keyframes auth-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes auth-slide-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-110%);
+  }
+}
+
+.auth-line-in {
+  animation: auth-fade-in 1.8s ease both;
+}
+
+.auth-line-in-delay {
+  animation-delay: 0.7s;
+}
+
+.auth-step-enter {
+  animation: auth-fade-in 1.2s ease both;
+}
+
+.auth-step-exit-left {
+  animation: auth-slide-out-left 1.2s ease forwards;
+}
+
+.auth-on-background label > span:first-child {
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.auth-on-background .text-danger {
+  color: #fecaca;
+}
+
+.auth-on-background input {
+  min-height: 3rem;
+  font-size: 1.0625rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-line-in,
+  .auth-line-in-delay,
+  .auth-step-enter,
+  .auth-step-exit-left {
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

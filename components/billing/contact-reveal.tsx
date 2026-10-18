@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/navigation";
+import { Link, usePathname } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,6 +25,7 @@ type Props =
 
 export function ContactReveal(props: Props) {
   const t = useTranslations("billing");
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const [contact, setContact] = useState<ContactPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,9 @@ export function ContactReveal(props: Props) {
       <Card elevation="nested" className="space-y-3 p-5">
         <p className="text-sm text-muted">{t("signInToContact")}</p>
         <Button asChild>
-          <Link href="/sign-in">{t("signIn")}</Link>
+          <Link href={authHref("/sign-in", { paid: true, next: pathname })}>
+            {t("signIn")}
+          </Link>
         </Button>
       </Card>
     );

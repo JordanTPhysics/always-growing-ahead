@@ -544,7 +544,10 @@ export function WorkerSearchView({
               type="button"
               className="w-full"
               onClick={() =>
-                requireAuth(() => router.push(`/workers/${selected.id}`))
+                requireAuth(
+                  () => router.push(`/workers/${selected.id}`),
+                  `/workers/${selected.id}`
+                )
               }
             >
               {t("viewFull")}

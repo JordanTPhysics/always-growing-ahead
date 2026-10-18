@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/lib/i18n/navigation";
+import { usePathname, useRouter } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import { BottomSheet } from "@/components/map/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";
@@ -36,6 +37,7 @@ export function EducationCommentsPanel({
   const t = useTranslations("education");
   const tCommon = useTranslations("common");
   const router = useRouter();
+  const pathname = usePathname();
   const [comments, setComments] = useState<EducationCommentListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +89,7 @@ export function EducationCommentsPanel({
       });
 
       if (response.status === 401) {
-        router.push("/sign-up");
+        router.push(authHref("/sign-up", { next: pathname }));
         return;
       }
 

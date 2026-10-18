@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/navigation";
-import { Field, PageHeader, inputClassName } from "@/components/ui/forms";
+import { Link, useRouter } from "@/lib/i18n/navigation";
+import { authSearchQuery, continuePath } from "@/lib/auth/continue-path";
+import { Field, inputClassName } from "@/components/ui/forms";
 import { Button } from "@/components/ui/button";
-import { PageSection } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
-import { UK_CITIES, getDistrictsForCity } from "@/lib/locations/uk-locations";
 import {
   clearFieldError,
   focusFirstInvalidField,
@@ -23,11 +22,14 @@ type FieldKey =
   | "email"
   | "username"
   | "phone"
-  | "city"
-  | "district"
   | "postcode"
   | "password"
   | "confirmPassword";
+
+type Step = "welcome" | "email" | "password" | "postcode" | "details";
+
+const SLIDE_MS = 1200;
+const WELCOME_HOLD_MS = 3000;
 
 type AbandonedRegistration = {
   name: string | null;
@@ -78,14 +80,6 @@ function EducationAccountNotice({ onClose }: { onClose: () => void }) {
   );
 }
 
-function preferListed(value: string, options: readonly string[]): string {
-  const trimmed = value.trim();
-  return (
-    options.find((option) => option.toLowerCase() === trimmed.toLowerCase()) ??
-    trimmed
-  );
-}
-
 function clip(value: string, max: number): string | null {
   const trimmed = value.trim().slice(0, max);
   return trimmed ? trimmed : null;
@@ -114,8 +108,11 @@ export default function SignUpPage() {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [educationNoticeOpen, setEducationNoticeOpen] = useState(false);
+  const [step, setStep] = useState<Step>("welcome");
+  const [motion, setMotion] = useState<"enter" | "exit">("enter");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -129,26 +126,66 @@ export default function SignUpPage() {
   );
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [checkEmail, setCheckEmail] = useState(false);
-  const [resendPending, setResendPending] = useState(false);
-  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
-  const districtOptions = useMemo(() => getDistrictsForCity(city), [city]);
   const draftRef = useRef({ username, email, phone, city, district, postcode, locale });
   const blockingErrorRef = useRef<string | null>(null);
   const succeededRef = useRef(false);
+  const transitioning = useRef(false);
+  const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   draftRef.current = { username, email, phone, city, district, postcode, locale };
+  const signInHref = `/sign-in${authSearchQuery(searchParams)}`;
+  const destination = continuePath(
+    {
+      intent: searchParams.get("intent"),
+      next: searchParams.get("next"),
+    },
+    "sign-up"
+  );
 
   function rememberFailure(message: string) {
     if (succeededRef.current) return;
     blockingErrorRef.current = message.slice(0, 2000);
   }
 
+  const showStep = useCallback((next: Step) => {
+    if (transitionTimer.current) {
+      clearTimeout(transitionTimer.current);
+      transitionTimer.current = null;
+    }
+    transitioning.current = false;
+    setMotion("enter");
+    setStep(next);
+  }, []);
+
+  const beginTransition = useCallback((next: Step) => {
+    if (transitioning.current) return;
+    transitioning.current = true;
+    setMotion("exit");
+    transitionTimer.current = setTimeout(() => {
+      transitionTimer.current = null;
+      transitioning.current = false;
+      setStep(next);
+      setMotion("enter");
+    }, SLIDE_MS);
+  }, []);
+
   useEffect(() => {
     if (searchParams.get("notice") === "education") {
       setEducationNoticeOpen(true);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (step !== "welcome" || educationNoticeOpen) return;
+    const id = setTimeout(() => beginTransition("email"), WELCOME_HOLD_MS);
+    return () => clearTimeout(id);
+  }, [beginTransition, educationNoticeOpen, step]);
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimer.current) clearTimeout(transitionTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (abandonReportTimer) {
@@ -191,58 +228,101 @@ export default function SignUpPage() {
 
   function clearField(key: FieldKey) {
     setFieldErrors((prev) => clearFieldError(prev, key));
+    setError(null);
   }
 
-  function validate(): Partial<Record<FieldKey, string>> {
+  function reject(next: Partial<Record<FieldKey, string>>) {
+    setFieldErrors(next);
+    setError(tCommon("validation.fixHighlighted"));
+    rememberFailure(describeErrors(next, tCommon("validation.fixHighlighted")));
+    focusFirstInvalidField();
+  }
+
+  function confirmEmail(event: React.FormEvent) {
+    event.preventDefault();
     const next: Partial<Record<FieldKey, string>> = {};
     if (!email.trim()) next.email = t("emailRequired");
     else if (!isValidEmail(email)) next.email = tCommon("validation.email");
-
-    if (username.trim() && !isValidUsername(username)) {
-      next.username = t("usernameInvalid");
-    }
-
-    if (!phone.trim()) next.phone = t("phoneRequired");
-    else if (!isValidPhone(phone)) next.phone = t("phoneInvalid");
-
-    const cityValue = preferListed(city, UK_CITIES);
-    const districtValue = preferListed(district, getDistrictsForCity(cityValue));
-
-    if (!cityValue) next.city = t("cityRequired");
-    if (!districtValue) next.district = t("districtRequired");
-
-    if (!postcode.trim()) next.postcode = t("postcodeRequired");
-    else if (!normalizeUkPostcode(postcode)) next.postcode = t("postcodeInvalid");
-
-    if (!password) next.password = t("passwordRequired");
-    else if (password.length < 8) next.password = t("passwordTooShort");
-
-    if (!confirmPassword) next.confirmPassword = t("passwordRequired");
-    else if (password !== confirmPassword) {
-      next.confirmPassword = t("passwordMismatch");
-    }
-
-    return next;
-  }
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const next = validate();
-    setFieldErrors(next);
     if (hasFieldErrors(next)) {
-      setError(tCommon("validation.fixHighlighted"));
-      rememberFailure(describeErrors(next, tCommon("validation.fixHighlighted")));
-      focusFirstInvalidField();
+      reject(next);
       return;
     }
+    setFieldErrors({});
+    setError(null);
+    beginTransition("password");
+  }
 
-    const cityValue = preferListed(city, UK_CITIES);
-    const districtValue = preferListed(district, getDistrictsForCity(cityValue));
-    const postcodeValue = normalizeUkPostcode(postcode) ?? postcode.trim();
-    if (cityValue !== city) setCity(cityValue);
-    if (districtValue !== district) setDistrict(districtValue);
-    if (postcodeValue !== postcode) setPostcode(postcodeValue);
+  function confirmPasswordStep(event: React.FormEvent) {
+    event.preventDefault();
+    const next: Partial<Record<FieldKey, string>> = {};
+    if (!password) next.password = t("passwordRequired");
+    else if (password.length < 8) next.password = t("passwordTooShort");
+    if (!confirmPassword) next.confirmPassword = t("passwordRequired");
+    else if (password !== confirmPassword) next.confirmPassword = t("passwordMismatch");
+    if (hasFieldErrors(next)) {
+      reject(next);
+      return;
+    }
+    setFieldErrors({});
+    setError(null);
+    beginTransition("postcode");
+  }
+
+  async function confirmPostcode(event: React.FormEvent) {
+    event.preventDefault();
+    const normalized = normalizeUkPostcode(postcode);
+    if (!postcode.trim()) {
+      reject({ postcode: t("postcodeRequired") });
+      return;
+    }
+    if (!normalized) {
+      reject({ postcode: t("postcodeInvalid") });
+      return;
+    }
+    setPostcode(normalized);
+    setPending(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/postcodes?resolve=1&q=${encodeURIComponent(normalized)}`
+      );
+      const data = await res.json().catch(() => ({}));
+      const foundCity = typeof data.result?.city === "string" ? data.result.city.trim() : "";
+      const foundDistrict =
+        typeof data.result?.district === "string" ? data.result.district.trim() : "";
+      if (!res.ok || !foundCity) {
+        setPending(false);
+        reject({ postcode: t("postcodeNotFound") });
+        return;
+      }
+      const resolvedPostcode =
+        typeof data.result?.postcode === "string" && data.result.postcode.trim()
+          ? data.result.postcode.trim()
+          : normalized;
+      setCity(foundCity);
+      setDistrict(foundDistrict || foundCity);
+      setPostcode(resolvedPostcode);
+      setFieldErrors({});
+      setPending(false);
+      beginTransition("details");
+    } catch {
+      setPending(false);
+      reject({ postcode: t("postcodeNotFound") });
+    }
+  }
+
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    const next: Partial<Record<FieldKey, string>> = {};
+    if (phone.trim() && !isValidPhone(phone)) next.phone = t("phoneInvalid");
+    if (username.trim() && !isValidUsername(username)) next.username = t("usernameInvalid");
+    if (!city.trim() || !district.trim()) next.postcode = t("postcodeNotFound");
+    if (hasFieldErrors(next)) {
+      reject(next);
+      if (next.postcode) showStep("postcode");
+      return;
+    }
 
     setPending(true);
     try {
@@ -253,10 +333,10 @@ export default function SignUpPage() {
           email,
           username: username.trim() || null,
           password,
-          phone: phone.trim(),
-          city: cityValue,
-          district: districtValue,
-          postcode: postcodeValue,
+          phone: phone.trim() || null,
+          city: city.trim(),
+          district: district.trim(),
+          postcode,
           preferredLocale: locale,
         }),
       });
@@ -274,6 +354,7 @@ export default function SignUpPage() {
           setFieldErrors({ email: t("emailTaken") });
           setError(t("emailTaken"));
           rememberFailure(t("emailTaken"));
+          showStep("email");
           focusFirstInvalidField();
           return;
         }
@@ -281,6 +362,7 @@ export default function SignUpPage() {
           setFieldErrors({ postcode: t("postcodeInvalid") });
           setError(tCommon("validation.fixHighlighted"));
           rememberFailure(t("postcodeInvalid"));
+          showStep("postcode");
           focusFirstInvalidField();
           return;
         }
@@ -300,187 +382,205 @@ export default function SignUpPage() {
 
     succeededRef.current = true;
     blockingErrorRef.current = null;
-    setPending(false);
-    setCheckEmail(true);
-  }
-
-  async function onResend() {
-    setResendPending(true);
-    setResendMessage(null);
-    const res = await fetch("/api/auth/resend-verification", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
     });
-    setResendPending(false);
-    setResendMessage(res.ok ? t("resendSent") : t("resendFailed"));
+    if (result?.error) {
+      setPending(false);
+      router.push(signInHref);
+      return;
+    }
+    router.push(destination);
+    router.refresh();
   }
 
-  if (checkEmail) {
-    return (
-      <div className="mx-auto flex w-full flex-1 flex-col lg:max-w-md">
-        <PageSection className="flex flex-1 flex-col">
-          <PageHeader
-            title={t("checkEmailTitle")}
-            subtitle={t("checkEmailBody")}
-          />
-          {resendMessage ? (
-            <p className="mb-3 text-sm text-muted">{resendMessage}</p>
-          ) : null}
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-full"
-            disabled={resendPending}
-            onClick={() => void onResend()}
-          >
-            {resendPending ? tCommon("status.loading") : t("resendEmail")}
-          </Button>
-          <p className="mt-4 text-sm text-muted">
-            <Link href="/sign-in" className="text-muted underline">
-              {t("submitSignIn")}
-            </Link>
-          </p>
-        </PageSection>
+  const motionClass =
+    step === "welcome" && motion === "enter"
+      ? undefined
+      : motion === "exit"
+        ? "auth-step-exit-left"
+        : "auth-step-enter";
+  const busy = pending || motion === "exit";
+
+  let stepContent: React.ReactNode;
+  if (step === "welcome") {
+    stepContent = (
+      <div className="py-8 text-center sm:py-12">
+        <h1 className="auth-line-in text-balance break-words text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl">
+          {t("welcomeTitle")}
+        </h1>
+        <p className="auth-line-in auth-line-in-delay mt-4 text-balance break-words text-2xl text-white/85 sm:text-3xl">
+          {t("welcomeSubtitle")}
+        </p>
       </div>
+    );
+  } else if (step === "email") {
+    stepContent = (
+      <form onSubmit={confirmEmail} noValidate className="space-y-4">
+        <Field label={t("email")} error={fieldErrors.email} inverted>
+          <input
+            className={inputClassName}
+            type="email"
+            required
+            autoFocus
+            autoComplete="email"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              clearField("email");
+            }}
+          />
+        </Field>
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        <Button type="submit" className="w-full" disabled={busy}>
+          {tCommon("actions.continue")}
+        </Button>
+      </form>
+    );
+  } else if (step === "password") {
+    stepContent = (
+      <form onSubmit={confirmPasswordStep} noValidate className="space-y-4">
+        <Field label={t("password")} error={fieldErrors.password} inverted>
+          <input
+            className={inputClassName}
+            type="password"
+            required
+            autoFocus
+            autoComplete="new-password"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              clearField("password");
+            }}
+          />
+        </Field>
+        <Field label={t("confirmPassword")} error={fieldErrors.confirmPassword} inverted>
+          <input
+            className={inputClassName}
+            type="password"
+            required
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(event) => {
+              setConfirmPassword(event.target.value);
+              clearField("confirmPassword");
+            }}
+          />
+        </Field>
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        <Button type="submit" className="w-full" disabled={busy}>
+          {tCommon("actions.continue")}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full text-white hover:bg-white/10 hover:text-white"
+          disabled={busy}
+          onClick={() => beginTransition("email")}
+        >
+          {tCommon("actions.back")}
+        </Button>
+      </form>
+    );
+  } else if (step === "postcode") {
+    stepContent = (
+      <form onSubmit={(event) => void confirmPostcode(event)} noValidate className="space-y-4">
+        <Field label={t("postcode")} error={fieldErrors.postcode} inverted>
+          <input
+            className={inputClassName}
+            type="text"
+            required
+            autoFocus
+            autoComplete="postal-code"
+            maxLength={10}
+            value={postcode}
+            onChange={(event) => {
+              setPostcode(event.target.value);
+              clearField("postcode");
+            }}
+          />
+        </Field>
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        <Button type="submit" className="w-full" disabled={busy}>
+          {pending ? tCommon("status.loading") : tCommon("actions.continue")}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full text-white hover:bg-white/10 hover:text-white"
+          disabled={busy}
+          onClick={() => beginTransition("password")}
+        >
+          {tCommon("actions.back")}
+        </Button>
+      </form>
+    );
+  } else {
+    stepContent = (
+      <form onSubmit={(event) => void onSubmit(event)} noValidate className="space-y-4">
+        <div>
+          <p className="text-lg text-white/75">{t("city")}</p>
+          <p className="break-words text-3xl font-semibold leading-tight text-white">{city}</p>
+          <p className="mt-4 text-lg text-white/75">{t("district")}</p>
+          <p className="break-words text-3xl font-semibold leading-tight text-white">{district}</p>
+        </div>
+        <Field label={t("phone")} hint={t("phoneOptional")} error={fieldErrors.phone} inverted>
+          <input
+            className={inputClassName}
+            type="tel"
+            autoFocus
+            autoComplete="tel"
+            value={phone}
+            onChange={(event) => {
+              setPhone(event.target.value);
+              clearField("phone");
+            }}
+          />
+        </Field>
+        <Field label={t("username")} hint={t("usernameHint")} error={fieldErrors.username} inverted>
+          <input
+            className={inputClassName}
+            type="text"
+            autoComplete="username"
+            value={username}
+            onChange={(event) => {
+              setUsername(event.target.value);
+              clearField("username");
+            }}
+          />
+        </Field>
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        <Button type="submit" className="w-full" disabled={busy}>
+          {pending ? tCommon("status.loading") : t("submitSignUp")}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full text-white hover:bg-white/10 hover:text-white"
+          disabled={busy}
+          onClick={() => beginTransition("postcode")}
+        >
+          {tCommon("actions.back")}
+        </Button>
+      </form>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full flex-1 flex-col lg:max-w-md">
-      <PageSection className="flex flex-1 flex-col">
-        <PageHeader title={t("signUpTitle")} subtitle={t("signUpSubtitle")} />
-        <form onSubmit={onSubmit} noValidate className="space-y-4">
-          <Field label={t("email")} error={fieldErrors.email}>
-            <input
-              className={inputClassName}
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                clearField("email");
-              }}
-            />
-          </Field>
-          <Field
-            label={t("username")}
-            hint={t("usernameHint")}
-            error={fieldErrors.username}
-          >
-            <input
-              className={inputClassName}
-              type="text"
-              autoComplete="username"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-                clearField("username");
-              }}
-            />
-          </Field>
-          <Field label={t("phone")} error={fieldErrors.phone}>
-            <input
-              className={inputClassName}
-              type="tel"
-              required
-              autoComplete="tel"
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value);
-                clearField("phone");
-              }}
-            />
-          </Field>
-          <Combobox
-            label={t("city")}
-            placeholder={t("selectCity")}
-            value={city}
-            onChange={(nextCity) => {
-              setCity(nextCity);
-              const listed = getDistrictsForCity(nextCity);
-              const currentDistrict = district.trim().toLowerCase();
-              const stillListed = listed.some(
-                (option) => option.toLowerCase() === currentDistrict
-              );
-              if (!nextCity.trim() || (listed.length > 0 && currentDistrict && !stillListed)) {
-                setDistrict("");
-              }
-              clearField("city");
-              clearField("district");
-            }}
-            options={UK_CITIES}
-            required
-            maxLength={100}
-            error={fieldErrors.city}
-          />
-          <Combobox
-            label={t("district")}
-            placeholder={city.trim() ? t("selectDistrict") : t("selectCityFirst")}
-            value={district}
-            onChange={(nextDistrict) => {
-              setDistrict(nextDistrict);
-              clearField("district");
-            }}
-            options={districtOptions}
-            disabled={!city.trim()}
-            required
-            maxLength={100}
-            error={fieldErrors.district}
-          />
-          <Field label={t("postcode")} error={fieldErrors.postcode}>
-            <input
-              className={inputClassName}
-              type="text"
-              required
-              autoComplete="postal-code"
-              maxLength={10}
-              value={postcode}
-              onChange={(e) => {
-                setPostcode(e.target.value);
-                clearField("postcode");
-              }}
-            />
-          </Field>
-          <Field label={t("password")} error={fieldErrors.password}>
-            <input
-              className={inputClassName}
-              type="password"
-              required
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                clearField("password");
-              }}
-            />
-          </Field>
-          <Field label={t("confirmPassword")} error={fieldErrors.confirmPassword}>
-            <input
-              className={inputClassName}
-              type="password"
-              required
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                clearField("confirmPassword");
-              }}
-            />
-          </Field>
-          {error ? <p className="text-sm text-danger">{error}</p> : null}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? tCommon("status.loading") : t("submitSignUp")}
-          </Button>
-          <p className="text-sm text-muted">
-            {t("hasAccount")}{" "}
-            <Link href="/sign-in" className="text-muted underline">
-              {t("submitSignIn")}
-            </Link>
-          </p>
-        </form>
-      </PageSection>
+    <div className="auth-on-background mx-auto flex w-full min-w-0 max-w-lg flex-1 flex-col justify-center overflow-x-hidden px-1 py-6 sm:px-2 sm:py-10">
+      <div className="overflow-x-hidden">
+        <div key={step} className={motionClass}>
+          {stepContent}
+        </div>
+      </div>
+      <p className="mt-8 text-center text-base text-white/80">
+        {t("hasAccount")}{" "}
+        <Link href={signInHref} className="text-white underline">
+          {t("submitSignIn")}
+        </Link>
+      </p>
       {educationNoticeOpen ? (
         <EducationAccountNotice onClose={() => setEducationNoticeOpen(false)} />
       ) : null}

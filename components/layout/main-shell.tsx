@@ -16,7 +16,7 @@ export function MainShell({ children }: { children: React.ReactNode }) {
         isHome && "md:w-[80vw] md:max-w-[80vw]",
         isEducationHub && "max-w-none lg:flex lg:flex-col",
         !isHome && !isEducationHub && "max-w-5xl",
-        isAuthPanel && "flex flex-col max-lg:py-4"
+        isAuthPanel && "flex flex-col overflow-x-hidden max-lg:py-4"
       )}
     >
       {children}

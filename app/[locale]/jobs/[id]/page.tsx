@@ -20,7 +20,7 @@ export default async function JobDetailPage({
 }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  await requireAuthOrSignUp(locale);
+  await requireAuthOrSignUp(locale, { next: `/jobs/${id}` });
   const t = await getTranslations("jobs");
   const jobId = Number(id);
 

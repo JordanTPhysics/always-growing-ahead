@@ -9,7 +9,7 @@ export default async function EmployerProfilePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAuthOrSignUp(locale);
+  await requireAuthOrSignUp(locale, { next: "/employer/profile" });
 
   return <EmployerProfileForm />;
 }

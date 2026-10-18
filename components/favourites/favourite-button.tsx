@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/lib/i18n/navigation";
+import { usePathname, useRouter } from "@/lib/i18n/navigation";
+import { authHref } from "@/lib/auth/continue-path";
 import { cn } from "@/lib/utils";
 import { StarIcon } from "@/components/favourites/star-icon";
 import type { FavouriteTargetType } from "@/lib/db/types";
@@ -22,6 +23,7 @@ export function FavouriteButton({
 }) {
   const t = useTranslations("favourites");
   const router = useRouter();
+  const pathname = usePathname();
   const [favourited, setFavourited] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -65,7 +67,7 @@ export function FavouriteButton({
           { method: "DELETE" }
         );
         if (response.status === 401) {
-          router.push("/sign-up");
+          router.push(authHref("/sign-up", { next: pathname }));
           return;
         }
         if (response.ok) {
@@ -81,7 +83,7 @@ export function FavouriteButton({
         body: JSON.stringify({ targetType, targetId }),
       });
       if (response.status === 401) {
-        router.push("/sign-up");
+        router.push(authHref("/sign-up", { next: pathname }));
         return;
       }
       if (response.ok) {

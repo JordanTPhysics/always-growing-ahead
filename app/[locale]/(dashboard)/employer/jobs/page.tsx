@@ -18,7 +18,7 @@ export default async function EmployerJobsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await requireAuthOrSignUp(locale);
+  const session = await requireAuthOrSignUp(locale, { next: "/employer/jobs" });
 
   const t = await getTranslations("jobs");
   const tEmployer = await getTranslations("employer-profile");

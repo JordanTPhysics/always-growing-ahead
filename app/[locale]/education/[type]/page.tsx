@@ -48,7 +48,10 @@ export default async function EducationTypePage({
     : "en";
   setRequestLocale(locale);
 
-  await requireAuthOrSignUp(locale, "education");
+  await requireAuthOrSignUp(locale, {
+    notice: "education",
+    next: `/education/${type}`,
+  });
 
   const mediaType = educationSlugToMediaType(type);
   const [t, resources] = await Promise.all([

@@ -3,7 +3,50 @@ export type GeocodeResult = {
   lng: number;
   postcode: string;
   address_text: string;
+  city: string;
+  district: string;
 };
+
+function tidyPlace(value: string | null | undefined): string {
+  return (value ?? "").replace(/,\s*unparished area$/i, "").trim();
+}
+
+function firstPlace(value: string | string[] | null | undefined): string {
+  const raw = Array.isArray(value) ? value.find((item) => tidyPlace(item)) : value;
+  return tidyPlace(raw);
+}
+
+function describePlace(input: {
+  postTown?: string | null;
+  locality?: string | null;
+  adminDistrict?: string | string[] | null;
+  adminWard?: string | string[] | null;
+  parish?: string | string[] | null;
+}): { city: string; district: string } {
+  const city = tidyPlace(input.postTown) || firstPlace(input.adminDistrict);
+  const different = (value: string) =>
+    value && value.toLowerCase() !== city.toLowerCase() ? value : "";
+  const district =
+    different(tidyPlace(input.locality)) ||
+    different(firstPlace(input.adminWard)) ||
+    different(firstPlace(input.parish)) ||
+    city;
+  return { city, district };
+}
+
+function located(
+  result: Omit<GeocodeResult, "city" | "district"> & {
+    city?: string;
+    district?: string;
+  }
+): GeocodeResult {
+  const city = result.city?.trim() ?? "";
+  return {
+    ...result,
+    city,
+    district: result.district?.trim() || city,
+  };
+}
 
 export type PostcodeSuggestion = {
   id: string;
@@ -87,16 +130,26 @@ export async function resolvePostcodeSuggestion(
         postcode?: string;
         line_1?: string;
         post_town?: string;
+        dependant_locality?: string;
+        ward?: string;
+        district?: string;
       };
     };
     const r = data.result;
     if (!r?.latitude || !r?.longitude) return null;
-    return {
+    const place = describePlace({
+      postTown: r.post_town,
+      locality: r.dependant_locality,
+      adminDistrict: r.district,
+      adminWard: r.ward,
+    });
+    return located({
       lat: r.latitude,
       lng: r.longitude,
       postcode: r.postcode ?? "",
       address_text: [r.line_1, r.post_town].filter(Boolean).join(", "),
-    };
+      ...place,
+    });
   }
 
   if (suggestion.id.startsWith("place:")) {
@@ -114,12 +167,15 @@ export async function resolvePostcodeSuggestion(
     };
     const r = data.result;
     if (!r?.latitude || !r?.longitude) return null;
-    return {
+    const name = r.name_1 ?? suggestion.label;
+    return located({
       lat: r.latitude,
       lng: r.longitude,
       postcode: "",
-      address_text: r.name_1 ?? suggestion.label,
-    };
+      address_text: name,
+      city: name,
+      district: name,
+    });
   }
 
   return geocodeQuery(suggestion.label);
@@ -145,16 +201,25 @@ export async function geocodeQuery(query: string): Promise<GeocodeResult | null>
             longitude?: number;
             postcode?: string;
             post_town?: string;
+            dependant_locality?: string;
+            ward?: string;
+            district?: string;
           }[];
         };
         const r = data.result?.[0];
         if (r?.latitude != null && r?.longitude != null) {
-          return {
+          return located({
             lat: r.latitude,
             lng: r.longitude,
             postcode: r.postcode ?? compact,
             address_text: r.post_town ?? compact,
-          };
+            ...describePlace({
+              postTown: r.post_town,
+              locality: r.dependant_locality,
+              adminDistrict: r.district,
+              adminWard: r.ward,
+            }),
+          });
         }
       }
     }
@@ -174,19 +239,63 @@ export async function geocodeQuery(query: string): Promise<GeocodeResult | null>
           longitude?: number;
           postcode?: string;
           admin_district?: string;
+          admin_ward?: string;
           parish?: string;
         };
       };
       const r = data.result;
       if (r?.latitude != null && r?.longitude != null) {
-        return {
+        return located({
           lat: r.latitude,
           lng: r.longitude,
           postcode: r.postcode ?? compact,
           address_text:
             [r.admin_district, r.parish, r.postcode].filter(Boolean).join(", ") ||
             compact,
+          ...describePlace({
+            adminDistrict: r.admin_district,
+            adminWard: r.admin_ward,
+            parish: r.parish,
+          }),
+        });
+      }
+    }
+  }
+
+  if (
+    !/^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/i.test(compact) &&
+    /^[A-Z]{1,2}\d[A-Z\d]?$/i.test(compact)
+  ) {
+    const outRes = await fetch(
+      `https://api.postcodes.io/outcodes/${encodeURIComponent(compact)}`
+    );
+    if (outRes.ok) {
+      const outData = (await outRes.json()) as {
+        result?: {
+          latitude?: number;
+          longitude?: number;
+          outcode?: string;
+          admin_district?: string[];
+          admin_ward?: string[];
+          parish?: string[];
         };
+      };
+      const out = outData.result;
+      if (out?.latitude != null && out?.longitude != null) {
+        const place = describePlace({
+          adminDistrict: out.admin_district,
+          adminWard: out.admin_ward,
+          parish: out.parish,
+        });
+        return located({
+          lat: out.latitude,
+          lng: out.longitude,
+          postcode: out.outcode ?? compact,
+          address_text: [place.city, place.district, out.outcode]
+            .filter(Boolean)
+            .join(", "),
+          ...place,
+        });
       }
     }
   }
@@ -202,18 +311,25 @@ export async function geocodeQuery(query: string): Promise<GeocodeResult | null>
         longitude?: number;
         postcode?: string;
         admin_district?: string;
+        admin_ward?: string;
+        parish?: string;
       }[] | null;
     };
     const hit = searchData.result?.[0];
     if (hit?.latitude != null && hit?.longitude != null) {
-      return {
+      return located({
         lat: hit.latitude,
         lng: hit.longitude,
         postcode: hit.postcode ?? "",
         address_text: [hit.admin_district, hit.postcode]
           .filter(Boolean)
           .join(", "),
-      };
+        ...describePlace({
+          adminDistrict: hit.admin_district,
+          adminWard: hit.admin_ward,
+          parish: hit.parish,
+        }),
+      });
     }
   }
 
@@ -231,10 +347,13 @@ export async function geocodeQuery(query: string): Promise<GeocodeResult | null>
   };
   const place = placesData.result?.[0];
   if (!place?.latitude || !place?.longitude) return null;
-  return {
+  const name = place.name_1 ?? q;
+  return located({
     lat: place.latitude,
     lng: place.longitude,
     postcode: "",
-    address_text: place.name_1 ?? q,
-  };
+    address_text: name,
+    city: name,
+    district: name,
+  });
 }

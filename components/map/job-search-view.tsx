@@ -813,8 +813,9 @@ export function JobSearchView({
               type="button"
               className="w-full"
               onClick={() =>
-                requireAuth(() =>
-                  router.push(`/employers/${selectedBusiness.id}`)
+                requireAuth(
+                  () => router.push(`/employers/${selectedBusiness.id}`),
+                  `/employers/${selectedBusiness.id}`
                 )
               }
             >
@@ -857,7 +858,10 @@ export function JobSearchView({
               type="button"
               className="w-full"
               onClick={() =>
-                requireAuth(() => router.push(`/jobs/${selected.id}`))
+                requireAuth(
+                  () => router.push(`/jobs/${selected.id}`),
+                  `/jobs/${selected.id}`
+                )
               }
             >
               {t("viewFull")}

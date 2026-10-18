@@ -24,7 +24,21 @@ const schema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   username: usernameSchema.optional().nullable(),
-  phone: z.string().trim().min(7).max(30),
+  phone: z
+    .string()
+    .trim()
+    .max(30)
+    .optional()
+    .nullable()
+    .transform((value) => (value ? value : null))
+    .refine(
+      (value) =>
+        value === null ||
+        (value.length >= 7 &&
+          /^[+]?[\d\s().-]+$/.test(value) &&
+          value.replace(/\D/g, "").length >= 7),
+      { message: "Enter a valid phone number" }
+    ),
   city: z.string().trim().min(1).max(100),
   district: z.string().trim().min(1).max(100),
   postcode: z.string().trim().min(1).max(10),
@@ -64,7 +78,7 @@ export async function POST(request: Request) {
     email,
     passwordHash,
     username,
-    phone: parsed.data.phone.trim(),
+    phone: parsed.data.phone,
     city,
     district,
     postcode,
