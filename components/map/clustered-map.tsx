@@ -4,8 +4,20 @@ import {
   AdvancedMarker,
   APIProvider,
   Map,
+  useMap,
 } from "@vis.gl/react-google-maps";
-import { useMemo } from "react";
+import {
+  animateMapCamera,
+  cameraForResults,
+  prefersReducedMapMotion,
+  UK_OVERVIEW,
+  type MapCameraTarget,
+} from "@/lib/maps/camera";
+import {
+  markMapIntroPlayed,
+  useUserMapFocus,
+} from "@/components/map/use-user-map-focus";
+import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { MdOutlinePersonPinCircle } from "react-icons/md";
 import { BsPersonRaisedHand, BsPersonStanding } from "react-icons/bs";
@@ -38,7 +50,8 @@ type Props = {
   hoveredId?: number | null;
   onHoverChange?: (id: number | null) => void;
   onSelect: (id: number) => void;
-  center?: { latitude: number; longitude: number; zoom?: number };
+  /** Increments when Apply filters should reframe the map around the current points. */
+  fitId?: number;
   className?: string;
   apiKey: string;
   mapId?: string;
@@ -177,27 +190,103 @@ function MapMarkerContent({
   );
 }
 
+function MapCamera({
+  points,
+  focus,
+  playIntro,
+  fitId,
+}: {
+  points: MapPoint[];
+  focus: MapCameraTarget | null;
+  playIntro: boolean;
+  fitId: number;
+}) {
+  const map = useMap();
+  const cancelRef = useRef<(() => void) | null>(null);
+  const introToken = useRef(0);
+  const introScheduled = useRef(false);
+  const skipIntro = useRef(false);
+  const placedKey = useRef<string | null>(null);
+  const lastFit = useRef(0);
+  const pointsRef = useRef(points);
+  pointsRef.current = points;
+
+  useEffect(() => {
+    if (!map || !playIntro || !focus || introScheduled.current || skipIntro.current) {
+      return;
+    }
+    introScheduled.current = true;
+    const token = ++introToken.current;
+    const reduced = prefersReducedMapMotion();
+    let started = false;
+    const timer = window.setTimeout(() => {
+      if (introToken.current !== token) return;
+      started = true;
+      markMapIntroPlayed();
+      cancelRef.current?.();
+      cancelRef.current = animateMapCamera(map, focus, reduced ? 0 : 1700);
+    }, reduced ? 0 : 650);
+    return () => {
+      window.clearTimeout(timer);
+      if (!started) introScheduled.current = false;
+    };
+  }, [map, playIntro, focus]);
+
+  useEffect(() => {
+    if (!map || playIntro || fitId > 0) return;
+    const target = focus ?? UK_OVERVIEW;
+    const key = `${target.lat.toFixed(4)},${target.lng.toFixed(4)},${target.zoom}`;
+    if (placedKey.current === key) return;
+    placedKey.current = key;
+    map.moveCamera({
+      center: { lat: target.lat, lng: target.lng },
+      zoom: target.zoom,
+    });
+  }, [map, playIntro, focus, fitId]);
+
+  useEffect(() => {
+    if (!map || fitId === 0 || fitId === lastFit.current) return;
+    lastFit.current = fitId;
+    skipIntro.current = true;
+    introToken.current += 1;
+    markMapIntroPlayed();
+    const el = map.getDiv();
+    const target = cameraForResults(pointsRef.current, {
+      width: el.clientWidth || el.offsetWidth || 800,
+      height: el.clientHeight || el.offsetHeight || 600,
+    });
+    if (!target) return;
+    cancelRef.current?.();
+    cancelRef.current = animateMapCamera(
+      map,
+      target,
+      prefersReducedMapMotion() ? 0 : 1100
+    );
+  }, [map, fitId]);
+
+  useEffect(() => () => cancelRef.current?.(), []);
+
+  return null;
+}
+
 export function ClusteredMap({
   className,
   searchMode,
   searchModeLabel,
   legendLabels,
   points,
-  selectedId = null,
   hoveredId = null,
   onHoverChange,
   onSelect,
-  center,
+  fitId = 0,
   apiKey,
   mapId = "DEMO_MAP_ID",
 }: Props) {
-  const defaultCenter = useMemo(
-    () =>
-      center
-        ? { lat: center.latitude, lng: center.longitude }
-        : { lat: 52.950001, lng: -1.15 },
-    [center]
-  );
+  const { checked, playIntro, focus } = useUserMapFocus();
+  const initial =
+    playIntro || !focus
+      ? UK_OVERVIEW
+      : focus;
 
   if (!apiKey) {
     return (
@@ -215,37 +304,46 @@ export function ClusteredMap({
       {legendLabels ? (
         <MapLegend searchMode={searchMode} labels={legendLabels} />
       ) : null}
-      <APIProvider apiKey={apiKey} libraries={["marker"]}>
-        <Map
-          className="h-full w-full"
-          mapId={mapId}
-          defaultZoom={center?.zoom ?? 10}
-          defaultCenter={defaultCenter}
-          gestureHandling="greedy"
-          disableDefaultUI={false}
-        >
-          {points.map((point) => {
-            const hovered = hoveredId === point.id;
-            return (
-              <AdvancedMarker
-                key={point.id}
-                position={{ lat: point.lat, lng: point.lng }}
-                onClick={() => onSelect(point.id)}
-                onMouseEnter={() => onHoverChange?.(point.id)}
-                onMouseLeave={() => onHoverChange?.(null)}
-              >
-                <MapMarkerContent
-                  searchMode={searchMode}
-                  occupationId={point.occupationId}
-                  active={point.active ?? false}
-                  hovered={hovered}
-                  title={point.properties?.title ?? undefined}
-                />
-              </AdvancedMarker>
-            );
-          })}
-        </Map>
-      </APIProvider>
+      {checked ? (
+        <APIProvider apiKey={apiKey} libraries={["marker"]}>
+          <Map
+            className="h-full w-full"
+            mapId={mapId}
+            defaultZoom={initial.zoom}
+            defaultCenter={{ lat: initial.lat, lng: initial.lng }}
+            isFractionalZoomEnabled
+            gestureHandling="greedy"
+            disableDefaultUI={false}
+          >
+            <MapCamera
+              points={points}
+              focus={focus}
+              playIntro={playIntro}
+              fitId={fitId}
+            />
+            {points.map((point) => {
+              const hovered = hoveredId === point.id;
+              return (
+                <AdvancedMarker
+                  key={point.id}
+                  position={{ lat: point.lat, lng: point.lng }}
+                  onClick={() => onSelect(point.id)}
+                  onMouseEnter={() => onHoverChange?.(point.id)}
+                  onMouseLeave={() => onHoverChange?.(null)}
+                >
+                  <MapMarkerContent
+                    searchMode={searchMode}
+                    occupationId={point.occupationId}
+                    active={point.active ?? false}
+                    hovered={hovered}
+                    title={point.properties?.title ?? undefined}
+                  />
+                </AdvancedMarker>
+              );
+            })}
+          </Map>
+        </APIProvider>
+      ) : null}
     </div>
   );
 }

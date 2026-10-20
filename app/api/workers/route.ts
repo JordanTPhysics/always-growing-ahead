@@ -16,21 +16,6 @@ import {
   updateWorkerProfile,
 } from "@/lib/db/repositories/workers";
 import type { Availability, JobType } from "@/lib/db/types";
-import {
-  isMockMapDataEnabled,
-  searchMockWorkers,
-} from "@/lib/mock/nottingham";
-import {
-  createJsonWorkerProfile,
-  getJsonWorkerById,
-  getJsonWorkerByUserId,
-  replaceJsonWorkerExperience,
-  replaceJsonWorkerQualifications,
-  setJsonWorkerSkills,
-  updateJsonWorkerProfile,
-} from "@/lib/mock/profiles-store";
-import { ensureLocationCoords } from "@/lib/mock/ensure-location";
-import { stripProfileContact } from "@/lib/profiles/contact";
 
 const jobTypes = z.enum([
   "full-time",
@@ -105,23 +90,11 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
   const mine = searchParams.get("mine");
-  const mock = isMockMapDataEnabled();
 
   if (mine === "1") {
     const { session, error } = await requireSession();
     if (error) return error;
     const userId = Number(session.user.id);
-
-    if (mock) {
-      const row = getJsonWorkerByUserId(userId);
-      if (!row) return NextResponse.json({ profile: null });
-      return NextResponse.json({
-        profile: row.profile,
-        skills: row.skills,
-        experience: row.experience,
-        qualifications: row.qualifications,
-      });
-    }
 
     const profile = await getWorkerByUserId(userId);
     if (!profile) return NextResponse.json({ profile: null });
@@ -134,19 +107,6 @@ export async function GET(request: Request) {
   }
 
   if (id) {
-    if (mock) {
-      const row = getJsonWorkerById(Number(id));
-      if (!row || row.profile.visibility !== "public") {
-        return jsonError("Worker not found", 404);
-      }
-      return NextResponse.json({
-        profile: stripProfileContact(row.profile),
-        skills: row.skills,
-        experience: row.experience,
-        qualifications: row.qualifications,
-      });
-    }
-
     const bundle = await getPublicWorkerBundle(Number(id));
     if (!bundle) return jsonError("Worker not found", 404);
     return NextResponse.json(bundle);
@@ -171,21 +131,6 @@ export async function GET(request: Request) {
     availability ||
     skillIds
   ) {
-    if (mock) {
-      const workers = await searchMockWorkers({
-        lat: lat != null ? Number(lat) : undefined,
-        lng: lng != null ? Number(lng) : undefined,
-        radiusMeters:
-          radius === "nationwide" || radius == null
-            ? null
-            : Number(radius),
-        field: field?.trim() || undefined,
-        jobType: (jobType as JobType | null) || undefined,
-        availability: (availability as Availability | null) || undefined,
-      });
-      return NextResponse.json({ workers });
-    }
-
     const workers = await searchPublicWorkers({
       lat: lat != null ? Number(lat) : undefined,
       lng: lng != null ? Number(lng) : undefined,
@@ -224,20 +169,6 @@ export async function POST(request: Request) {
 
   const { skills, experience, qualifications, ...profileInput } = parsed.data;
 
-  if (isMockMapDataEnabled()) {
-    if (getJsonWorkerByUserId(userId)) {
-      return jsonError("Worker profile already exists", 409);
-    }
-    const located = await ensureLocationCoords(profileInput);
-    const profile = createJsonWorkerProfile(userId, located);
-    if (skills) setJsonWorkerSkills(profile.id, skills);
-    if (experience) replaceJsonWorkerExperience(profile.id, experience);
-    if (qualifications) {
-      replaceJsonWorkerQualifications(profile.id, qualifications);
-    }
-    return NextResponse.json({ profile }, { status: 201 });
-  }
-
   const existing = await getWorkerByUserId(userId);
   if (existing) return jsonError("Worker profile already exists", 409);
 
@@ -264,22 +195,6 @@ export async function PUT(request: Request) {
   if (!parsed.success) return jsonError(parsed.error.issues[0]?.message ?? "Invalid input");
 
   const { skills, experience, qualifications, ...profileInput } = parsed.data;
-
-  if (isMockMapDataEnabled()) {
-    const existing = getJsonWorkerByUserId(userId);
-    if (!existing) return jsonError("Worker profile not found", 404);
-    const located = await ensureLocationCoords({
-      ...existing.profile,
-      ...profileInput,
-    });
-    const profile = updateJsonWorkerProfile(existing.profile.id, located);
-    if (skills) setJsonWorkerSkills(profile.id, skills);
-    if (experience) replaceJsonWorkerExperience(profile.id, experience);
-    if (qualifications) {
-      replaceJsonWorkerQualifications(profile.id, qualifications);
-    }
-    return NextResponse.json({ profile });
-  }
 
   const existing = await getWorkerByUserId(userId);
   if (!existing) return jsonError("Worker profile not found", 404);

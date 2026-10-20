@@ -10,13 +10,8 @@ import {
   parseJobCsv,
   type JobCsvInput,
 } from "@/lib/jobs/csv";
-import { ensureLocationCoords } from "@/lib/mock/ensure-location";
-import {
-  createJsonJob,
-  setJsonJobSkills,
-} from "@/lib/mock/jobs-store";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
-import { getJsonEmployerByUserId } from "@/lib/mock/profiles-store";
+import { ensureLocationCoords } from "@/lib/geocoding/ensure-location";
+import { notifyJobPublished } from "@/lib/notifications/events";
 import type { Skill } from "@/lib/db/types";
 
 export const runtime = "nodejs";
@@ -24,7 +19,6 @@ export const runtime = "nodejs";
 function assertCanPostJobs(session: {
   user: { tier: Tier; isEmailVerified: boolean };
 }) {
-  if (isMockMapDataEnabled()) return null;
   if (!session.user.isEmailVerified) {
     return jsonError("Verify your email before posting jobs", 403);
   }
@@ -104,15 +98,12 @@ export async function POST(request: Request) {
   if (parsed.error) return jsonError(parsed.error);
 
   const userId = Number(session.user.id);
-  const mock = isMockMapDataEnabled();
-  const employer = mock
-    ? getJsonEmployerByUserId(userId)
-    : await getEmployerByUserId(userId);
+  const employer = await getEmployerByUserId(userId);
   if (!employer) {
     return jsonError("Create an employer profile first", 400);
   }
 
-  const catalog = mock ? [] : await listSkills();
+  const catalog = await listSkills();
   const skillsByName = skillMap(catalog);
   const geoCache = new Map<string, JobCsvInput>();
 
@@ -123,9 +114,7 @@ export async function POST(request: Request) {
   for (const row of parsed.rows) {
     try {
       const located = await locateRow(row.input, geoCache);
-      const job = mock
-        ? createJsonJob(employer.id, located)
-        : await createJob(employer.id, located);
+      const job = await createJob(employer.id, located);
 
       const unknown: string[] = [];
       const skills = row.skillNames.flatMap((name) => {
@@ -138,8 +127,7 @@ export async function POST(request: Request) {
       });
 
       if (skills.length > 0) {
-        if (mock) setJsonJobSkills(job.id, skills);
-        else await setJobSkills(job.id, skills);
+        await setJobSkills(job.id, skills);
       }
       if (unknown.length > 0 && catalog.length > 0) {
         warnings.push({
@@ -149,6 +137,14 @@ export async function POST(request: Request) {
       }
 
       created.push({ line: row.line, id: job.id, title: job.title });
+      await notifyJobPublished({
+        posterUserId: userId,
+        jobId: job.id,
+        title: job.title,
+        status: job.status,
+        postcode: job.postcode,
+        addressText: job.address_text,
+      });
     } catch (err) {
       failed.push({
         line: row.line,

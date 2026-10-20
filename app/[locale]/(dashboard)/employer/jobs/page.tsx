@@ -3,9 +3,6 @@ import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { Link } from "@/lib/i18n/navigation";
 import { getEmployerByUserId } from "@/lib/db/repositories/employers";
 import { listJobsByEmployer } from "@/lib/db/repositories/jobs";
-import { listJsonJobsByEmployer } from "@/lib/mock/jobs-store";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
-import { getJsonEmployerByUserId } from "@/lib/mock/profiles-store";
 import { PageHeader } from "@/components/ui/forms";
 import { Button } from "@/components/ui/button";
 import { Card, PageSection } from "@/components/ui/card";
@@ -23,17 +20,10 @@ export default async function EmployerJobsPage({
   const t = await getTranslations("jobs");
   const tEmployer = await getTranslations("employer-profile");
   const tBilling = await getTranslations("billing");
-  const mock = isMockMapDataEnabled();
   const userId = Number(session.user.id);
-  const employer = mock
-    ? getJsonEmployerByUserId(userId)
-    : await getEmployerByUserId(userId);
-  const jobs = employer
-    ? mock
-      ? listJsonJobsByEmployer(employer.id)
-      : await listJobsByEmployer(employer.id)
-    : [];
-  const canPost = mock || canPostJobs(session.user.tier);
+  const employer = await getEmployerByUserId(userId);
+  const jobs = employer ? await listJobsByEmployer(employer.id) : [];
+  const canPost = canPostJobs(session.user.tier);
 
   return (
     <PageSection>

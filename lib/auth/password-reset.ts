@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import { pool } from "@/lib/db/pool";
 import { appBaseUrl } from "@/lib/app-url";
 import { isSmtpConfigured, sendMail } from "@/lib/mail/smtp";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import { updateUserPassword } from "@/lib/db/repositories/users";
 import type { RowDataPacket } from "mysql2";
 
@@ -74,7 +73,6 @@ function copyForLocale(locale: string) {
 }
 
 export async function sendPasswordResetEmail(email: string): Promise<void> {
-  if (isMockMapDataEnabled()) return;
   await ensurePasswordResetTable();
 
   const [rows] = await pool.execute<
@@ -127,7 +125,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
 export async function peekPasswordResetToken(
   token: string
 ): Promise<{ ok: true } | { ok: false; reason: "invalid" | "expired" }> {
-  if (!token || isMockMapDataEnabled()) return { ok: false, reason: "invalid" };
+  if (!token) return { ok: false, reason: "invalid" };
   await ensurePasswordResetTable();
 
   const tokenHash = hashToken(token);
@@ -150,7 +148,7 @@ export async function resetPasswordWithToken(input: {
   token: string;
   password: string;
 }): Promise<{ ok: true } | { ok: false; reason: "invalid" | "expired" }> {
-  if (!input.token || isMockMapDataEnabled()) {
+  if (!input.token) {
     return { ok: false, reason: "invalid" };
   }
   await ensurePasswordResetTable();

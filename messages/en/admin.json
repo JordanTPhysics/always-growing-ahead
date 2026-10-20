@@ -1,6 +1,6 @@
 {
   "title": "Admin dashboard",
-  "subtitle": "Manage skills, users, live chat, worker imports, business imports, education uploads, news updates, failed signups, and locale translations.",
+  "subtitle": "Manage skills, users, live chat, worker imports, business imports, education uploads, news updates, sponsored slides, failed signups, and locale translations.",
   "tabsLabel": "Admin sections",
   "tabs": {
     "access": "Skills & users",
@@ -9,6 +9,7 @@
     "businesses": "Businesses",
     "education": "Education",
     "news": "News",
+    "sponsored": "Sponsored",
     "translations": "Translations",
     "signups": "Signups"
   },
@@ -103,6 +104,27 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "saving": "Saving…"
+  },
+  "sponsored": {
+    "heading": "Sponsored slides",
+    "hint": "Each homepage slide can have its own picture, tagline, and link.",
+    "empty": "No sponsored slides yet.",
+    "edit": "Edit",
+    "picture": "Picture",
+    "changePicture": "Change picture",
+    "uploading": "Uploading…",
+    "tagline": "Tagline",
+    "link": "Link",
+    "linkHint": "Use a full http(s) URL or a site path such as /jobs.",
+    "taglineRequired": "Enter a tagline before saving.",
+    "linkInvalid": "Use a full http(s) URL or a path starting with /.",
+    "pictureInvalid": "Choose a picture before saving.",
+    "save": "Save slide",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "uploadFailed": "Picture upload failed.",
+    "saveFailed": "Could not save the slide.",
+    "loadFailed": "Could not load sponsored slides."
   },
   "translations": {
     "heading": "Locale translations",

@@ -8,9 +8,7 @@ import {
   parseBusinessCsv,
   type BusinessCsvInput,
 } from "@/lib/employers/csv";
-import { ensureLocationCoords } from "@/lib/mock/ensure-location";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
-import { upsertJsonDirectoryEmployer } from "@/lib/mock/profiles-store";
+import { ensureLocationCoords } from "@/lib/geocoding/ensure-location";
 
 export const runtime = "nodejs";
 
@@ -72,7 +70,6 @@ export async function POST(request: Request) {
   const parsed = parseBusinessCsv(text);
   if (parsed.error) return jsonError(parsed.error);
 
-  const mock = isMockMapDataEnabled();
   const geoCache = new Map<string, BusinessCsvInput>();
 
   const created: { line: number; id: number; company_name: string }[] = [];
@@ -83,9 +80,7 @@ export async function POST(request: Request) {
   for (const row of parsed.rows) {
     try {
       const located = await locateRow(row.input, geoCache);
-      const saved = mock
-        ? upsertJsonDirectoryEmployer(located)
-        : await upsertDirectoryEmployer(located);
+      const saved = await upsertDirectoryEmployer(located);
 
       if (
         located.location_lat == null ||

@@ -34,21 +34,6 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) (redirects to `/en`).
 
-### Mock test accounts (`USE_MOCK_MAP_DATA=1`)
-
-Seed demo profiles/jobs (and MySQL users when the DB is available):
-
-```bash
-npm run seed:mock
-```
-
-| Email | Password | Tier |
-|---|---|---|
-| `full@aga.test` | `password123` | Advanced (full — worker + employer/jobs) |
-| `worker@aga.test` | `password123` | Basic (worker subscription only) |
-
-With mock map data enabled, these logins work even without MySQL.
-
 ### Dev-only tier switch (until Stripe)
 
 ```bash
@@ -67,4 +52,3 @@ In development, job posting is allowed without Advanced so Phase 1 CRUD is usabl
 | `npm run dev` | Next.js dev server |
 | `npm run build` | Production build |
 | `npm run db:migrate` | Apply `lib/db/migrations/*.sql` |
-| `npm run seed:mock` | Seed mock test accounts + demo JSON data |

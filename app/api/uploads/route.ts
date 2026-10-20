@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { jsonError, requireSession } from "@/lib/api/auth";
+import { isAdmin } from "@/lib/db/repositories/users";
 import {
   isObjectStorageConfigured,
   keyToStoredUrl,
@@ -11,7 +12,7 @@ import { z } from "zod";
 
 const schema = z.object({
   dataUrl: z.string().min(32).max(8_000_000),
-  folder: z.enum(["profiles", "certificates", "logos"]).optional(),
+  folder: z.enum(["profiles", "certificates", "logos", "sponsored"]).optional(),
 });
 
 export const runtime = "nodejs";
@@ -37,6 +38,13 @@ export async function POST(request: Request) {
   }
 
   const folder = parsed.data.folder ?? "profiles";
+  if (
+    folder === "sponsored" &&
+    !(await isAdmin(Number(session.user.id)))
+  ) {
+    return jsonError("Forbidden", 403);
+  }
+
   const buffer = Buffer.from(match[2], "base64");
   if (buffer.byteLength > 5 * 1024 * 1024) {
     return jsonError("Image too large (max 5MB)");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useRequireAuth } from "@/lib/auth/use-require-auth";
@@ -20,7 +20,6 @@ import {
   formatSalary,
   milesToMeters,
   type RadiusMiles,
-  NOTTINGHAM_CENTER,
 } from "@/lib/search/constants";
 import { getCurrentPosition } from "@/lib/native/geolocation";
 import { track } from "@/lib/analytics/track";
@@ -269,6 +268,9 @@ export function JobSearchView({
   const [skills, setSkills] = useState<Skill[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [fitId, setFitId] = useState(0);
+  const [reloadToken, setReloadToken] = useState(0);
+  const fitAfterFetch = useRef(false);
 
   const [postcode, setPostcode] = useState("");
   const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(
@@ -380,8 +382,13 @@ export function JobSearchView({
           }
           setBusinesses(businessData.businesses ?? []);
         }
+        if (fitAfterFetch.current) {
+          fitAfterFetch.current = false;
+          setFitId((id) => id + 1);
+        }
       } catch (err) {
         if (cancelled) return;
+        fitAfterFetch.current = false;
         setError(err instanceof Error ? err.message : tCommon("status.error"));
       } finally {
         if (!cancelled) setLoading(false);
@@ -391,7 +398,7 @@ export function JobSearchView({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [queryKey, origin, radius, debouncedField, jobType, salaryMin, salaryMax, postedWithinDays, skillId, tCommon]);
+  }, [queryKey, reloadToken, origin, radius, debouncedField, jobType, salaryMin, salaryMax, postedWithinDays, skillId, tCommon]);
 
   const selected = useMemo(
     () => (selectedId != null && selectedId > 0
@@ -449,18 +456,12 @@ export function JobSearchView({
     [jobs, businesses]
   );
 
-  const mapCenter = origin
-    ? {
-        latitude: origin.lat,
-        longitude: origin.lng,
-        zoom: radius === "nationwide" ? 6 : radius <= 5 ? 12 : 10,
-      }
-    : NOTTINGHAM_CENTER;
-
   const applyFilters = useCallback(() => {
     setFiltersOpen(false);
-    // queryKey deps already drive refetch; toggling a noop state isn't needed
-  }, []);
+    setDebouncedField(field);
+    fitAfterFetch.current = true;
+    setReloadToken((token) => token + 1);
+  }, [field]);
 
   const selectJob = useCallback(
     (id: number) => {
@@ -704,7 +705,7 @@ export function JobSearchView({
               hoveredId={hoveredId}
               onHoverChange={setHoveredId}
               onSelect={selectJob}
-              center={mapCenter}
+              fitId={fitId}
             />
           ) : (
             <div className="absolute inset-0 overflow-y-auto bg-surface p-3 md:hidden">

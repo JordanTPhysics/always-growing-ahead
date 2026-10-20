@@ -12,18 +12,6 @@ import {
 import { getUserById } from "@/lib/db/repositories/users";
 import { createNotification } from "@/lib/db/repositories/notifications";
 import { dispatchPushToUser } from "@/lib/notifications/push-dispatch";
-import {
-  getMockJobById,
-  getMockWorkerById,
-  isMockMapDataEnabled,
-} from "@/lib/mock/nottingham";
-import { getJsonJobById } from "@/lib/mock/jobs-store";
-import {
-  getJsonEmployerById,
-  getJsonWorkerById,
-  getJsonWorkerByUserId,
-} from "@/lib/mock/profiles-store";
-import { getMockUserById } from "@/lib/mock/test-accounts";
 
 const schema = z.discriminatedUnion("target", [
   z.object({
@@ -56,51 +44,19 @@ export async function POST(request: Request) {
   }
 
   const viewerId = Number(session.user.id);
-  const mock = isMockMapDataEnabled();
 
   if (parsed.data.target === "job") {
-    return revealJobContact(parsed.data.jobId, viewerId, mock);
+    return revealJobContact(parsed.data.jobId, viewerId);
   }
 
   return revealWorkerContact(
     parsed.data.workerId,
     viewerId,
-    parsed.data.jobId ?? null,
-    mock
+    parsed.data.jobId ?? null
   );
 }
 
-async function revealJobContact(
-  jobId: number,
-  viewerId: number,
-  mock: boolean
-) {
-  if (mock) {
-    const job =
-      getJsonJobById(jobId)?.job ?? getMockJobById(jobId) ?? null;
-    if (!job || job.status !== "active") {
-      return jsonError("Job not found", 404);
-    }
-
-    const viewerWorker = getJsonWorkerByUserId(viewerId);
-    if (!viewerWorker) {
-      return jsonError("Create a worker profile before contacting employers", 400);
-    }
-
-    const employer = getJsonEmployerById(job.employer_id);
-    const account = getMockUserById(employer?.user_id ?? 1);
-
-    return NextResponse.json({
-      email:
-        employer?.contact_email ??
-        account?.email ??
-        "contact@example.com",
-      phone: employer?.contact_phone ?? account?.phone ?? null,
-      linkedinUrl: employer?.linkedin_url ?? null,
-      companyName: employer?.company_name ?? job.company_name ?? null,
-    });
-  }
-
+async function revealJobContact(jobId: number, viewerId: number) {
   const job = await getJobById(jobId);
   if (!job || job.status !== "active") {
     return jsonError("Job not found", 404);
@@ -163,37 +119,8 @@ async function revealJobContact(
 async function revealWorkerContact(
   workerId: number,
   viewerId: number,
-  jobId: number | null,
-  mock: boolean
+  jobId: number | null
 ) {
-  if (mock) {
-    const row = getJsonWorkerById(workerId);
-    const mockWorker = row?.profile ?? getMockWorkerById(workerId);
-    if (!mockWorker || mockWorker.visibility !== "public") {
-      return jsonError("Worker not found", 404);
-    }
-    if (mockWorker.user_id != null && mockWorker.user_id === viewerId) {
-      return jsonError("Cannot reveal your own contact info this way", 400);
-    }
-
-    const account =
-      mockWorker.user_id != null ? getMockUserById(mockWorker.user_id) : null;
-    const email =
-      mockWorker.contact_email ??
-      account?.email ??
-      null;
-    const phone = mockWorker.contact_phone ?? account?.phone ?? null;
-    const linkedinUrl = mockWorker.linkedin_url ?? null;
-    if (!email && !phone && !linkedinUrl) {
-      return jsonError("Contact not found", 404);
-    }
-    return NextResponse.json({
-      email,
-      phone,
-      linkedinUrl,
-    });
-  }
-
   const worker = await getWorkerById(workerId);
   if (!worker || worker.visibility !== "public") {
     return jsonError("Worker not found", 404);

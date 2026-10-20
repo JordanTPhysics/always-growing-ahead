@@ -18,6 +18,7 @@ import {
   type MarketplacePost,
 } from "@/lib/marketplace/types";
 import { isRemoteDatabaseConfigured } from "@/lib/db/config";
+import { notifyMarketplacePosted } from "@/lib/notifications/events";
 import {
   deleteStoredUpload,
   isObjectStorageConfigured,
@@ -222,6 +223,12 @@ export async function POST(request: Request) {
       category: parsed.data.category,
       mediaType: allowed.mediaType,
       mediaUrl,
+    });
+
+    await notifyMarketplacePosted({
+      posterUserId: userId,
+      listingId: post.id,
+      title: post.title,
     });
 
     return NextResponse.json(

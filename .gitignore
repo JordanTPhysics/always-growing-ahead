@@ -37,7 +37,7 @@ infra/env.app.vps.example
 # local uploads
 /public/uploads
 
-# local mock JSON databases (worker/employer profiles when USE_MOCK_MAP_DATA=1)
+# leftover local demo JSON
 /.data
 
 # Capacitor native projects (generated via npm run cap:add:android)

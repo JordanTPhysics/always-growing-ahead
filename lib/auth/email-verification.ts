@@ -2,7 +2,6 @@ import { createHash, randomBytes } from "node:crypto";
 import { pool } from "@/lib/db/pool";
 import { appBaseUrl } from "@/lib/app-url";
 import { isSmtpConfigured, sendMail } from "@/lib/mail/smtp";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import { setEmailVerified } from "@/lib/db/repositories/users";
 import type { RowDataPacket } from "mysql2";
 
@@ -48,8 +47,6 @@ export async function sendVerificationEmail(input: {
   email: string;
   locale?: string | null;
 }): Promise<void> {
-  if (isMockMapDataEnabled()) return;
-
   const token = randomBytes(32).toString("hex");
   const tokenHash = hashToken(token);
   const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
@@ -85,7 +82,7 @@ export async function sendVerificationEmail(input: {
 export async function consumeVerificationToken(
   token: string
 ): Promise<{ ok: true } | { ok: false; reason: "invalid" | "expired" }> {
-  if (!token || isMockMapDataEnabled()) return { ok: false, reason: "invalid" };
+  if (!token) return { ok: false, reason: "invalid" };
 
   const tokenHash = hashToken(token);
   const [rows] = await pool.execute<TokenRow[]>(
@@ -112,8 +109,6 @@ export async function consumeVerificationToken(
 }
 
 export async function resendVerificationEmail(email: string): Promise<void> {
-  if (isMockMapDataEnabled()) return;
-
   const [rows] = await pool.execute<
     (RowDataPacket & {
       id: number;

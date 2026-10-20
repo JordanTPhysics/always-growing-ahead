@@ -2,12 +2,6 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { getPublicWorkerBundle } from "@/lib/db/repositories/workers";
-import {
-  getMockWorkerById,
-  isMockMapDataEnabled,
-} from "@/lib/mock/nottingham";
-import { getJsonWorkerById } from "@/lib/mock/profiles-store";
-import { stripProfileContact } from "@/lib/profiles/contact";
 import { PageHeader } from "@/components/ui/forms";
 import { Card, PageSection } from "@/components/ui/card";
 import { ContactReveal } from "@/components/billing/contact-reveal";
@@ -24,27 +18,9 @@ export default async function WorkerPublicPage({
   const t = await getTranslations("worker-profile");
   const workerId = Number(id);
 
-  let profile;
-  let skills;
-  let experience;
-  let qualifications;
-
-  if (isMockMapDataEnabled()) {
-    const row = getJsonWorkerById(workerId);
-    const mockWorker = row?.profile ?? getMockWorkerById(workerId);
-    if (!mockWorker || mockWorker.visibility !== "public") notFound();
-    profile = stripProfileContact(mockWorker);
-    skills = row?.skills ?? [];
-    experience = row?.experience ?? [];
-    qualifications = row?.qualifications ?? [];
-  } else {
-    const bundle = await getPublicWorkerBundle(workerId);
-    if (!bundle) notFound();
-    profile = bundle.profile;
-    skills = bundle.skills;
-    experience = bundle.experience;
-    qualifications = bundle.qualifications;
-  }
+  const bundle = await getPublicWorkerBundle(workerId);
+  if (!bundle) notFound();
+  const { profile, skills, experience, qualifications } = bundle;
 
   return (
     <PageSection>

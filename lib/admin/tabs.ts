@@ -5,6 +5,7 @@ export const ADMIN_TABS = [
   "businesses",
   "education",
   "news",
+  "sponsored",
   "translations",
   "signups",
 ] as const;

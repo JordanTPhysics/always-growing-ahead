@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { searchDirectoryBusinesses } from "@/lib/db/repositories/employers";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
-import { searchJsonDirectoryBusinesses } from "@/lib/mock/profiles-store";
 
 export const runtime = "nodejs";
 
@@ -21,9 +19,7 @@ export async function GET(request: Request) {
     field: field?.trim() || undefined,
   };
 
-  const businesses = isMockMapDataEnabled()
-    ? searchJsonDirectoryBusinesses(filters)
-    : await searchDirectoryBusinesses(filters);
+  const businesses = await searchDirectoryBusinesses(filters);
 
   return NextResponse.json({ businesses });
 }

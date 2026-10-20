@@ -6,6 +6,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { PageHeader } from "@/components/ui/forms";
 import { Button } from "@/components/ui/button";
 import { Card, PageSection } from "@/components/ui/card";
+import { BrowserPushSettings } from "@/components/notifications/browser-push";
 
 type Notification = {
   id: number;
@@ -59,6 +60,7 @@ export default function NotificationsPage() {
         }
       />
       <div className="space-y-3">
+        <BrowserPushSettings />
         {notifications.length === 0 ? (
           <Card elevation="nested" className="p-5 text-muted">
             {t("empty")}

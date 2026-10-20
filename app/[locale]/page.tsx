@@ -4,6 +4,10 @@ import { NewsUpdatesBanner } from "@/components/news/news-updates-banner";
 import { Link } from "@/lib/i18n/navigation";
 import { auth } from "@/auth";
 import { sponsoredItems } from "@/lib/sponsored/content";
+import {
+  listSponsoredItems,
+  toCarouselItem,
+} from "@/lib/db/repositories/sponsored";
 import Carousel from "@/components/ui/carousel";
 import { listPublishedNewsExcerpts } from "@/lib/db/repositories/news-excerpts";
 import { isAdmin } from "@/lib/db/repositories/users";
@@ -28,6 +32,12 @@ export default async function HomePage({
     !!session?.user?.id && (await isAdmin(Number(session.user.id)));
 
   const activeLocale = isActiveLocale(locale) ? locale : "en";
+  const storedSponsored = await listSponsoredItems();
+  const carouselItems =
+    storedSponsored.length > 0
+      ? storedSponsored.map(toCarouselItem)
+      : sponsoredItems;
+
   const newsExcerpts = (await listPublishedNewsExcerpts()).map((excerpt) => ({
     text: localizedNewsBody(excerpt, activeLocale),
     href: excerpt.article_url,
@@ -62,7 +72,7 @@ export default async function HomePage({
       <HomeShortcuts />
 
       <section className="space-y-8">
-        <SponsoredCarousel items={sponsoredItems} />
+        <SponsoredCarousel items={carouselItems} />
         <div className="w-full space-y-4">
           <p className="text-lg italic font-medium uppercase tracking-[0.18em] text-muted">
             {t("appName")}
@@ -115,7 +125,7 @@ export default async function HomePage({
             },
           ]}
         />
-        <SponsoredCarousel items={[...sponsoredItems].reverse()} />
+        <SponsoredCarousel items={[...carouselItems].reverse()} />
       </section>
 
       <section id="help" className="scroll-mt-6 space-y-6">

@@ -5,13 +5,6 @@ export const UK_MAP_CENTER = {
   zoom: 5.6,
 } as const;
 
-/** Nottingham city centre — used for demo / mock map focus. */
-export const NOTTINGHAM_CENTER = {
-  latitude: 52.950001,
-  longitude: -1.15,
-  zoom: 11,
-} as const;
-
 export const RADIUS_PRESETS_MI = [1, 5, 10, 25] as const;
 
 export type RadiusMiles = (typeof RADIUS_PRESETS_MI)[number] | "nationwide";

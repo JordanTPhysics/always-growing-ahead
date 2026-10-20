@@ -3,7 +3,6 @@ import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { JobForm } from "@/components/job/job-form";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { canPostJobs } from "@/lib/entitlements";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 
 export default async function NewJobPage({
   params,
@@ -17,7 +16,7 @@ export default async function NewJobPage({
     next: "/employer/jobs/new",
   });
 
-  if (!isMockMapDataEnabled() && !canPostJobs(session.user.tier)) {
+  if (!canPostJobs(session.user.tier)) {
     const t = await getTranslations("billing");
     return (
       <UpgradePrompt

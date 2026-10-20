@@ -9,11 +9,6 @@ import {
   getUserByEmail,
   getUserById,
 } from "@/lib/db/repositories/users";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
-import {
-  getMockUserByEmail,
-  getMockUserById,
-} from "@/lib/mock/test-accounts";
 
 declare module "next-auth" {
   interface Session {
@@ -24,6 +19,7 @@ declare module "next-auth" {
       role: UserRole;
       preferredLocale: string;
       isEmailVerified: boolean;
+      postcode: string | null;
     };
   }
 
@@ -41,6 +37,7 @@ type AppToken = {
   role?: UserRole;
   preferredLocale?: string;
   isEmailVerified?: boolean;
+  postcode?: string | null;
 };
 
 const googleId =
@@ -49,16 +46,12 @@ const googleSecret =
   process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET ?? "";
 
 async function resolveUserByEmail(email: string) {
-  if (isMockMapDataEnabled()) {
-    return getMockUserByEmail(email);
-  }
+
   return getUserByEmail(email);
 }
 
 async function resolveUserById(id: number) {
-  if (isMockMapDataEnabled()) {
-    return getMockUserById(id);
-  }
+
   return getUserById(id);
 }
 
@@ -114,7 +107,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       const existing = await resolveUserByEmail(user.email);
       if (!existing) {
-        if (isMockMapDataEnabled()) return true;
         await createUser({
           email: user.email,
           passwordHash: null,
@@ -134,6 +126,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           appToken.role = dbUser.role;
           appToken.preferredLocale = dbUser.preferred_locale;
           appToken.isEmailVerified = Boolean(dbUser.email_verified_at);
+          appToken.postcode = dbUser.postcode ?? null;
         }
       } else if (appToken.id) {
         const dbUser = await resolveUserById(Number(appToken.id));
@@ -142,6 +135,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           appToken.role = dbUser.role;
           appToken.preferredLocale = dbUser.preferred_locale;
           appToken.isEmailVerified = Boolean(dbUser.email_verified_at);
+          appToken.postcode = dbUser.postcode ?? null;
         }
       }
 
@@ -159,6 +153,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = appToken.role ?? "user";
         session.user.preferredLocale = appToken.preferredLocale ?? "en";
         session.user.isEmailVerified = Boolean(appToken.isEmailVerified);
+        session.user.postcode = appToken.postcode ?? null;
       }
       return session;
     },

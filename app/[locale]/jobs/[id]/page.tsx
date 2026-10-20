@@ -2,11 +2,6 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { getJobById, listJobSkills } from "@/lib/db/repositories/jobs";
-import { getJsonJobById } from "@/lib/mock/jobs-store";
-import {
-  getMockJobById,
-  isMockMapDataEnabled,
-} from "@/lib/mock/nottingham";
 import { PageHeader } from "@/components/ui/forms";
 import { Card, PageSection } from "@/components/ui/card";
 import { ContactReveal } from "@/components/billing/contact-reveal";
@@ -24,24 +19,9 @@ export default async function JobDetailPage({
   const t = await getTranslations("jobs");
   const jobId = Number(id);
 
-  let job;
-  let skills;
-
-  if (isMockMapDataEnabled()) {
-    const mockRow = getJsonJobById(jobId);
-    const mockJob = mockRow?.job ?? getMockJobById(jobId);
-    if (!mockJob) notFound();
-    job = mockJob;
-    skills =
-      mockRow?.skills.map((skill) => ({
-        ...skill,
-        skill_name: `Skill #${skill.skill_id}`,
-      })) ?? [];
-  } else {
-    job = await getJobById(jobId);
-    if (!job) notFound();
-    skills = await listJobSkills(job.id);
-  }
+  const job = await getJobById(jobId);
+  if (!job) notFound();
+  const skills = await listJobSkills(job.id);
 
   return (
     <PageSection>

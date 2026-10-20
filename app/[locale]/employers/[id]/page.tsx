@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { getEmployerById } from "@/lib/db/repositories/employers";
-import { getJsonEmployerById } from "@/lib/mock/profiles-store";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import { canViewContactInfo } from "@/lib/entitlements";
 import { stripProfileContact } from "@/lib/profiles/contact";
 import { Link } from "@/lib/i18n/navigation";
@@ -30,9 +28,7 @@ export default async function EmployerPublicPage({
   const employerId = Number(id);
   const session = await auth();
 
-  const profile = isMockMapDataEnabled()
-    ? getJsonEmployerById(employerId)
-    : await getEmployerById(employerId);
+  const profile = await getEmployerById(employerId);
 
   if (!profile) notFound();
 

@@ -3,5 +3,14 @@
   "subtitle": "Stay up to date with activity on your AGA account.",
   "markAllRead": "Mark all as read",
   "empty": "You have no notifications yet.",
-  "unread": "Unread"
+  "unread": "Unread",
+  "pushTitle": "Browser notifications",
+  "pushPrompt": "Get an alert in this browser when someone posts on the marketplace, or when a new job is published while you are actively looking.",
+  "enablePush": "Turn on browser notifications",
+  "pushEnabling": "Turning on…",
+  "pushEnabled": "Browser notifications are on for this device.",
+  "pushDenied": "Notifications are blocked in this browser. Allow them in the site settings, then reload this page.",
+  "pushUnsupported": "This browser does not support push notifications.",
+  "pushUnavailable": "Browser push is not configured on the server yet.",
+  "pushError": "Could not turn on browser notifications. Try again."
 }

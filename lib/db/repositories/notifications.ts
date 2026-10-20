@@ -1,12 +1,5 @@
 import { pool } from "@/lib/db/pool";
 import type { Notification } from "@/lib/db/types";
-import {
-  createMockNotification,
-  listMockNotificationsForUser,
-  markAllMockNotificationsRead,
-  markMockNotificationRead,
-} from "@/lib/mock/demo-notifications";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 type NotificationRow = Notification & RowDataPacket;
@@ -18,8 +11,6 @@ export async function createNotification(input: {
   body: string;
   linkUrl?: string | null;
 }): Promise<Notification> {
-  if (isMockMapDataEnabled()) return createMockNotification(input);
-
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO notifications (user_id, type, title, body, link_url)
      VALUES (?, ?, ?, ?, ?)`,
@@ -38,9 +29,6 @@ export async function listNotificationsForUser(
   limit = 50
 ): Promise<Notification[]> {
   const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 200);
-  if (isMockMapDataEnabled()) {
-    return listMockNotificationsForUser(userId, safeLimit);
-  }
   const [rows] = await pool.execute<NotificationRow[]>(
     `SELECT * FROM notifications
      WHERE user_id = ?
@@ -55,11 +43,6 @@ export async function markNotificationRead(
   notificationId: number,
   userId: number
 ): Promise<void> {
-  if (isMockMapDataEnabled()) {
-    markMockNotificationRead(notificationId, userId);
-    return;
-  }
-
   await pool.execute(
     `UPDATE notifications
      SET read_at = COALESCE(read_at, CURRENT_TIMESTAMP)
@@ -68,12 +51,44 @@ export async function markNotificationRead(
   );
 }
 
-export async function markAllNotificationsRead(userId: number): Promise<void> {
-  if (isMockMapDataEnabled()) {
-    markAllMockNotificationsRead(userId);
-    return;
+export async function createNotificationsForUsers(
+  userIds: number[],
+  input: {
+    type: string;
+    title: string;
+    body: string;
+    linkUrl?: string | null;
   }
+): Promise<void> {
+  const ids = [
+    ...new Set(userIds.filter((id) => Number.isInteger(id) && id > 0)),
+  ];
+  if (ids.length === 0) return;
 
+  const title = input.title.slice(0, 255);
+  const type = input.type.slice(0, 50);
+  const linkUrl = input.linkUrl ?? null;
+
+  const chunkSize = 100;
+  for (let offset = 0; offset < ids.length; offset += chunkSize) {
+    const chunk = ids.slice(offset, offset + chunkSize);
+    const placeholders = chunk.map(() => "(?, ?, ?, ?, ?)").join(", ");
+    const params = chunk.flatMap((userId) => [
+      userId,
+      type,
+      title,
+      input.body,
+      linkUrl,
+    ]);
+    await pool.execute(
+      `INSERT INTO notifications (user_id, type, title, body, link_url)
+       VALUES ${placeholders}`,
+      params
+    );
+  }
+}
+
+export async function markAllNotificationsRead(userId: number): Promise<void> {
   await pool.execute(
     `UPDATE notifications
      SET read_at = COALESCE(read_at, CURRENT_TIMESTAMP)

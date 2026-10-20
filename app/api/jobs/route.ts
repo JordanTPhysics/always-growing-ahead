@@ -14,19 +14,7 @@ import {
   updateJob,
 } from "@/lib/db/repositories/jobs";
 import type { JobType } from "@/lib/db/types";
-import {
-  createJsonJob,
-  getJsonJobById,
-  listJsonJobsByEmployer,
-  setJsonJobSkills,
-  updateJsonJob,
-} from "@/lib/mock/jobs-store";
-import { ensureLocationCoords } from "@/lib/mock/ensure-location";
-import {
-  isMockMapDataEnabled,
-  searchMockJobs,
-} from "@/lib/mock/nottingham";
-import { getJsonEmployerByUserId } from "@/lib/mock/profiles-store";
+import { notifyJobPublished } from "@/lib/notifications/events";
 
 const jobTypes = z.enum([
   "full-time",
@@ -63,7 +51,6 @@ const jobSchema = z.object({
 function assertCanPostJobs(session: {
   user: { tier: Tier; isEmailVerified: boolean };
 }) {
-  if (isMockMapDataEnabled()) return null;
   if (!session.user.isEmailVerified) {
     return jsonError("Verify your email before posting jobs", 403);
   }
@@ -77,14 +64,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
   const mine = searchParams.get("mine");
-  const mock = isMockMapDataEnabled();
 
   if (id) {
-    if (mock) {
-      const row = getJsonJobById(Number(id));
-      if (!row) return jsonError("Job not found", 404);
-      return NextResponse.json({ job: row.job, skills: row.skills });
-    }
     const job = await getJobById(Number(id));
     if (!job) return jsonError("Job not found", 404);
     const skills = await listJobSkills(job.id);
@@ -95,13 +76,6 @@ export async function GET(request: Request) {
     const { session, error } = await requireSession();
     if (error) return error;
     const userId = Number(session.user.id);
-    if (mock) {
-      const employer = getJsonEmployerByUserId(userId);
-      if (!employer) return NextResponse.json({ jobs: [] });
-      return NextResponse.json({
-        jobs: listJsonJobsByEmployer(employer.id),
-      });
-    }
     const employer = await getEmployerByUserId(userId);
     if (!employer) return NextResponse.json({ jobs: [] });
     const jobs = await listJobsByEmployer(employer.id);
@@ -129,24 +103,6 @@ export async function GET(request: Request) {
     skillIds;
 
   if (hasSearch) {
-    if (mock) {
-      const jobs = await searchMockJobs({
-        lat: lat != null ? Number(lat) : undefined,
-        lng: lng != null ? Number(lng) : undefined,
-        radiusMeters:
-          radius === "nationwide" || radius == null
-            ? null
-            : Number(radius),
-        field: field?.trim() || undefined,
-        jobType: (jobType as JobType | null) || undefined,
-        salaryMin: salaryMin != null ? Number(salaryMin) : undefined,
-        salaryMax: salaryMax != null ? Number(salaryMax) : undefined,
-        postedWithinDays:
-          postedWithinDays != null ? Number(postedWithinDays) : undefined,
-      });
-      return NextResponse.json({ jobs });
-    }
-
     const jobs = await searchJobs({
       lat: lat != null ? Number(lat) : undefined,
       lng: lng != null ? Number(lng) : undefined,
@@ -170,10 +126,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ jobs });
   }
 
-  if (mock) {
-    return NextResponse.json({ jobs: await searchMockJobs({}) });
-  }
-
   const jobs = await listActiveJobs();
   return NextResponse.json({ jobs });
 }
@@ -194,17 +146,6 @@ export async function POST(request: Request) {
 
   const { skills, ...jobInput } = parsed.data;
 
-  if (isMockMapDataEnabled()) {
-    const employer = getJsonEmployerByUserId(userId);
-    if (!employer) {
-      return jsonError("Create an employer profile first", 400);
-    }
-    const located = await ensureLocationCoords(jobInput);
-    const job = createJsonJob(employer.id, located);
-    if (skills) setJsonJobSkills(job.id, skills);
-    return NextResponse.json({ job }, { status: 201 });
-  }
-
   const employer = await getEmployerByUserId(userId);
   if (!employer) {
     return jsonError("Create an employer profile first", 400);
@@ -212,6 +153,14 @@ export async function POST(request: Request) {
 
   const job = await createJob(employer.id, jobInput);
   if (skills) await setJobSkills(job.id, skills);
+  await notifyJobPublished({
+    posterUserId: userId,
+    jobId: job.id,
+    title: job.title,
+    status: job.status,
+    postcode: job.postcode,
+    addressText: job.address_text,
+  });
 
   return NextResponse.json({ job }, { status: 201 });
 }
@@ -234,22 +183,6 @@ export async function PUT(request: Request) {
 
   const { skills, id, ...jobInput } = parsed.data;
 
-  if (isMockMapDataEnabled()) {
-    const employer = getJsonEmployerByUserId(userId);
-    if (!employer) return jsonError("Employer profile not found", 404);
-    const existing = getJsonJobById(id);
-    if (!existing || existing.job.employer_id !== employer.id) {
-      return jsonError("Job not found", 404);
-    }
-    const located = await ensureLocationCoords({
-      ...existing.job,
-      ...jobInput,
-    });
-    const job = updateJsonJob(id, located);
-    if (skills) setJsonJobSkills(job.id, skills);
-    return NextResponse.json({ job });
-  }
-
   const employer = await getEmployerByUserId(userId);
   if (!employer) return jsonError("Employer profile not found", 404);
 
@@ -260,6 +193,15 @@ export async function PUT(request: Request) {
 
   const job = await updateJob(id, jobInput);
   if (skills) await setJobSkills(job.id, skills);
+  await notifyJobPublished({
+    posterUserId: userId,
+    jobId: job.id,
+    title: job.title,
+    status: job.status,
+    previousStatus: existing.status,
+    postcode: job.postcode,
+    addressText: job.address_text,
+  });
 
   return NextResponse.json({ job });
 }

@@ -12,6 +12,7 @@ import { FaFacebook, FaInstagram, FaLinkedin, FaTiktok } from "react-icons/fa6";
 import { IconGradients, iconFill } from "@/components/icons/icon-gradients";
 import { AuthSessionProvider } from "@/components/auth/session-provider";
 import { NativeBootstrap } from "@/components/native/native-bootstrap";
+import { BrowserPushSync } from "@/components/notifications/browser-push";
 import { LiveChatWidget } from "@/components/chat/live-chat-widget";
 import { auth } from "@/auth";
 import { themeInitScript } from "@/lib/theme";
@@ -64,6 +65,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <AuthSessionProvider>
             <NativeBootstrap />
+            <BrowserPushSync />
             <HashScroll />
             <SiteHeader
               locale={locale}

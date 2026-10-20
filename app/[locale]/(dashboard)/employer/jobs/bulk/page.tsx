@@ -3,7 +3,6 @@ import { requireAuthOrSignUp } from "@/lib/auth/require-auth";
 import { JobsCsvUpload } from "@/components/job/jobs-csv-upload";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { canPostJobs } from "@/lib/entitlements";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
 
 export default async function BulkJobsPage({
   params,
@@ -17,7 +16,7 @@ export default async function BulkJobsPage({
     next: "/employer/jobs/bulk",
   });
 
-  if (!isMockMapDataEnabled() && !canPostJobs(session.user.tier)) {
+  if (!canPostJobs(session.user.tier)) {
     const t = await getTranslations("billing");
     return (
       <UpgradePrompt

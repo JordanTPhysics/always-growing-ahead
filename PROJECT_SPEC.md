@@ -469,7 +469,10 @@ S3_BUCKET_NAME= / R2_BUCKET_NAME=
 S3_ACCESS_KEY_ID=
 S3_SECRET_ACCESS_KEY=
 RESEND_API_KEY=                  # or Postmark
-FIREBASE_SERVER_KEY=              # for push notifications
+FIREBASE_SERVER_KEY=              # native app push (FCM)
+VAPID_PUBLIC_KEY=                 # browser push
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:admin@alwaysgrowingahead.com
 ```
 
 ---

@@ -373,6 +373,17 @@ export type NewsExcerpt = {
   updated_at: Date;
 };
 
+export type SponsoredItemRecord = {
+  id: number;
+  slug: string;
+  href: string;
+  tagline: string;
+  description: string | null;
+  image_url: string;
+  sort_order: number;
+  updated_at: Date;
+};
+
 export type ChatSenderRole = "user" | "admin";
 
 export type ChatConversation = {

@@ -8,6 +8,7 @@ import { PillToggle } from "@/components/ui/pill-toggle";
 import { AdminChatPanel } from "@/components/admin/admin-chat-panel";
 import { AdminEducationPanel } from "@/components/admin/admin-education-panel";
 import { AdminNewsPanel } from "@/components/admin/admin-news-panel";
+import { AdminSponsoredPanel } from "@/components/admin/admin-sponsored-panel";
 import { AdminTranslationsPanel } from "@/components/admin/admin-translations-panel";
 import { AdminSignupsPanel } from "@/components/admin/admin-signups-panel";
 import { BusinessesCsvUpload } from "@/components/admin/businesses-csv-upload";
@@ -79,6 +80,7 @@ export function AdminDashboard({ initialTab = "access" }: { initialTab?: AdminTa
           { value: "businesses", label: t("tabs.businesses") },
           { value: "education", label: t("tabs.education") },
           { value: "news", label: t("tabs.news") },
+          { value: "sponsored", label: t("tabs.sponsored") },
           { value: "translations", label: t("tabs.translations") },
           { value: "signups", label: t("tabs.signups") },
         ]}
@@ -158,6 +160,7 @@ export function AdminDashboard({ initialTab = "access" }: { initialTab?: AdminTa
       {tab === "businesses" ? <BusinessesCsvUpload /> : null}
       {tab === "education" ? <AdminEducationPanel /> : null}
       {tab === "news" ? <AdminNewsPanel /> : null}
+      {tab === "sponsored" ? <AdminSponsoredPanel /> : null}
       {tab === "translations" ? <AdminTranslationsPanel /> : null}
       {tab === "signups" ? <AdminSignupsPanel /> : null}
     </div>

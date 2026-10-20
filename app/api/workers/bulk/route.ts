@@ -9,12 +9,7 @@ import {
   parseWorkerCsv,
   type WorkerCsvInput,
 } from "@/lib/workers/csv";
-import { ensureLocationCoords } from "@/lib/mock/ensure-location";
-import { isMockMapDataEnabled } from "@/lib/mock/nottingham";
-import {
-  createJsonWorkerProfile,
-  setJsonWorkerSkills,
-} from "@/lib/mock/profiles-store";
+import { ensureLocationCoords } from "@/lib/geocoding/ensure-location";
 import type { Skill } from "@/lib/db/types";
 
 export const runtime = "nodejs";
@@ -85,8 +80,7 @@ export async function POST(request: Request) {
   const parsed = parseWorkerCsv(text);
   if (parsed.error) return jsonError(parsed.error);
 
-  const mock = isMockMapDataEnabled();
-  const catalog = mock ? [] : await listSkills();
+  const catalog = await listSkills();
   const skillsByName = skillMap(catalog);
   const geoCache = new Map<string, WorkerCsvInput>();
 
@@ -97,9 +91,7 @@ export async function POST(request: Request) {
   for (const row of parsed.rows) {
     try {
       const located = await locateRow(row.input, geoCache);
-      const profile = mock
-        ? createJsonWorkerProfile(null, located)
-        : await createWorkerProfile(null, located);
+      const profile = await createWorkerProfile(null, located);
 
       const unknown: string[] = [];
       const skills = row.skillNames.flatMap((name) => {
@@ -112,8 +104,7 @@ export async function POST(request: Request) {
       });
 
       if (skills.length > 0) {
-        if (mock) setJsonWorkerSkills(profile.id, skills);
-        else await setWorkerSkills(profile.id, skills);
+        await setWorkerSkills(profile.id, skills);
       }
       if (unknown.length > 0 && catalog.length > 0) {
         warnings.push({

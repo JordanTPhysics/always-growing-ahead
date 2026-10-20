@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "tsx lib/db/migrate.ts",
-    "seed:mock": "tsx scripts/seed-mock-data.ts",
     "stripe:upload-products": "tsx lib/stripe/upload-stripe-products.ts",
     "cap:sync": "npx cap sync",
     "cap:open:android": "npx cap open android",
@@ -39,6 +38,7 @@
     "react-icons": "^5.7.0",
     "stripe": "^22.3.1",
     "tailwind-merge": "^3.6.0",
+    "web-push": "^3.6.7",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -52,6 +52,7 @@
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
