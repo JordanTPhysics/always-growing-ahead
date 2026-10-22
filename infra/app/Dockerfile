@@ -1,9 +1,10 @@
-FROM node:24-alpine AS deps
+# 24.22.1 is the Oct 21 2026 security release for the 24.x line.
+FROM node:24.22.1-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:24-alpine AS builder
+FROM node:24.22.1-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -12,7 +13,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # inline any NEXT_PUBLIC_* into the browser bundle at build time.
 RUN npm run build
 
-FROM node:24-alpine AS runner
+FROM node:24.22.1-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

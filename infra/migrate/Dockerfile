@@ -1,4 +1,5 @@
-FROM node:24-alpine
+# 24.22.1 is the Oct 21 2026 security release for the 24.x line.
+FROM node:24.22.1-alpine
 
 WORKDIR /app
 
