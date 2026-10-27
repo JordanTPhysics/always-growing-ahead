@@ -13,10 +13,10 @@ import { useMarketplaceLikes } from "@/components/marketplace/use-marketplace-li
 export function MarketplaceFeed() {
   const t = useTranslations("marketplace");
   const locale = useLocale();
-  const { isLiked, toggleLike } = useMarketplaceLikes();
   const [posts, setPosts] = useState<MarketplacePost[]>(marketplacePosts);
   const [quota, setQuota] = useState<MarketplaceQuota | null>(null);
   const listingIds = posts.map((post) => post.id);
+  const { isLiked, getLikeCount, toggleLike } = useMarketplaceLikes(listingIds);
   const { getCount, setCount } = useMarketplaceCommentCounts(listingIds);
   const [activeIndex, setActiveIndex] = useState(0);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
@@ -142,8 +142,9 @@ export function MarketplaceFeed() {
             <MarketplacePostCard
               post={post}
               liked={isLiked(post.id)}
+              likeCount={getLikeCount(post.id)}
               commentCount={getCount(post.id)}
-              onToggleLike={() => toggleLike(post.id)}
+              onToggleLike={() => void toggleLike(post.id)}
               onOpenComments={() => setCommentsPostId(post.id)}
               onShare={() => void sharePost(post.id, post.title)}
               isActive={activeIndex === index}

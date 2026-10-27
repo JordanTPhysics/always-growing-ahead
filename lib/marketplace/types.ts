@@ -34,7 +34,6 @@ export type MarketplacePost = {
   category: string;
   mediaType: MarketplaceMediaType;
   mediaUrl: string;
-  likes: number;
 };
 
 export function marketplaceSellerHref(

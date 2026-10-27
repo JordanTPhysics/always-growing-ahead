@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 type Props = {
   post: MarketplacePost;
   liked: boolean;
+  likeCount: number;
   commentCount: number;
   onToggleLike: () => void;
   onOpenComments: () => void;
@@ -33,6 +34,7 @@ function formatCount(value: number) {
 export function MarketplacePostCard({
   post,
   liked,
+  likeCount,
   commentCount,
   onToggleLike,
   onOpenComments,
@@ -42,7 +44,6 @@ export function MarketplacePostCard({
   const t = useTranslations("marketplace");
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
-  const likeCount = post.likes + (liked ? 1 : 0);
   const sellerHref = marketplaceSellerHref(post.seller);
 
   useEffect(() => {

@@ -14,6 +14,49 @@ dotenv.config();
 
 type MigrationRow = RowDataPacket & { name: string };
 
+/** Last migration applied by hand before schema_migrations was kept in sync. */
+const HAND_APPLIED_THROUGH = "025_push_subscription_tokens.sql";
+
+/**
+ * 007–025 were applied outside this runner, so they are missing from
+ * schema_migrations and a re-run dies on the first duplicate column.
+ * When the end state of that range is already present, record the files
+ * and leave execution to anything newer.
+ */
+async function recordHandAppliedMigrations(
+  conn: mysql.Connection,
+  files: string[]
+) {
+  const [marker] = await conn.query<RowDataPacket[]>(
+    `SELECT 1 AS ok
+     FROM information_schema.STATISTICS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'device_tokens'
+       AND INDEX_NAME = 'device_tokens_token_hash'
+     LIMIT 1`
+  );
+  if (marker.length === 0) return;
+
+  const [rows] = await conn.query<MigrationRow[]>(
+    "SELECT name FROM schema_migrations"
+  );
+  const recorded = new Set(rows.map((row) => row.name));
+  const missing = files.filter(
+    (file) => file <= HAND_APPLIED_THROUGH && !recorded.has(file)
+  );
+  if (missing.length === 0) return;
+
+  console.log(
+    `Recording ${missing.length} migration(s) through ${HAND_APPLIED_THROUGH} as already applied.`
+  );
+  for (const file of missing) {
+    await conn.query("INSERT INTO schema_migrations (name) VALUES (?)", [
+      file,
+    ]);
+    console.log(`record ${file}`);
+  }
+}
+
 async function main() {
   const host = process.env.DB_HOST ?? "127.0.0.1";
   const port = Number(process.env.DB_PORT ?? 3306);
@@ -91,6 +134,8 @@ async function main() {
     .readdirSync(dir)
     .filter((f) => f.endsWith(".sql"))
     .sort();
+
+  await recordHandAppliedMigrations(conn, files);
 
   for (const file of files) {
     const [rows] = await conn.query<MigrationRow[]>(

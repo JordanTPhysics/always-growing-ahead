@@ -77,7 +77,6 @@ function mapListingToPost(row: ListingFeedRow): MarketplacePost {
     category: row.category || "Other",
     mediaType: row.media_type,
     mediaUrl: row.media_url,
-    likes: 0,
   };
 }
 
