@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -30,6 +31,15 @@ const arabic = Noto_Sans_Arabic({
   display: "swap",
 });
 
+export const metadata: Metadata = {
+  verification: {
+    other: {
+      "ahrefs-site-verification":
+        "2eeff0bd2fb439b4875d203988a74dc5ab9134f3586474ccfc8ecd81b4ac8f9f",
+    },
+  },
+};
+
 export const runtime = "nodejs";
 
 export function generateStaticParams() {
@@ -59,6 +69,20 @@ export default async function LocaleLayout({
       className={`${latin.variable} ${arabic.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-3Z3502RET0"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-3Z3502RET0');`,
+          }}
+        />
+      </head>
       <body className="flex min-h-dvh flex-col antialiased">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <IconGradients />

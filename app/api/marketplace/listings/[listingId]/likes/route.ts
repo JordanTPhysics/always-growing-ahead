@@ -48,9 +48,13 @@ export async function POST(_request: Request, { params }: Params) {
   const created = await addMarketplaceLike({ listingId, userId });
 
   if (created) {
-    const ownerUserId = await getMarketplaceListingOwnerUserId(listingId);
-    if (ownerUserId != null && ownerUserId !== userId) {
-      await notifyOwnerLiked(listingId, ownerUserId);
+    try {
+      const ownerUserId = await getMarketplaceListingOwnerUserId(listingId);
+      if (ownerUserId != null && ownerUserId !== userId) {
+        await notifyOwnerLiked(listingId, ownerUserId);
+      }
+    } catch (err) {
+      console.error("notifyOwnerLiked", err);
     }
   }
 

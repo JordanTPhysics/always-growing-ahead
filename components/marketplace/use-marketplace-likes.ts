@@ -15,35 +15,40 @@ export function useMarketplaceLikes(listingIds: string[]) {
   const countsRef = useRef(counts);
   likedIdsRef.current = likedIds;
   countsRef.current = counts;
+  // Taps that happened after a list request started. That response must not undo them.
+  const localRef = useRef(new Map<string, { liked: boolean; count: number }>());
 
   useEffect(() => {
     if (!listingKey) return;
     let cancelled = false;
+    const localAtStart = new Map(localRef.current);
 
     async function load() {
       try {
         const response = await fetch(
-          `/api/marketplace/likes?ids=${encodeURIComponent(listingKey)}`
+          `/api/marketplace/likes?ids=${encodeURIComponent(listingKey)}`,
+          { cache: "no-store" }
         );
-        if (!response.ok) return;
+        if (!response.ok || cancelled) return;
         const data = (await response.json()) as {
           counts?: Record<string, number>;
           likedIds?: string[];
         };
         if (cancelled) return;
 
-        const pending = pendingRef.current;
-        setCounts((prev) => {
+        setCounts(() => {
           const next = { ...(data.counts ?? {}) };
-          for (const id of pending) {
-            if (id in prev) next[id] = prev[id];
+          for (const [id, like] of localRef.current) {
+            if (localAtStart.get(id) === like) continue;
+            next[id] = like.count;
           }
           return next;
         });
-        setLikedIds((prev) => {
+        setLikedIds(() => {
           const next = new Set(data.likedIds ?? []);
-          for (const id of pending) {
-            if (prev.has(id)) next.add(id);
+          for (const [id, like] of localRef.current) {
+            if (localAtStart.get(id) === like) continue;
+            if (like.liked) next.add(id);
             else next.delete(id);
           }
           return next;
@@ -71,21 +76,26 @@ export function useMarketplaceLikes(listingIds: string[]) {
       if (pendingRef.current.has(id)) return;
       pendingRef.current.add(id);
 
-      const wasLiked = likedIdsRef.current.has(id);
-      const previousCount = countsRef.current[id] ?? 0;
-
+      const prior = localRef.current.get(id);
+      const hadPrior = localRef.current.has(id);
+      const wasLiked = prior?.liked ?? likedIdsRef.current.has(id);
+      const previousCount = prior?.count ?? countsRef.current[id] ?? 0;
+      const optimistic = {
+        liked: !wasLiked,
+        count: Math.max(0, previousCount + (wasLiked ? -1 : 1)),
+      };
+      localRef.current.set(id, optimistic);
       setLikedIds((prev) => {
         const next = new Set(prev);
-        if (wasLiked) next.delete(id);
-        else next.add(id);
+        if (optimistic.liked) next.add(id);
+        else next.delete(id);
         return next;
       });
-      setCounts((prev) => ({
-        ...prev,
-        [id]: Math.max(0, previousCount + (wasLiked ? -1 : 1)),
-      }));
+      setCounts((prev) => ({ ...prev, [id]: optimistic.count }));
 
       const revert = () => {
+        if (hadPrior && prior) localRef.current.set(id, prior);
+        else localRef.current.delete(id);
         setLikedIds((prev) => {
           const next = new Set(prev);
           if (wasLiked) next.add(id);
@@ -98,7 +108,7 @@ export function useMarketplaceLikes(listingIds: string[]) {
       try {
         const response = await fetch(
           `/api/marketplace/listings/${encodeURIComponent(id)}/likes`,
-          { method: wasLiked ? "DELETE" : "POST" }
+          { method: wasLiked ? "DELETE" : "POST", cache: "no-store" }
         );
 
         if (response.status === 401) {
@@ -116,17 +126,18 @@ export function useMarketplaceLikes(listingIds: string[]) {
           liked?: boolean;
           count?: number;
         };
-        if (typeof data.count === "number") {
-          setCounts((prev) => ({ ...prev, [id]: data.count as number }));
-        }
-        if (typeof data.liked === "boolean") {
-          setLikedIds((prev) => {
-            const next = new Set(prev);
-            if (data.liked) next.add(id);
-            else next.delete(id);
-            return next;
-          });
-        }
+        const confirmed = {
+          liked: typeof data.liked === "boolean" ? data.liked : optimistic.liked,
+          count: typeof data.count === "number" ? data.count : optimistic.count,
+        };
+        localRef.current.set(id, confirmed);
+        setLikedIds((prev) => {
+          const next = new Set(prev);
+          if (confirmed.liked) next.add(id);
+          else next.delete(id);
+          return next;
+        });
+        setCounts((prev) => ({ ...prev, [id]: confirmed.count }));
       } catch {
         revert();
       } finally {

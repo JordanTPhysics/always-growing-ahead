@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+
+export const dynamic = "force-dynamic";
 import {
   countLikesForListings,
   listLikedListingIds,
@@ -21,5 +23,8 @@ export async function GET(request: Request) {
       ? await listLikedListingIds(userId, listingIds)
       : [];
 
-  return NextResponse.json({ counts, likedIds });
+  return NextResponse.json(
+    { counts, likedIds },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }
