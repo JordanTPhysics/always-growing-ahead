@@ -15,6 +15,7 @@ import {
 } from "@/components/notifications/notification-bell";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { HeaderSearch } from "@/components/search/site-search-form";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -605,6 +606,7 @@ export function SiteHeader({ user: initialUser }: Props) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 py-2 sm:px-6">
+          <HeaderSearch />
           <ThemeToggle />
           <LanguageMenu open={localeOpen} onOpenChange={openLanguageMenu} />
           {user ? (

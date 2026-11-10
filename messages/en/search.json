@@ -1,0 +1,23 @@
+{
+  "label": "Search the site",
+  "placeholder": "Search pages, jobs, people, guides, and posts",
+  "submit": "Search",
+  "title": "Search",
+  "subtitle": "Find pages, job postings, profiles, education, and marketplace posts.",
+  "resultsFor": "Results for \"{query}\"",
+  "summary": "{count, plural, one {# result} other {# results}}",
+  "empty": "Nothing matched \"{query}\". Try a job title, a name, a topic, or a page such as pricing.",
+  "tooShort": "Enter at least 2 characters.",
+  "prompt": "Search pages, job postings, profiles, education, and marketplace posts.",
+  "unavailable": "Live listings could not be searched just now. Page matches are still shown.",
+  "kinds": {
+    "page": "Pages",
+    "job": "Job postings",
+    "profile": "Profiles",
+    "education": "Education",
+    "marketplace": "Marketplace"
+  },
+  "profileWorker": "Worker",
+  "profileEmployer": "Employer",
+  "by": "by {name}"
+}

@@ -86,6 +86,12 @@ export function EducationTypeLibrary({ slug, resources }: Props) {
   }, [resources]);
 
   useEffect(() => {
+    const id = window.location.hash.replace(/^#/, "");
+    if (!id.startsWith("resource-")) return;
+    document.getElementById(id)?.scrollIntoView({ block: "start" });
+  }, [resources]);
+
+  useEffect(() => {
     if (!shareMessage) return;
     const timer = window.setTimeout(() => setShareMessage(null), 2500);
     return () => window.clearTimeout(timer);

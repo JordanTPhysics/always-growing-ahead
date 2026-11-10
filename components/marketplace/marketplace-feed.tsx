@@ -79,6 +79,14 @@ export function MarketplaceFeed() {
   }, [posts]);
 
   useEffect(() => {
+    const id = window.location.hash.replace(/^#/, "");
+    if (!id) return;
+    const index = posts.findIndex((post) => post.id === id);
+    if (index < 0) return;
+    itemRefs.current[index]?.scrollIntoView({ block: "start" });
+  }, [posts]);
+
+  useEffect(() => {
     if (!shareMessage) return;
     const timer = window.setTimeout(() => setShareMessage(null), 2500);
     return () => window.clearTimeout(timer);
