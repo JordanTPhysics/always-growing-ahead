@@ -568,12 +568,23 @@ html[data-theme="dark"] .theme-toggle-sun {
   z-index: 1;
 }
 
-.marketplace-feed {
+.marketplace-feed,
+.education-shorts-feed {
   scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
 }
 
-.marketplace-snap-item {
+.education-shorts-feed {
+  touch-action: pan-y;
+  scrollbar-width: none;
+}
+
+.education-shorts-feed::-webkit-scrollbar {
+  display: none;
+}
+
+.marketplace-snap-item,
+.education-shorts-item {
   scroll-snap-stop: always;
 }
 

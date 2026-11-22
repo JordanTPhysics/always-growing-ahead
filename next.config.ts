@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
         destination: "/:locale#privacy",
         permanent: true,
       },
+      {
+        source: "/:locale(en|ar|ckb)/education/lectures",
+        destination: "/:locale/education/courses",
+        permanent: true,
+      },
     ];
   },
 };

@@ -14,12 +14,14 @@ export function FavouriteButton({
   className,
   iconClassName,
   onChange,
+  variant = "default",
 }: {
   targetType: FavouriteTargetType;
   targetId: number;
   className?: string;
   iconClassName?: string;
   onChange?: (favourited: boolean) => void;
+  variant?: "default" | "overlay";
 }) {
   const t = useTranslations("favourites");
   const router = useRouter();
@@ -105,9 +107,15 @@ export function FavouriteButton({
       title={favourited ? t("remove") : t("add")}
       className={cn(
         "inline-flex shrink-0 items-center justify-center rounded-md p-1.5 transition",
-        favourited
-          ? "text-accent hover:bg-accent/10"
-          : "text-muted hover:bg-background-soft hover:text-accent",
+        variant === "overlay"
+          ? cn(
+              "h-12 w-12 rounded-full bg-black/40 p-0 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white",
+              favourited &&
+                "bg-white/15 text-amber-300 hover:bg-white/20 hover:text-amber-300"
+            )
+          : favourited
+            ? "text-accent hover:bg-accent/10"
+            : "text-muted hover:bg-background-soft hover:text-accent",
         busy && "opacity-60",
         className
       )}

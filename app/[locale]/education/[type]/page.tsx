@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { EducationShortsFeed } from "@/components/education/education-shorts-feed";
 import { EducationTypeLibrary } from "@/components/education/education-type-library";
 import { PageHeader } from "@/components/ui/forms";
 import { PageSection } from "@/components/ui/card";
@@ -19,19 +20,19 @@ import { isActiveLocale, type ActiveLocale } from "@/lib/i18n/locales";
 
 const titleKeyBySlug: Record<
   EducationTypeSlug,
-  "sectionShortVideos" | "sectionLectures" | "sectionPdfGuides"
+  "sectionShortVideos" | "sectionCourses" | "sectionPdfGuides"
 > = {
   "short-videos": "sectionShortVideos",
-  lectures: "sectionLectures",
+  courses: "sectionCourses",
   pdf: "sectionPdfGuides",
 };
 
 const subtitleKeyBySlug: Record<
   EducationTypeSlug,
-  "sectionShortVideosHint" | "sectionLecturesHint" | "sectionPdfGuidesHint"
+  "sectionShortVideosHint" | "sectionCoursesHint" | "sectionPdfGuidesHint"
 > = {
   "short-videos": "sectionShortVideosHint",
-  lectures: "sectionLecturesHint",
+  courses: "sectionCoursesHint",
   pdf: "sectionPdfGuidesHint",
 };
 
@@ -70,6 +71,14 @@ export default async function EducationTypePage({
       description: localizedEducationDescription(resource, locale),
     }))
   );
+
+  if (type === "short-videos" && libraryItems.length > 0) {
+    return (
+      <div className="fixed inset-x-0 top-[3.75rem] bottom-0 z-10">
+        <EducationShortsFeed resources={libraryItems} />
+      </div>
+    );
+  }
 
   return (
     <PageSection>

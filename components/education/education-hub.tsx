@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 const hubMeta: Record<
   EducationTypeSlug,
   {
-    titleKey: "sectionShortVideos" | "sectionLectures" | "sectionPdfGuides";
+    titleKey: "sectionShortVideos" | "sectionCourses" | "sectionPdfGuides";
     hintKey:
       | "sectionShortVideosHint"
-      | "sectionLecturesHint"
+      | "sectionCoursesHint"
       | "sectionPdfGuidesHint";
     Icon: typeof MdOndemandVideo;
     panelClassName: string;
@@ -29,9 +29,9 @@ const hubMeta: Record<
     iconClassName:
       "dark:text-[color-mix(in_srgb,var(--button-happy-from)_50%,var(--button-happy-to))]",
   },
-  lectures: {
-    titleKey: "sectionLectures",
-    hintKey: "sectionLecturesHint",
+  courses: {
+    titleKey: "sectionCourses",
+    hintKey: "sectionCoursesHint",
     Icon: MdSchool,
     panelClassName:
       "bg-[linear-gradient(135deg,var(--button-secondary-from),var(--button-secondary-to))] text-[var(--button-secondary-fg)]",

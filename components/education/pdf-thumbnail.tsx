@@ -9,9 +9,11 @@ const THUMB_CSS_WIDTH = 144;
 type Props = {
   src: string;
   title: string;
+  /** Fill the parent box instead of rendering a fixed 144px preview. */
+  fill?: boolean;
 };
 
-export function PdfThumbnail({ src, title }: Props) {
+export function PdfThumbnail({ src, title, fill = false }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [visible, setVisible] = useState(false);
@@ -66,13 +68,20 @@ export function PdfThumbnail({ src, title }: Props) {
 
       const unscaled = page.getViewport({ scale: 1 });
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      const cssWidth = fill
+        ? Math.max(rootRef.current?.clientWidth ?? THUMB_CSS_WIDTH, THUMB_CSS_WIDTH)
+        : THUMB_CSS_WIDTH;
       const viewport = page.getViewport({
-        scale: (THUMB_CSS_WIDTH / unscaled.width) * pixelRatio,
+        scale: (cssWidth / unscaled.width) * pixelRatio,
       });
 
       canvas.width = Math.ceil(viewport.width);
       canvas.height = Math.ceil(viewport.height);
       await page.render({ canvas, viewport }).promise;
+      if (fill) {
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+      }
       if (!cancelled) setStatus("ready");
     }
 
@@ -85,19 +94,25 @@ export function PdfThumbnail({ src, title }: Props) {
       cancelled = true;
       void loadingTask?.destroy().catch(() => undefined);
     };
-  }, [src, visible]);
+  }, [fill, src, visible]);
 
   return (
     <div
       ref={rootRef}
-      className="relative w-36 overflow-hidden rounded-md border border-border bg-white"
-      style={status === "ready" ? undefined : { aspectRatio: "3 / 4" }}
+      className={
+        fill
+          ? "relative h-full w-full overflow-hidden bg-white"
+          : "relative w-36 overflow-hidden rounded-md border border-border bg-white"
+      }
+      style={fill || status === "ready" ? undefined : { aspectRatio: "3 / 4" }}
     >
       <canvas
         ref={canvasRef}
         className={
           status === "ready"
-            ? "block h-auto w-full"
+            ? fill
+              ? "h-full w-full object-contain"
+              : "block h-auto w-full"
             : "pointer-events-none absolute inset-0 opacity-0"
         }
       />

@@ -6,7 +6,6 @@ import { MdChatBubbleOutline, MdShare } from "react-icons/md";
 import { FavouriteButton } from "@/components/favourites/favourite-button";
 import { EducationCommentsPanel } from "@/components/education/education-comments-panel";
 import { PdfThumbnail } from "@/components/education/pdf-thumbnail";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { inputClassName } from "@/components/ui/forms";
 import { Link } from "@/lib/i18n/navigation";
@@ -30,6 +29,75 @@ type Props = {
   slug: EducationTypeSlug;
   resources: EducationLibraryItem[];
 };
+
+function PdfGuideCard({
+  resource,
+  commentCount,
+  openLabel,
+  commentLabel,
+  shareLabel,
+  onOpenComments,
+  onShare,
+}: {
+  resource: EducationLibraryItem;
+  commentCount: number;
+  openLabel: string;
+  commentLabel: string;
+  shareLabel: string;
+  onOpenComments: () => void;
+  onShare: () => void;
+}) {
+  return (
+    <Card
+      elevation="nested"
+      className="flex h-80 flex-col overflow-hidden p-0"
+    >
+      <a
+        href={resource.file_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${openLabel}: ${resource.title}`}
+        className="block h-3/4 min-h-0 overflow-hidden bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-text"
+      >
+        <PdfThumbnail src={resource.file_url} title={resource.title} fill />
+      </a>
+      <div className="grid h-1/4 min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 overflow-hidden px-3">
+        <div className="min-w-0 text-start">
+          <h3 className="line-clamp-2 break-normal text-sm font-semibold leading-snug text-text">
+            {resource.title}
+          </h3>
+          {resource.description ? (
+            <p className="truncate text-xs text-muted">{resource.description}</p>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-center">
+          <FavouriteButton targetType="education" targetId={resource.id} />
+          <button
+            type="button"
+            onClick={onOpenComments}
+            className="inline-flex items-center gap-1 rounded-md p-1.5 text-muted transition hover:bg-background-soft hover:text-text"
+            aria-label={commentLabel}
+            title={commentLabel}
+          >
+            <MdChatBubbleOutline className="h-5 w-5" />
+            {commentCount > 0 ? (
+              <span className="text-xs font-medium">{commentCount}</span>
+            ) : null}
+          </button>
+          <button
+            type="button"
+            onClick={onShare}
+            className="inline-flex items-center justify-center rounded-md p-1.5 text-muted transition hover:bg-background-soft hover:text-text"
+            aria-label={shareLabel}
+            title={shareLabel}
+          >
+            <MdShare className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 function groupByTopic(items: EducationLibraryItem[]) {
   const groups = new Map<string, EducationLibraryItem[]>();
@@ -180,91 +248,93 @@ export function EducationTypeLibrary({ slug, resources }: Props) {
       ) : (
         <div className="space-y-6">
           {groups.map(([topic, items]) => (
-            <Card key={`${slug}-${topic}`} elevation="nested" className="p-5">
+            <section key={`${slug}-${topic}`} className="space-y-3">
               <h2 className="text-xl font-semibold text-text">{topic}</h2>
-              <ul className="mt-4 space-y-6">
-                {items.map((resource) => {
-                  const commentCount = commentCounts[resource.id] ?? 0;
-
-                  return (
+              {slug === "pdf" ? (
+                <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {items.map((resource) => (
                     <li
                       key={resource.id}
                       id={`resource-${resource.id}`}
-                      className="scroll-mt-24 border-t border-border pt-4"
+                      className="scroll-mt-24"
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-lg font-medium text-text">
-                            {resource.title}
-                          </h3>
-                          {resource.description ? (
-                            <p className="mt-2 max-w-2xl text-sm text-muted">
-                              {resource.description}
-                            </p>
-                          ) : null}
-                        </div>
-                        <div className="flex shrink-0 items-center gap-1">
-                          <FavouriteButton
-                            targetType="education"
-                            targetId={resource.id}
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setActiveComments({
-                                id: resource.id,
-                                title: resource.title,
-                              })
-                            }
-                            className="inline-flex items-center gap-1 rounded-md p-1.5 text-muted transition hover:bg-background-soft hover:text-text"
-                            aria-label={t("comment")}
-                            title={t("comment")}
-                          >
-                            <MdChatBubbleOutline className="h-5 w-5" />
-                            {commentCount > 0 ? (
-                              <span className="text-xs font-medium">
-                                {commentCount}
-                              </span>
-                            ) : null}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void shareResource(resource)}
-                            className="inline-flex items-center justify-center rounded-md p-1.5 text-muted transition hover:bg-background-soft hover:text-text"
-                            aria-label={t("share")}
-                            title={t("share")}
-                          >
-                            <MdShare className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
+                      <PdfGuideCard
+                        resource={resource}
+                        commentCount={commentCounts[resource.id] ?? 0}
+                        openLabel={t("openPdf")}
+                        commentLabel={t("comment")}
+                        shareLabel={t("share")}
+                        onOpenComments={() =>
+                          setActiveComments({
+                            id: resource.id,
+                            title: resource.title,
+                          })
+                        }
+                        onShare={() => void shareResource(resource)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <Card elevation="nested" className="p-5">
+                  <ul className="space-y-6">
+                    {items.map((resource) => {
+                      const commentCount = commentCounts[resource.id] ?? 0;
 
-                      <div className="mt-4">
-                        {resource.media_type === "pdf" ? (
-                          <div className="flex flex-col items-start gap-3">
-                            <a
-                              href={resource.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text focus-visible:ring-offset-2"
-                            >
-                              <PdfThumbnail
-                                src={resource.file_url}
-                                title={resource.title}
+                      return (
+                        <li
+                          key={resource.id}
+                          id={`resource-${resource.id}`}
+                          className="scroll-mt-24 border-t border-border pt-4 first:border-t-0 first:pt-0"
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-lg font-medium text-text">
+                                {resource.title}
+                              </h3>
+                              {resource.description ? (
+                                <p className="mt-2 max-w-2xl text-sm text-muted">
+                                  {resource.description}
+                                </p>
+                              ) : null}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <FavouriteButton
+                                targetType="education"
+                                targetId={resource.id}
                               />
-                            </a>
-                            <Button asChild>
-                              <a
-                                href={resource.file_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActiveComments({
+                                    id: resource.id,
+                                    title: resource.title,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 rounded-md p-1.5 text-muted transition hover:bg-background-soft hover:text-text"
+                                aria-label={t("comment")}
+                                title={t("comment")}
                               >
-                                {t("openPdf")}
-                              </a>
-                            </Button>
+                                <MdChatBubbleOutline className="h-5 w-5" />
+                                {commentCount > 0 ? (
+                                  <span className="text-xs font-medium">
+                                    {commentCount}
+                                  </span>
+                                ) : null}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void shareResource(resource)}
+                                className="inline-flex items-center justify-center rounded-md p-1.5 text-muted transition hover:bg-background-soft hover:text-text"
+                                aria-label={t("share")}
+                                title={t("share")}
+                              >
+                                <MdShare className="h-5 w-5" />
+                              </button>
+                            </div>
                           </div>
-                        ) : (
-                          <div className="space-y-2">
+
+                          <div className="mt-4 space-y-2">
                             <p className="text-sm text-muted">
                               {isEducationVideoType(resource.media_type)
                                 ? t("watchVideo")
@@ -279,13 +349,13 @@ export function EducationTypeLibrary({ slug, resources }: Props) {
                               <a href={resource.file_url}>{t("watchVideo")}</a>
                             </video>
                           </div>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </Card>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </Card>
+              )}
+            </section>
           ))}
         </div>
       )}
