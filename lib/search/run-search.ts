@@ -218,10 +218,10 @@ export async function runSiteSearch(query: string): Promise<SiteSearchResults> {
       text: tEducation("sectionShortVideosHint"),
     },
     {
-      id: "education-lectures",
-      href: "/education/lectures",
-      title: tEducation("sectionLectures"),
-      text: tEducation("sectionLecturesHint"),
+      id: "education-courses",
+      href: "/education/courses",
+      title: tEducation("sectionCourses"),
+      text: tEducation("sectionCoursesHint"),
     },
     {
       id: "education-pdf",
@@ -298,7 +298,7 @@ export async function runSiteSearch(query: string): Promise<SiteSearchResults> {
   const mediaLabel = {
     pdf: tEducation("typePdf"),
     short_video: tEducation("typeShortVideo"),
-    lecture: tEducation("typeLecture"),
+    lecture: tEducation("typeCourse"),
   } as const;
 
   const profiles = [...content.profiles]

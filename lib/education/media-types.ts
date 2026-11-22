@@ -14,7 +14,7 @@ export const EDUCATION_SECTION_ORDER: EducationMediaType[] = [
 
 export const EDUCATION_TYPE_SLUGS = [
   "short-videos",
-  "lectures",
+  "courses",
   "pdf",
 ] as const;
 
@@ -22,13 +22,13 @@ export type EducationTypeSlug = (typeof EDUCATION_TYPE_SLUGS)[number];
 
 const SLUG_TO_MEDIA_TYPE: Record<EducationTypeSlug, EducationMediaType> = {
   "short-videos": "short_video",
-  lectures: "lecture",
+  courses: "lecture",
   pdf: "pdf",
 };
 
 const MEDIA_TYPE_TO_SLUG: Record<EducationMediaType, EducationTypeSlug> = {
   short_video: "short-videos",
-  lecture: "lectures",
+  lecture: "courses",
   pdf: "pdf",
 };
 

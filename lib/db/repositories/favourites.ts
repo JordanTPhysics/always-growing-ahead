@@ -80,7 +80,7 @@ export async function listFavouritesForUser(
              '/education/',
              CASE er.media_type
                WHEN 'short_video' THEN 'short-videos'
-               WHEN 'lecture' THEN 'lectures'
+               WHEN 'lecture' THEN 'courses'
                ELSE 'pdf'
              END
            )
