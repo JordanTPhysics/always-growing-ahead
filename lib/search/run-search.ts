@@ -304,7 +304,9 @@ export async function runSiteSearch(query: string): Promise<SiteSearchResults> {
   const profiles = [...content.profiles]
     .sort(
       (a, b) =>
-        rankTitle(a.title ?? "", query) - rankTitle(b.title ?? "", query)
+        a.matchRank - b.matchRank ||
+        rankTitle(a.title ?? "", query) - rankTitle(b.title ?? "", query) ||
+        b.matchScore - a.matchScore
     )
     .slice(0, 12)
     .map((profile) =>

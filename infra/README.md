@@ -47,6 +47,7 @@ Cheat sheet (status, logs, deploy, env recreate, backups): [`DOCKER.md`](DOCKER.
 | Service | Role |
 |---|---|
 | `app` | Next.js (proxied by Caddy on port 80/443) |
+| `embed` | Local multilingual embeddings (`Xenova/multilingual-e5-small`). About 2 GB RAM. Bound to `127.0.0.1:8000` |
 | `mysql` | MySQL 8.4. Creates `AGA` (live) and `AGA_test` (test) on first boot |
 | `minio` | S3-compatible object storage for PDFs, videos, photos |
 | `minio-init` | Creates private buckets `aga-live` and `aga-test`, then exits |
@@ -67,7 +68,7 @@ docker compose run --rm --no-deps minio-init
 docker compose --profile tools run --rm migrate
 docker compose --profile tools run --rm ensure-test-db
 docker compose --profile tools run --rm migrate-test
-docker compose up -d --build app caddy
+docker compose up -d --build embed app caddy
 ```
 
 Browser CORS is set in Caddy (community MinIO has no bucket CORS API). Recreate Caddy after Caddyfile changes:
@@ -86,6 +87,15 @@ S3_SECRET_ACCESS_KEY=<MINIO_ROOT_PASSWORD>
 S3_BUCKET_NAME=aga-live
 S3_FORCE_PATH_STYLE=1
 ```
+
+Search translations and vectors use two optional settings in `/opt/aga/.env`:
+
+```
+AZURE_TRANSLATOR_KEY=
+AZURE_TRANSLATOR_REGION=
+```
+
+Leave the key empty to keep lexical search only. Compose sets `EMBEDDING_URL=http://embed:8000` for the app container. Central Kurdish is sent to Azure as `ku`. A cron in the `trial-billing` container calls `/api/cron/search-index` every five minutes with `CRON_SECRET`, same as chat cleanup.
 
 Staging uses `aga_test` / `AGA_test` and `S3_BUCKET_NAME=aga-test`. Leave `S3_ENDPOINT` empty for local `public/uploads`.
 

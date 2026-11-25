@@ -1,4 +1,5 @@
 node_modules
+services/embed/node_modules
 .next
 .git
 android

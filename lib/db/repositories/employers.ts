@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db/pool";
 import { pointParams } from "@/lib/db/repositories/helpers";
+import { enqueueSearchIndex } from "@/lib/search/index-queue";
 import type { BusinessMapResult, EmployerProfile } from "@/lib/db/types";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -104,6 +105,7 @@ export async function createEmployerProfile(
   );
   const profile = await getEmployerById(result.insertId);
   if (!profile) throw new Error("Failed to load created employer profile");
+  await enqueueSearchIndex("employer", profile.id);
   return profile;
 }
 
@@ -156,6 +158,7 @@ export async function updateEmployerProfile(
 
   const updated = await getEmployerById(employerId);
   if (!updated) throw new Error("Failed to load updated employer profile");
+  await enqueueSearchIndex("employer", updated.id);
   return updated;
 }
 
@@ -216,6 +219,7 @@ export async function upsertDirectoryEmployer(
     );
     const profile = await getEmployerById(result.insertId);
     if (!profile) throw new Error("Failed to load created business profile");
+    await enqueueSearchIndex("employer", profile.id);
     return { profile, created: true };
   }
 
@@ -254,6 +258,7 @@ export async function upsertDirectoryEmployer(
   );
   const profile = await getEmployerById(existing.id);
   if (!profile) throw new Error("Failed to load updated business profile");
+  await enqueueSearchIndex("employer", profile.id);
   return { profile, created: false };
 }
 

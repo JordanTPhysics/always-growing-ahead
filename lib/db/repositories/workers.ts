@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db/pool";
 import { mapWorkerRow, pointParams } from "@/lib/db/repositories/helpers";
+import { enqueueSearchIndex } from "@/lib/search/index-queue";
 import type {
   Availability,
   JobType,
@@ -116,6 +117,7 @@ export async function createWorkerProfile(
   );
   const profile = await getWorkerById(result.insertId);
   if (!profile) throw new Error("Failed to load created worker profile");
+  await enqueueSearchIndex("worker", profile.id);
   return profile;
 }
 
@@ -228,6 +230,7 @@ export async function updateWorkerProfile(
 
   const updated = await getWorkerById(workerId);
   if (!updated) throw new Error("Failed to load updated worker profile");
+  await enqueueSearchIndex("worker", updated.id);
   return updated;
 }
 
@@ -269,6 +272,7 @@ export async function setWorkerSkills(
   } finally {
     conn.release();
   }
+  await enqueueSearchIndex("worker", workerId);
 }
 
 export async function listWorkerExperience(
@@ -321,6 +325,7 @@ export async function replaceWorkerExperience(
   } finally {
     conn.release();
   }
+  await enqueueSearchIndex("worker", workerId);
 }
 
 export async function listWorkerQualifications(
@@ -372,6 +377,7 @@ export async function replaceWorkerQualifications(
   } finally {
     conn.release();
   }
+  await enqueueSearchIndex("worker", workerId);
 }
 
 export async function getPublicWorkerBundle(workerId: number) {

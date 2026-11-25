@@ -1,5 +1,6 @@
 import { isRemoteDatabaseConfigured } from "@/lib/db/config";
 import { pool } from "@/lib/db/pool";
+import { enqueueSearchIndex, discardSearchIndex } from "@/lib/search/index-queue";
 import type { EducationMediaType, EducationResource } from "@/lib/db/types";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -106,6 +107,7 @@ export async function createEducationResource(
   );
   const created = await getEducationResourceById(result.insertId);
   if (!created) throw new Error("Failed to load created education resource");
+  await enqueueSearchIndex("education", created.id);
   return created;
 }
 
@@ -177,7 +179,9 @@ export async function updateEducationResource(
     ]
   );
 
-  return getEducationResourceById(id);
+  const updated = await getEducationResourceById(id);
+  if (updated) await enqueueSearchIndex("education", updated.id);
+  return updated;
 }
 
 export async function deleteEducationResource(id: number): Promise<boolean> {
@@ -185,5 +189,6 @@ export async function deleteEducationResource(id: number): Promise<boolean> {
     "DELETE FROM education_resources WHERE id = ?",
     [id]
   );
+  if (result.affectedRows > 0) await discardSearchIndex("education", id);
   return result.affectedRows > 0;
 }

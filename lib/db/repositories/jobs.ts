@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db/pool";
 import { pointParams } from "@/lib/db/repositories/helpers";
+import { enqueueSearchIndex } from "@/lib/search/index-queue";
 import type {
   Job,
   JobSearchFilters,
@@ -205,6 +206,7 @@ export async function createJob(
 
   const job = await getJobById(result.insertId);
   if (!job) throw new Error("Failed to load created job");
+  await enqueueSearchIndex("job", job.id);
   return job;
 }
 
@@ -291,6 +293,7 @@ export async function updateJob(jobId: number, input: Partial<JobInput>): Promis
 
   const updated = await getJobById(jobId);
   if (!updated) throw new Error("Failed to load updated job");
+  await enqueueSearchIndex("job", updated.id);
   return updated;
 }
 
@@ -328,4 +331,5 @@ export async function setJobSkills(
   } finally {
     conn.release();
   }
+  await enqueueSearchIndex("job", jobId);
 }
