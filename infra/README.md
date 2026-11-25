@@ -110,6 +110,7 @@ Default Linux policy already allows 22, 80, 443. Add **3306 only if the app is n
 | 22 | SSH |
 | 80 / 443 | App + HTTPS (Caddy). Path `/aga-live/` and `/aga-test/` go to MinIO until you use a files. subdomain |
 | 3306 | Bound to localhost only — do not open this in the IONOS firewall |
+| 8000 | Embedding service, bound to localhost only |
 | 9000 / 9001 | Keep closed. Console: `ssh -L 9001:127.0.0.1:9001 user@vps` then http://127.0.0.1:9001 |
 
 ## File store

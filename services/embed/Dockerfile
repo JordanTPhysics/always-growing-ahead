@@ -8,7 +8,8 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev \
+  && node node_modules/onnxruntime-node/script/install.js
 COPY --chown=node:node server.mjs ./
 RUN mkdir -p /models && chown node:node /models
 
