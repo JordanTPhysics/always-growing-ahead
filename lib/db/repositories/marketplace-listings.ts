@@ -6,6 +6,7 @@ import type {
   MarketplaceSellerProfile,
 } from "@/lib/marketplace/types";
 import { isRemoteDatabaseConfigured } from "@/lib/db/config";
+import { enqueueSearchIndex } from "@/lib/search/index-queue";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 type ListingRow = MarketplaceListing & RowDataPacket;
@@ -171,5 +172,6 @@ export async function createMarketplaceListing(input: {
     marketplaceListingPublicId(result.insertId)
   );
   if (!post) throw new Error("Failed to load created listing");
+  await enqueueSearchIndex("marketplace", result.insertId);
   return post;
 }

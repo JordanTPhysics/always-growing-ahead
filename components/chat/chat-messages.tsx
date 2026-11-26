@@ -10,9 +10,16 @@ export function formatChatTime(value: Date | string) {
   });
 }
 
-export function remainingChatHours(expiresAt: Date | string) {
+export function chatExpiryParts(expiresAt: Date | string):
+  | { kind: "soon" }
+  | { kind: "hours"; hours: number }
+  | { kind: "days"; days: number } {
   const ms = new Date(expiresAt).getTime() - Date.now();
-  return Math.max(0, Math.ceil(ms / (60 * 60 * 1000)));
+  const hours = Math.max(0, Math.ceil(ms / (60 * 60 * 1000)));
+  if (hours <= 1) return { kind: "soon" };
+  if (hours < 48) return { kind: "hours", hours };
+  const days = Math.max(1, Math.ceil(ms / (24 * 60 * 60 * 1000)));
+  return { kind: "days", days };
 }
 
 export function ChatMessageList({

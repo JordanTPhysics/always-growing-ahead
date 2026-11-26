@@ -8,7 +8,7 @@ cd /opt/aga/infra
 
 Compose reads `infra/.env` (MySQL, MinIO, Caddy) and `/opt/aga/.env` (app secrets, Stripe). Stay in `infra/` so those files resolve correctly.
 
-Project name is `aga`. Services: `app`, `mysql`, `minio`, `caddy`. One-shot tools: `migrate`, `migrate-test`, `ensure-test-db`, `minio-init`.
+Project name is `aga`. Services: `app`, `embed`, `mysql`, `minio`, `caddy`, `trial-billing`. One-shot tools: `migrate`, `migrate-test`, `ensure-test-db`, `minio-init`.
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "title": "Chat with admin",
-  "subtitle": "Send a message and an admin will reply here. Chats are deleted after 48 hours.",
+  "subtitle": "Send a message and an admin will reply here. Chats are deleted after 6 months.",
   "openChat": "Open live chat",
   "closeChat": "Close chat",
   "placeholder": "Write a message…",
@@ -9,6 +9,7 @@
   "signInPrompt": "Sign in to chat with an admin.",
   "signIn": "Sign in",
   "expiresIn": "This chat is deleted in {hours} hours.",
+  "expiresInDays": "This chat is deleted in {days} days.",
   "expiresSoon": "This chat will be deleted soon.",
   "unread": "{count} unread messages",
   "you": "You",
@@ -17,7 +18,7 @@
   "loadFailed": "Could not load the chat.",
   "admin": {
     "heading": "Live chat",
-    "hint": "Reply to users here. Conversations are deleted 48 hours after they start.",
+    "hint": "Reply to users here. Conversations are deleted 6 months after they start.",
     "empty": "No open chats.",
     "select": "Select a conversation to reply.",
     "viewAccount": "View account",

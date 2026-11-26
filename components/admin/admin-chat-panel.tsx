@@ -9,8 +9,8 @@ import { Card } from "@/components/ui/card";
 import { inputClassName } from "@/components/ui/forms";
 import {
   ChatMessageList,
+  chatExpiryParts,
   formatChatTime,
-  remainingChatHours,
 } from "@/components/chat/chat-messages";
 import type {
   ChatConversation,
@@ -117,8 +117,8 @@ export function AdminChatPanel() {
     }
   }
 
-  const hoursLeft = conversation
-    ? remainingChatHours(conversation.expires_at)
+  const expiry = conversation
+    ? chatExpiryParts(conversation.expires_at)
     : null;
 
   return (
@@ -193,11 +193,13 @@ export function AdminChatPanel() {
                   {user.username ? (
                     <p className="text-sm text-muted">{user.username}</p>
                   ) : null}
-                  {hoursLeft != null ? (
+                  {expiry ? (
                     <p className="mt-1 text-xs text-muted">
-                      {hoursLeft <= 1
+                      {expiry.kind === "soon"
                         ? t("expiresSoon")
-                        : t("expiresIn", { hours: hoursLeft })}
+                        : expiry.kind === "hours"
+                          ? t("expiresIn", { hours: expiry.hours })
+                          : t("expiresInDays", { days: expiry.days })}
                     </p>
                   ) : null}
                   <div className="mt-3 flex flex-wrap gap-2">

@@ -8,7 +8,14 @@ import type {
 } from "@/lib/db/types";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
-export const CHAT_TTL_MS = 48 * 60 * 60 * 1000;
+/** New conversations are kept for six calendar months from creation. */
+export const CHAT_RETENTION_MONTHS = 6;
+
+export function chatExpiresAt(from = new Date()): Date {
+  const expiresAt = new Date(from.getTime());
+  expiresAt.setUTCMonth(expiresAt.getUTCMonth() + CHAT_RETENTION_MONTHS);
+  return expiresAt;
+}
 
 type ConversationRow = ChatConversation & RowDataPacket;
 type MessageRow = ChatMessage & RowDataPacket;
@@ -52,7 +59,7 @@ export async function getConversationById(
 export async function createConversation(
   userId: number
 ): Promise<ChatConversation> {
-  const expiresAt = new Date(Date.now() + CHAT_TTL_MS);
+  const expiresAt = chatExpiresAt();
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO chat_conversations (user_id, expires_at, last_message_at)
      VALUES (?, ?, UTC_TIMESTAMP())`,

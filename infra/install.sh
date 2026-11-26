@@ -170,7 +170,7 @@ start_stack() {
   compose --profile tools run --rm migrate-test
 
   log "Building and starting the app"
-  compose up -d --build app caddy trial-billing
+  compose up -d --build embed app caddy trial-billing
 }
 
 print_done() {

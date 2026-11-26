@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { inputClassName } from "@/components/ui/forms";
 import {
   ChatMessageList,
-  remainingChatHours,
+  chatExpiryParts,
 } from "@/components/chat/chat-messages";
 import { panelClassName } from "@/lib/ui-styles";
 import { cn } from "@/lib/utils";
@@ -152,8 +152,8 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
     }
   }
 
-  const hoursLeft = conversation
-    ? remainingChatHours(conversation.expires_at)
+  const expiry = conversation
+    ? chatExpiryParts(conversation.expires_at)
     : null;
 
   return (
@@ -169,11 +169,13 @@ export function LiveChatWidget({ role }: { role?: string | null }) {
           <header className="bg-foreground px-4 py-3">
             <h2 className="text-base font-semibold text-white">{t("title")}</h2>
             <p className="mt-1 text-xs text-white/80">{t("subtitle")}</p>
-            {hoursLeft != null ? (
+            {expiry ? (
               <p className="mt-1 text-xs text-white/70">
-                {hoursLeft <= 1
+                {expiry.kind === "soon"
                   ? t("expiresSoon")
-                  : t("expiresIn", { hours: hoursLeft })}
+                  : expiry.kind === "hours"
+                    ? t("expiresIn", { hours: expiry.hours })
+                    : t("expiresInDays", { days: expiry.days })}
               </p>
             ) : null}
           </header>
