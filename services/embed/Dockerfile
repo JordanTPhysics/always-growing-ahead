@@ -8,8 +8,10 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev \
-  && node node_modules/onnxruntime-node/script/install.js
+# The CPU binary ships in the npm package. install.js only fetches CUDA
+# libraries, and on Linux x64 that download fails the image build.
+ENV ONNXRUNTIME_NODE_INSTALL_CUDA=skip
+RUN npm ci --omit=dev
 COPY --chown=node:node server.mjs ./
 RUN mkdir -p /models && chown node:node /models
 
